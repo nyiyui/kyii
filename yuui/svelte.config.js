@@ -10,9 +10,6 @@ const config = {
 		adapter: adapter({
 			trailingSlash: 'always',
 		}),
-		paths: {
-			base: dev ? '' : '/yuui',
-		}
 	}
 };
 
