@@ -7,6 +7,6 @@ if (!baseUrl) {
 	throw new Error(`invalid API Base URL: ${baseUrl}`);
 }
 
-export const apiBaseUrl = persist(writable(new URL(baseUrl)), localStorage(), 'apiBaseUrl');
+export const apiBaseUrl = persist(writable(baseUrl), localStorage(), 'apiBaseUrl');
 
 export const debugMode = persist(writable(false), localStorage(), 'debugMode');

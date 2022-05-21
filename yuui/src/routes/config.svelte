@@ -1,5 +1,6 @@
 <script lang="ts" type="module">
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
+	import Autosaved from '$lib/Autosaved.svelte';
 	import { Client } from "$lib/api";
 	import type { ApInput, AfInput } from "$lib/api";
 	import { debugMode, apiBaseUrl } from "$lib/store";
@@ -232,7 +233,7 @@
 	{:else if submitAxError === ''}
 		<Box level="ok" />
 	{/if}
-	<h2>Client-Specific</h2>
+	<h2>Client-Specific <Autosaved /></h2>
 	<h3>Debug Mode</h3>
 	<label>
 		On

@@ -118,9 +118,9 @@ type AfInput = {
 class Client {
 	private baseUrl: URL;
 
-	constructor(baseUrl: URL) {
+	constructor(baseUrl: string) {
 		if (!browser) throw new Error("can only use in a browser");
-		this.baseUrl = baseUrl;
+		this.baseUrl = new URL(baseUrl);
 	}
 
 	async getCsrfToken(): Promise<string> {
