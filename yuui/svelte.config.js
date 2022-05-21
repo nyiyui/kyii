@@ -13,12 +13,15 @@ const config = {
       pages: 'build',
       assets: 'build',
       fallback: null,
-      precompress: false
+      precompress: false,
+			trailingSlash: 'always',
     }),
 		prerender: {
 			default: true,
 		},
-		trailingSlash: 'always',
+		paths: {
+			base: '/kyii/yuui',
+		},
 	}
 };
 
