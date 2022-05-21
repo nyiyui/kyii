@@ -35,7 +35,8 @@ jobs:
         # Delete the ref to avoid keeping history.
         git update-ref -d refs/heads/gh-pages
         rm -rf *
-        mv ../book/* ./docs
+        mkdir paimon
+        mv ../book/* ./paimon
         cp -r ../../yuui/build .
         git add .
         git commit -m "Deploy $GITHUB_SHA to gh-pages"
