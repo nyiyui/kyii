@@ -33,12 +33,12 @@ jobs:
         git worktree add gh-pages gh-pages
         git config user.name "Deploy from CI"
         git config user.email ""
-        mv ./yuui/build ./gh-pages/yuui
-        mv ./paimon/book ./gh-pages/paimon
         cd gh-pages
         # Delete the ref to avoid keeping history.
         git update-ref -d refs/heads/gh-pages
         rm -rf *
+        mv ../yuui/build ../gh-pages/yuui
+        mv ../paimon/book ../gh-pages/paimon
         git add .
         git commit -m "Deploy $GITHUB_SHA to gh-pages"
         git push --force
