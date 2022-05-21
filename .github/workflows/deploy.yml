@@ -17,6 +17,7 @@ jobs:
     - name: Build Yuui
       run: |
         cd yuui
+        npm i --include=dev
         npm run build
     - name: Install mdbook
       run: |
