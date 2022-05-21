@@ -7,9 +7,18 @@ const dev = process.env.NODE_ENV === 'development';
 const config = {
 	preprocess: preprocess(),
 	kit: {
-		adapter: adapter({
-			trailingSlash: 'always',
-		}),
+		trailingSlash: 'always',
+    adapter: adapter({
+      // default options are shown
+      pages: 'build',
+      assets: 'build',
+      fallback: null,
+      precompress: false
+    }),
+		prerender: {
+			default: true,
+		},
+		trailingSlash: 'always',
 	}
 };
 

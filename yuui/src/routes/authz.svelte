@@ -23,9 +23,10 @@
 
 	let csrfToken: string;
 
-	const grant: Grant = JSON.parse($page.url.searchParams.get('grant'));
+	let grant: Grant;
 	(async () => {
 		if (browser) {
+			grant = JSON.parse($page.url.searchParams.get('grant'));
 			client = new Client();
 			// not using export function get in *.ts because it didn't work for moi…maybe a TODO: fix this?
 			const s = await client.status();
@@ -38,10 +39,11 @@
 </script>
 
 <svelte:head>
-	<title>Authorize {grant.client.name}</title>
+	<title>Authorize</title>
 </svelte:head>
 
 <main>
+	{#if grant}
 	<a href="{grant.client.uri}">{grant.client.name}</a> is requesting:
 	<ul>
 		{#each grant.request.scope.split(' ') as scope}
@@ -53,4 +55,5 @@
 		<input type="submit" name="action_allow" value="Allow" />
 		<input type="submit" name="action_deny" value="Deny" />
 	</form>
+	{/if}
 </main>

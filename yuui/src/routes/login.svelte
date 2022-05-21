@@ -33,7 +33,7 @@
 		return null;
 	}
 
-	const next = getNext();
+	let next: string | null;
 
 	let done: boolean;
 	let aps: Array<Ap> = [];
@@ -49,6 +49,7 @@
 		if (browser) {
 			client = new Client();
 			// not using export function get in *.ts because it didn't work for moi…maybe a TODO: fix this?
+			next = getNext();
 			const s = await client.status();
 			if (s !== null) {
 				console.log('already logged in; redirecting to next');
