@@ -438,3 +438,4 @@ def api_oauth_clients():
 @api_v1.route("/api/v1/oauth/grants", methods=("GET", "POST"))
 @req_perms(("api_v1.oauth.grants",), perm_handler)
 @update_ul_last
+def api_oauth_grants():
