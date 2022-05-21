@@ -1,5 +1,6 @@
 <script lang="ts" type="module">
 	import { Client } from "$lib/api";
+	import { apiBaseUrl } from "$lib/store";
 	import { browser } from "$app/env";
 	import Box from '$lib/Box.svelte';
 
@@ -10,7 +11,7 @@
 
 	(async () => {
 		if (browser) {
-			client = new Client();
+			client = new Client($apiBaseUrl);
 			// not using export function get in *.ts because it didn't work for moi…maybe a TODO: fix this?
 			const s = await client.status();
 			if (s !== null) {

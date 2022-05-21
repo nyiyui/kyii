@@ -1,4 +1,5 @@
 <script lang="ts" type="module">
+	import { apiBaseUrl } from "$lib/store";
 	import { Client } from "$lib/api";
 	import type { UserLogin } from '$lib/api';
 	import { browser } from "$app/env";
@@ -9,7 +10,7 @@
 
 	(async () => {
 		if (browser) {
-			client = new Client();
+			client = new Client($apiBaseUrl);
 			if (!await client.loggedIn()) {
 				console.log('not logged in');
 				window.location.replace("/login");

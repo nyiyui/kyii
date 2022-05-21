@@ -70,7 +70,7 @@
 
 	(async () => {
 		if (browser) {
-			client = new Client();
+			client = new Client($apiBaseUrl);
 			if (!await client.loggedIn()) {
 				window.location.replace("/login");
 			}

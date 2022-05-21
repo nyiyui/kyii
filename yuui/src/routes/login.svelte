@@ -5,14 +5,13 @@
 	import type { Status } from "../lib/api";
 	import { browser } from "$app/env";
 	import Icon from '@iconify/svelte';
-	import AF from '../lib/AF.svelte';
 	import AFChallenge from '../lib/AFChallenge.svelte';
 	import { AttemptResultStatus } from '$lib/util';
+	import { apiBaseUrl } from '$lib/store';
 
 	let username: string;
 	let usernameFound: boolean|undefined = undefined;
 	let apUuid: string;
-	let currentAttempt: string;
 	let attempts: Map<string, string> = new Map();
 
 	let client: Client;
@@ -22,7 +21,7 @@
 		const nextRel = $page.url.searchParams.get('next');
 		if (nextRel !== null) {
 			const argsRaw = $page.url.searchParams.get('args') || '';
-			return (nextRel !== null) ? new URL(nextRel, import.meta.env.VITE_API_BASE_URL).toString() + '?' + argsRaw : null;
+			return (nextRel !== null) ? new URL(nextRel, $apiBaseUrl).toString() + '?' + argsRaw : null;
 		}
 		const selfnextRel = $page.url.searchParams.get('selfnext');
 		if (selfnextRel !== null) {
@@ -38,7 +37,6 @@
 	let done: boolean;
 	let aps: Array<Ap> = [];
 	let afs: Array<Af> = [];
-	let status: Status;
 
 	let attemptResults: Map<string, { status: AttemptResultStatus, msg: string }> = new Map();
 	// string: error
@@ -47,7 +45,7 @@
 
 	(async () => {
 		if (browser) {
-			client = new Client();
+			client = new Client($apiBaseUrl);
 			// not using export function get in *.ts because it didn't work for moi…maybe a TODO: fix this?
 			next = getNext();
 			const s = await client.status();
@@ -97,19 +95,13 @@
 		}
 		attemptResults = attemptResults;
 	}
-
-	async function check() {
-		if (await client.status() !== undefined) {
-			console.log('logged in');
-		}
-	}
 </script>
 
 <svelte:head>
 	<title>Login</title>
 </svelte:head>
 
-<main class="login-start" on:load={check}>
+<main class="login-start">
 	<form id="login">
 		<div id="login-top">
 			<div id="login-u">

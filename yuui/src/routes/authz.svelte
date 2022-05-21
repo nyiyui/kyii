@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import { Client } from "../lib/api";
 	import { browser } from "$app/env";
+	import { apiBaseUrl } from "$lib/store";
 	import Icon from '@iconify/svelte';
 
 	let client: Client;
@@ -27,7 +28,7 @@
 	(async () => {
 		if (browser) {
 			grant = JSON.parse($page.url.searchParams.get('grant'));
-			client = new Client();
+			client = new Client($apiBaseUrl);
 			// not using export function get in *.ts because it didn't work for moi…maybe a TODO: fix this?
 			const s = await client.status();
 			if (s === null)
@@ -50,7 +51,7 @@
 			<li><code>{scope}</code></li>
 		{/each}
 	</ul>
-	<form action="{import.meta.env.VITE_API_BASE_URL}/oauth/authorize?{new URLSearchParams(grant.args).toString()}" method="post">
+	<form action="{$apiBaseUrl}/oauth/authorize?{new URLSearchParams(grant.args).toString()}" method="post">
 		<input type="hidden" name="_csrf_token" value="{csrfToken}" />
 		<input type="submit" name="action_allow" value="Allow" />
 		<input type="submit" name="action_deny" value="Deny" />

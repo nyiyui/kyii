@@ -1,6 +1,6 @@
 <script lang="ts" type="modue">
 	import { page } from '$app/stores';
-	import { debugMode } from '$lib/store';
+	import { debugMode, apiBaseUrl } from '$lib/store';
 	import { t, locale, locales } from '$lib/translations';
 	import logo from '../../../static/favicon.svg';
 	import { browser } from '$app/env';
@@ -11,7 +11,7 @@
 	let loggedIn: boolean;
 	(async () => {
 		if (browser) {
-			client = new Client();
+			client = new Client($apiBaseUrl);
 			loggedIn = await client.loggedIn();
 		}
 	})();

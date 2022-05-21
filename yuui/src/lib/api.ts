@@ -118,9 +118,9 @@ type AfInput = {
 class Client {
 	private baseUrl: URL;
 
-	constructor() {
+	constructor(baseUrl: URL) {
 		if (!browser) throw new Error("can only use in a browser");
-		this.baseUrl = new URL(import.meta.env.VITE_API_BASE_URL as string);
+		this.baseUrl = baseUrl;
 	}
 
 	async getCsrfToken(): Promise<string> {
