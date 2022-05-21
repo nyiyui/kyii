@@ -17,7 +17,7 @@ from typing import Optional
 from flask_cors import CORS
 from flask import session, jsonify
 from ..session import API_V1_APID, API_V1_SOLVED, API_V1_UID
-from ..util import req_perms
+from ..util import req_perms, has_perms
 
 
 def perm_handler(missing_perms, reason):
@@ -434,6 +434,7 @@ def api_signup():
 @req_perms(("api_v1.oauth.clients",), perm_handler)
 @update_ul_last
 def api_oauth_clients():
+    if request
 
 @api_v1.route("/api/v1/oauth/grants", methods=("GET", "POST"))
 @req_perms(("api_v1.oauth.grants",), perm_handler)
