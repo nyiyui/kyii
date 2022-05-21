@@ -33,9 +33,7 @@ jobs:
         git worktree add gh-pages gh-pages
         git config user.name "Deploy from CI"
         git config user.email ""
-        mkdir ./gh-pages/yuui
         mv ./yuui/build ./gh-pages/yuui
-        mkdir ./gh-pages/paimon
         mv ./paimon/book ./gh-pages/paimon
         cd gh-pages
         # Delete the ref to avoid keeping history.
