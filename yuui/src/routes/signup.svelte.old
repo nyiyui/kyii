@@ -1,0 +1,100 @@
+<script lang="ts" type="module">
+	import { Client } from "$lib/api";
+	import type { SignupAp, SignupAf } from "$lib/api";
+	import { browser } from "$app/env";
+	import Icon from '@iconify/svelte';
+	import AFInput from '../lib/AFInput.svelte';
+	import APInput from '../lib/APInput.svelte';
+
+	let username: string;
+	let usernameTaken: boolean|undefined = undefined;
+	let name: string;
+	let email: string;
+
+	const aps = new Array<SignupAp>();
+	aps.push({name: "Primary", reqs: [1, 2]});
+	aps.push({name: "Backup", reqs: [1, 4]});
+	const afs = new Map<number, SignupAf>();
+	afs.set(1, {name: "Password from mCTF", verifier: "pw", params: {password: 'abc'}});
+	afs.set(2, {name: "TOTP", verifier: "otp_totp", params: {}});
+	afs.set(4, {name: "Primary Email", verifier: "ctrl_email", params: {email: 'for.testing+kyii-airy@nyiyui.ca'}});
+
+	let client: Client;
+
+	// TODO: next, selfnext, etc
+
+	(async () => {
+		if (browser) {
+			client = new Client();
+			// not using export function get in *.ts because it didn't work for moi…maybe a TODO: fix this?
+			const s = await client.status();
+			if (s !== null) {
+				window.location.replace("/");
+			}
+			console.log('not logged in');
+		}
+	})();
+
+	async function usernameFind() {
+		usernameTaken = (await client.username(username)).exists;
+	}
+</script>
+
+<main>
+	<form id="signup">
+		<div id="signup-top">
+			<label for="username">Username</label>
+			<input id="username" type="username" autocomplete="username" bind:value={username} on:input={usernameFind} />
+			{#if usernameTaken}
+				<Icon icon="mdi:account-cancel" style="color: var(--color-error);" />
+				Taken
+			{:else}
+				<Icon icon="mdi:account-check" style="color: var(--color-ok);" />
+				Available
+			{/if}
+			<br/>
+			<label for="name">Name</label>
+			<input id="name" type="name" autocomplete="name" bind:value={name} />
+			<br/>
+			<label for="email">Email</label>
+			<input id="email" type="email" autocomplete="email" bind:value={email} />
+		</div>
+		<div class="flex">
+			<fieldset class="flex-in">
+				<legend>APs</legend>
+				{#each aps as ap}
+					<div class="ax-input">
+						<APInput bind:ap={ap} {afs} />
+					</div>
+				{/each}
+			</fieldset>
+			<fieldset class="flex-in">
+				<legend>AFs</legend>
+				{#each [...afs] as [n, af]}
+					<div class="ax-input">
+						<AFInput {n} bind:af={af} />
+					</div>
+				{/each}
+			</fieldset>
+		</div>
+		<div id="signup-bottom">
+			<button id="signup-submit">
+				<Icon icon="mdi:account-plus" style="color: #cfc;" />
+				Sign up
+			</button>
+		</div>
+	</form>
+</main>
+
+<style>
+	.flex {
+		display: flex;
+	}
+	.flex-in {
+		flex: 50%;
+	}
+
+	.ax-input:not(:last-child) {
+		margin-bottom: 16px;
+	}
+</style>

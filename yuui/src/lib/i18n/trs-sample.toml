@@ -1,0 +1,21 @@
+[[routes]]
+key = 'menu'
+
+[[routes]]
+key = 'home'
+routes = ['/']
+
+[[routes]]
+key = 'about'
+routes = ['/about']
+
+[locale]
+default = 'en'
+
+[locales.en.name]
+en = 'English'
+cs = 'Česky'
+
+[locales.cs.name]
+en = 'English'
+cs = 'Česky'

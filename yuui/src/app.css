@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
+
+:root {
+	--color-bg: #000;
+	--color-fg: #fff;
+	--color-1: #cff;
+	--color-2: #ccc;
+	--color-neutral: #ccc;
+	--color-ok: #cfc;
+	--color-info: #ccf;
+	--color-warn: #ffc;
+	--color-error: #fcc;
+}
+
+body {
+	font-family: 'Roboto', sans-serif;
+	background-color: var(--color-bg);
+	color: var(--color-fg);
+}
+
+a {
+	color: var(--color-1);
+}
+
+input, button, fieldset {
+	background-color: var(--color-bg);
+	color: var(--color-fg);
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 8px;
+	border-color: var(--color-2);
+	padding: 6px;
+	margin: 2px;
+}
+
+input[type="button"]:hover {
+	border-width: 2px;
+	margin: 1px;
+}
+
+input:focus {
+	border-width: 2px;
+	margin: 1px;
+}
+
+input:disabled {
+	border-style: dashed;
+}
+
+.delete {
+	border-color: var(--color-error);
+}
+
+.new {
+	border-color: var(--color-info);
+}
+
+.update {
+	border-color: var(--color-ok);
+}
+
+.flex {
+	display: flex;
+}
+
+@media screen and ( max-width: 1000px ) {
+	.flex {
+		flex-direction: column;
+	}
+}
+
+.panel {
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 8px;
+	border-color: var(--color-2);
+	padding: 6px;
+	margin: 4px;
+}

@@ -1,0 +1,32 @@
+version: '3'
+volumes:
+  database:
+services:
+  airy:
+    build: ./
+    volumes:
+      - ./airy/docker/local_config.py:/opt/kyii-airy/airy/local_config.py
+    networks:
+      - main
+  nginx:
+    build: ../nginx/
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      NGINX_HOST: "localhost"
+      NGINX_PORT: "8080"
+    networks:
+      - main
+  database:
+    image: mariadb:latest
+    restart: always
+    volumes:
+      - database:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: kyii_airy_db
+      MYSQL_USER: kyii_airy_user
+      MYSQL_PASSWORD: very_secure_password
+      MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+    networks:
+      - main
