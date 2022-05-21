@@ -38,7 +38,7 @@ jobs:
         git update-ref -d refs/heads/gh-pages
         rm -rf ../gh-pages/*
         mv ../CNAME .
-        mv ../yuui/build ../gh-pages/
+        mv ../yuui/build/* ../gh-pages/
         mv ../paimon/book ../gh-pages/paimon
         git add .
         git commit -m "Deploy $GITHUB_SHA to gh-pages"
