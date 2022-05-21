@@ -18,6 +18,7 @@ jobs:
       run: |
         cd yuui
         npm i --include=dev
+        ls -al
         source .env.production
         NODE_ENV=production npm run build
     - name: Install mdbook
