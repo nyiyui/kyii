@@ -125,6 +125,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Config</title>
+</svelte:head>
+
 <main>
 	<h2>Identity</h2>
 	<div class="flex">

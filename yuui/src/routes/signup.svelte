@@ -27,6 +27,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Signup</title>
+</svelte:head>
+
 <main>
 	<form id="signup">
 		<Box level="info">

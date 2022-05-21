@@ -20,6 +20,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Logout</title>
+</svelte:head>
+
 <main class="logout">
 	<input type="button" value="Logout" on:click={logout} />
 </main>

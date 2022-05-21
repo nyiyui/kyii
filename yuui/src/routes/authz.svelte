@@ -37,6 +37,10 @@
 	})();
 </script>
 
+<svelte:head>
+	<title>Authorize {grant.client.name}</title>
+</svelte:head>
+
 <main>
 	<a href="{grant.client.uri}">{grant.client.name}</a> is requesting:
 	<ul>

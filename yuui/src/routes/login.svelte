@@ -104,6 +104,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Login</title>
+</svelte:head>
+
 <main class="login-start" on:load={check}>
 	<form id="login">
 		<div id="login-top">

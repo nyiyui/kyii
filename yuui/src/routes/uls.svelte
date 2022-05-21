@@ -20,6 +20,10 @@
 	})();
 </script>
 
+<svelte:head>
+	<title>Sessions</title>
+</svelte:head>
+
 <main class="logout">
 	{#each Array.from(uls.entries()) as [i, ul]}
 		<div class="user-login">
