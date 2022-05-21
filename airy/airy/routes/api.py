@@ -429,3 +429,12 @@ def api_signup():
         ),
         200,
     )  # NOTE: not using 201 as it requires Location (?), but signup doesn't return one
+
+@api_v1.route("/api/v1/oauth/clients", methods=("GET", "POST"))
+@req_perms(("api_v1.oauth.clients",), perm_handler)
+@update_ul_last
+def api_oauth_clients():
+
+@api_v1.route("/api/v1/oauth/grants", methods=("GET", "POST"))
+@req_perms(("api_v1.oauth.grants",), perm_handler)
+@update_ul_last
