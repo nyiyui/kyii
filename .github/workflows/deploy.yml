@@ -24,21 +24,23 @@ jobs:
         mkdir mdbook
         curl -sSL https://github.com/rust-lang/mdBook/releases/download/v0.4.14/mdbook-v0.4.14-x86_64-unknown-linux-gnu.tar.gz | tar -xz --directory=./mdbook
         echo `pwd`/mdbook >> $GITHUB_PATH
-    - name: Deploy GitHub Pages
+    - name: Build Paimon
       run: |
         cd paimon
         mdbook build
+    - name: Deploy GitHub Pages
+      run: |
         git worktree add gh-pages gh-pages
         git config user.name "Deploy from CI"
         git config user.email ""
+        mkdir ./gh-pages/yuui
+        mv ./yuui/build ./gh-pages/yuui
+        mkdir ./gh-pages/paimon
+        mv ./paimon/book ./gh-pages/paimon
         cd gh-pages
         # Delete the ref to avoid keeping history.
         git update-ref -d refs/heads/gh-pages
         rm -rf *
-        mkdir paimon
-        mv ../book/* ./paimon
-        cp -r ../../yuui/build/* .
-        cp -r ../../yuui/build/.* .
         git add .
         git commit -m "Deploy $GITHUB_SHA to gh-pages"
         git push --force
