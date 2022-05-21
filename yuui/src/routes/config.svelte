@@ -2,7 +2,7 @@
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
 	import { Client } from "$lib/api";
 	import type { ApInput, AfInput } from "$lib/api";
-	import { debugMode } from "$lib/store";
+	import { debugMode, apiBaseUrl } from "$lib/store";
 	import { browser } from "$app/env";
 	import Icon from '@iconify/svelte';
 	import Box from '../lib/Box.svelte';
@@ -245,6 +245,11 @@
 	<Box level="info">
 		This only shows data already available to Yuui (hidden if Debug Mode is off).
 	</Box>
+	<h3>Etc</h3>
+	<label>
+		Airy API Base URL
+		<input type="url" bind:value={$apiBaseUrl} />
+	</label>
 </main>
 
 <style>
