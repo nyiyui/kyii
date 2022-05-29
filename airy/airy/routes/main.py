@@ -1,36 +1,19 @@
 import json
 import logging
 import time
+import uuid
 from datetime import datetime
 from typing import Optional
 from urllib.parse import urlencode, urljoin
 
 from authlib.integrations.flask_oauth2 import current_token
 from authlib.oauth2 import OAuth2Error
-from flask import (
-    Blueprint,
-    Response,
-    abort,
-    current_app,
-    g,
-    jsonify,
-    redirect,
-    render_template,
-    request,
-    session,
-    url_for,
-)
+from flask import (Blueprint, Response, abort, current_app, g, jsonify,
+                   redirect, render_template, request, session, url_for)
 from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import gen_salt
 
-from ..db import (
-    AF,
-    AP,
-    OAuth2Client,
-    User,
-    UserLogin,
-    db,
-)
+from ..db import AF, AP, OAuth2Client, User, UserLogin, db
 from ..etc import csrf, login_manager
 from ..oauth2 import authorization, generate_user_info, require_oauth
 
@@ -133,16 +116,23 @@ def oauth_authorize():
             return jsonify(dict(error.get_body()))
         if current_app.config["KYII_YUUI"]:
             base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/authz")
-            query = urlencode(
-                dict(
-                    grant=json.dumps(
-                        {"args": request.args.to_dict(), **grant_as_dict(grant)}
-                    )
+            azrqid = uuid.uuid4()
+            session[f"azrq-{azrqid}"] = dict(
+                grant=(
+                    {
+                        "args": dict(azrqid=azrqid, **request.args.to_dict()),
+                        **grant_as_dict(grant),
+                    }
                 )
             )
+            query = urlencode(dict(azrqid=azrqid))
             return redirect(f"{base}?{query}")
         else:
             return render_template("authz.html", user=user, grant=grant)
+    if "azrqid" not in request.args:
+        return "azrqid required", 400
+    azrqid = request.args["azrqid"]
+    del session[f"azrq-{azrqid}"]
     if "action_allow" in request.form:
         grant_user = user
     else:

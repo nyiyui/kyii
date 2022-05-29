@@ -1,8 +1,9 @@
 import base64
+import json
 
 from passlib.hash import django_pbkdf2_sha256
 
-from .db import AF, AP, Group, User, db, gen_uuid, GroupPerms
+from .db import AF, AP, Group, GroupPerms, OAuth2Client, User, db, gen_uuid, Email
 
 
 def init_app(app):
@@ -10,26 +11,32 @@ def init_app(app):
     def seed():
         for table in reversed(db.metadata.sorted_tables):
             db.session.execute(table.delete())
+        sus = Group(slug="sus", name="Superusers")
+        db.session.add(sus)
+
+        db.session.commit()
+        email = Email(email="root@nyiyui.ca", is_verified=True, group=sus)
+        db.session.add(email)
+
         nyiyui = User(
-            id=gen_uuid(), slug="nyiyui", name="Yui Shibata", email_verified=False
+            id=gen_uuid(), slug="nyiyui", name="Yui Shibata", primary_group=sus,
         )
         db.session.add(nyiyui)
-
-        sus = Group(slug="sus", name="Superusers", email_verified=False)
-        sus.users.append(nyiyui)
-        db.session.add(sus)
         db.session.commit()
         gp = GroupPerms(group_id=sus.id, perm_name="_.admin")
         print(gp, gp.group_id, gp.perm_name)
         db.session.add(gp)
 
         af1 = AF(
-            name="One", user=nyiyui, verifier="pw", gen_params=dict(password="abc")
+            name="One", user=nyiyui, verifier="pw"
         )
+        af1.regen_params(gen_params=dict(password="abc"))
         db.session.add(af1)
 
-        af2 = AF(name="Two", user=nyiyui, verifier="otp_totp", gen_params={})
-        af2.name += af2.params["secret_key"]
+        af2 = AF(name="Two", user=nyiyui, verifier="otp_totp")
+        af2.regen_params(gen_params={})
+        af2.name = f"Two with secret key {af2.params['secret_key']}"
+        print(af2, af2.params, af2.state)
         db.session.add(af2)
 
         af3 = AF(
@@ -54,5 +61,28 @@ def init_app(app):
 
         ap3 = AP(name="Legacy", user=nyiyui, reqs=[af3])
         db.session.add(ap3)
+
+        mctf = OAuth2Client(
+            id="9b540566-c278-4968-bf18-8cdb29fb9b08",
+            user=nyiyui,
+            client_id="yLEG3BmYr6UL6xT5VNuFTApY",
+            client_secret="zv7pEjvyH0g6Bhkc7egFN2HanJ244Qxd9xwjDYGeU6vfzbYC",
+            client_id_issued_at=1653174311,
+            client_secret_expires_at=0,
+            _client_metadata=json.dumps(
+                {
+                    "client_name": "mCTF",
+                    "client_uri": "http://localhost:8001",
+                    "grant_types": ["authorization_code"],
+                    "redirect_uris": [
+                        "http://localhost:8001/accounts/kyii/login/callback/"
+                    ],
+                    "response_types": ["code"],
+                    "scope": "openid profile",
+                    "token_endpoint_auth_method": "client_secret_post",
+                },
+            ),
+        )
+        db.session.add(mctf)
 
         db.session.commit()

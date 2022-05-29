@@ -1,6 +1,26 @@
 import { browser } from "$app/env";
 import type { UUID } from "@types/uuid";
 
+type TAF = {
+	tafid: UUID,
+	feedback: any,
+}
+
+type Grant = {
+	args: any,
+	client: {
+		user_id: string,
+		name: string,
+		uri: string,
+	},
+	request: {
+		response_type: string,
+		redirect_uri: string,
+		scope: string,
+		state: string,
+	},
+};
+
 type UserLogin = {
 	uuid: string,
 	name: string,
@@ -90,15 +110,32 @@ class Status {
 }
 
 type Identity = {
+	uuid: string,
 	slug: string,
 	name: string,
 	email: string,
+	groups: Array<Group>,
+}
+
+type Group = {
+	id: string,
+	slug: string,
+	name: string,
+	email: string,
+	email_verified: boolean,
+	perms: Array<string>,
 }
 
 type AxInput = {
 	aps: Array<ApInput>,
 	del_aps: Array<string>,
-	afs: Array<{key: number, value: AfInput}>,
+	afs: Map<number, AfInput>,
+	del_afs: Array<string>,
+}
+
+type AxInput2 = {
+	aps: Array<ApInput2>,
+	del_aps: Array<string>,
 	del_afs: Array<string>,
 }
 
@@ -106,6 +143,7 @@ type ApInput = {
 	uuid: string,
 	name: string,
 	reqs: Array<number>,
+	taf_reqs: Array<UUID>,
 }
 
 type AfInput = {
@@ -143,8 +181,8 @@ class Client {
 		};
 	}
 
-	async username(username: string): Promise<{exists: boolean}> {
-		const r = await fetch(new URL(`/api/v1/username?username=${encodeURIComponent(username)}`, this.baseUrl.href).href, {
+	async username(slug: string): Promise<{exists: boolean}> {
+		const r = await fetch(new URL(`/api/v1/user/exists?slug=${encodeURIComponent(slug)}`, this.baseUrl.href).href, {
 			method: 'GET',
 		})
 		if (r.status === 200) {
@@ -153,12 +191,10 @@ class Client {
 		throw new Error(`unexpected status ${r.status}`);
 	}
 
-	async loginStart(username: string): Promise<undefined|{aps: Array<Ap>}> {
+	async loginStart(slug: string): Promise<undefined|{aps: Array<Ap>}> {
 		const r = await fetch(new URL('/api/v1/login/start', this.baseUrl.href).href, {
 			...await this.commonOpts('POST'),
-			body: new URLSearchParams({
-				username,
-			}),
+			body: new URLSearchParams({ slug }),
 		})
 		if (r.status === 200) {
 			return await r.json();
@@ -169,12 +205,10 @@ class Client {
 		throw new Error(`unexpected status ${r.status}`);
 	}
 
-	async loginChoose(apUuid: string): Promise<{afs: Array<Af>}> {
+	async loginChoose(apid: string): Promise<{afs: Array<Af>}> {
 		const r = await fetch(new URL('/api/v1/login/choose', this.baseUrl.href).href, {
 			...await this.commonOpts('POST'),
-			body: new URLSearchParams({
-				ap_uuid: apUuid,
-			}),
+			body: new URLSearchParams({ apid }),
 		})
 		if (r.status === 404) {
 			return undefined;
@@ -182,13 +216,10 @@ class Client {
 		return await r.json();
 	}
 
-	async loginAttempt(afUuid: string, chalResp: string): Promise<{success: false, msg: string}|{success: true, done: boolean}> {
+	async loginAttempt(afid: string, attempt: string): Promise<{success: false, msg: string}|{success: true, done: boolean}> {
 		const r = await fetch(new URL('/api/v1/login/attempt', this.baseUrl.href).href, {
 			...await this.commonOpts('POST'),
-			body: new URLSearchParams({
-				af_uuid: afUuid,
-				challenge_response: chalResp,
-			}),
+			body: new URLSearchParams({ afid, attempt }),
 		});
 		return await r.json();
 	}
@@ -233,11 +264,15 @@ class Client {
 		});
 	}
 
-	async signup(): Promise<UUID> {
+	async signup(): Promise<UUID|false> {
 		const r = await fetch(new URL('/api/v1/signup', this.baseUrl.href).href, {
 			...await this.commonOpts('POST'),
 		})
-		return (await r.json()).user_id;
+		const d = await r.json();
+		if (d.type === 'missing_perms') {
+			return false;
+		}
+		return d.user_id;
 	}
 
 	async getId(): Promise<Identity> {
@@ -252,10 +287,8 @@ class Client {
 
 	async submitId(req: Identity): Promise<void> {
 		const r = await fetch(new URL('/api/v1/config/id', this.baseUrl.href).href, {
-			...await this.commonOpts('POST', {
-				'Content-Type': 'application/json',
-			}),
-			body: JSON.stringify(req),
+			...await this.commonOpts('POST'),
+			body: new URLSearchParams(req),
 		})
 		if (r.status !== 200) {
 			throw new Error(`unexpected status ${r.status}`);
@@ -274,7 +307,7 @@ class Client {
 		return new Ax(data.aps, data.afs);
 	}
 
-	async submitAx(req: AxInput): Promise<Map<string, any>> {
+	async submitAx(req: AxInput2): Promise<Map<string, any>> {
 		const r = await fetch(new URL('/api/v1/config/ax', this.baseUrl.href).href, {
 			...await this.commonOpts('POST', {
 				'Content-Type': 'application/json',
@@ -299,10 +332,8 @@ class Client {
 
 	async revokeUl(ulid: string): Promise<Array<UserLogin>> {
 		const r = await fetch(new URL('/api/v1/uls/revoke', this.baseUrl.href).href, {
-			...await this.commonOpts('POST', {
-				'Content-Type': 'application/json',
-			}),
-			body: JSON.stringify({ ulid }),
+			...await this.commonOpts('POST'),
+			body: new URLSearchParams({ ulid }),
 		})
 		if (r.status !== 200) {
 			throw new Error(`unexpected status ${r.status}`);
@@ -312,10 +343,8 @@ class Client {
 
 	async deleteUl(ulid: string): Promise<Array<UserLogin>> {
 		const r = await fetch(new URL('/api/v1/uls/delete', this.baseUrl.href).href, {
-			...await this.commonOpts('POST', {
-				'Content-Type': 'application/json',
-			}),
-			body: JSON.stringify({ ulid }),
+			...await this.commonOpts('POST'),
+			body: new URLSearchParams({ ulid }),
 		})
 		if (r.status !== 200) {
 			throw new Error(`unexpected status ${r.status}`);
@@ -325,15 +354,146 @@ class Client {
 
 	async editUl(ulid: string, name: string): Promise<Array<UserLogin>> {
 		const r = await fetch(new URL('/api/v1/uls/edit', this.baseUrl.href).href, {
-			...await this.commonOpts('POST', {
-				'Content-Type': 'application/json',
-			}),
-			body: JSON.stringify({ ulid, name }),
+			...await this.commonOpts('POST'),
+			body: new URLSearchParams({ ulid, name }),
 		})
 		if (r.status !== 200) {
 			throw new Error(`unexpected status ${r.status}`);
 		}
 		return (await r.json()).success;
+	}
+
+	async getAzrq(azrqid: UUID): Promise<Grant | null> {
+		const r = await fetch(new URL(`/api/v1/oauth/azrq?azrqid=${encodeURIComponent(azrqid)}`, this.baseUrl.href).href, {
+			...await this.commonOpts('GET'),
+		})
+		if (r.status !== 200) {
+			throw new Error(`unexpected status ${r.status}`);
+		}
+		const d = await r.json();
+		if (d.type === 'azrq_nonexistent') {
+			return null;
+		}
+		if (d.type !== 'ok') {
+			throw new Error(`unexpected type ${d.type}`);
+		}
+		return d.azrq;
+	}
+
+	// TAF
+	async allocTaf(): Promise<string> {
+		const r = await fetch(new URL('/api/v1/config/ax/taf/alloc', this.baseUrl.href).href, {
+			...await this.commonOpts('POST'),
+		})
+		if (r.status !== 200) {
+			throw new Error(`unexpected status ${r.status}`);
+		}
+		const d = await r.json();
+		if (d.type !== 'ok') {
+			throw new Error(`unexpected type ${d.type}`);
+		}
+		return d.tafid;
+	}
+	async deallocTaf(tafid: string): Promise<void> {
+		const r = await fetch(new URL('/api/v1/config/ax/taf/dealloc', this.baseUrl.href).href, {
+			...await this.commonOpts('POST'),
+			body: new URLSearchParams({ tafid }),
+		})
+		if (r.status !== 200) {
+			throw new Error(`unexpected status ${r.status}`);
+		}
+		const d = await r.json();
+		if (d.type !== 'ok') {
+			throw new Error(`unexpected type ${d.type}`);
+		}
+		return d.taf;
+	}
+	async setTaf(tafid: string, af: AfInput): Promise<TAF> {
+		const r = await fetch(new URL('/api/v1/config/ax/taf/set', this.baseUrl.href).href, {
+			...await this.commonOpts('POST', {
+				'Content-Type': 'application/json',
+			}),
+			body: JSON.stringify({ tafid, name: af.name, verifier: af.verifier, gen_params: af.params }),
+		})
+		if (r.status !== 200) {
+			throw new Error(`unexpected status ${r.status}`);
+		}
+		const d = await r.json();
+		if (d.type !== 'ok') {
+			throw new Error(`unexpected type ${d.type}`);
+		}
+		return d.taf;
+	}
+	async attemptTaf(tafid: UUID, attempt: string): Promise<{success: boolean, msg?: string}> {
+		const r = await fetch(new URL('/api/v1/config/ax/taf/attempt', this.baseUrl.href).href, {
+			...await this.commonOpts('POST'),
+			body: new URLSearchParams({ tafid, attempt }),
+		})
+		if (r.status !== 200) {
+			throw new Error(`unexpected status ${r.status}`);
+		}
+		const d = await r.json();
+		if (d.type === 'verification_error') {
+			return {success: false, msg: d.msg};
+		}
+		if (d.type !== 'ok') {
+			throw new Error(`unexpected type ${d.type}`);
+		}
+		return {success: true};
+	}
+
+	async emailVerifyStart(emailId: number): Promise<void> {
+		const r = await fetch(new URL('/api/v1/email/verify/start', this.baseUrl.href).href, {
+			...await this.commonOpts('POST'),
+			body: new URLSearchParams({ email_id: emailId.toString() }),
+		})
+		if (r.status !== 200) {
+			throw new Error(`unexpected status ${r.status}`);
+		}
+		const d = await r.json();
+		if (d.type === 'not_yours') {
+			throw new Error('email is not yours');
+		}
+		if (d.type !== 'ok') {
+			throw new Error(`unexpected type ${d.type}`);
+		}
+		return;
+	}
+
+	async emailInfo(token: string): Promise<void> {
+		const r = await fetch(new URL('/api/v1/email/verify', this.baseUrl.href).href, {
+			...await this.commonOpts('GET'),
+			body: new URLSearchParams({ token }),
+		})
+		if (r.status !== 200) {
+			throw new Error(`unexpected status ${r.status}`);
+		}
+		const d = await r.json();
+		if (d.type === 'not_yours') {
+			throw new Error('email is not yours');
+		}
+		if (d.type !== 'ok') {
+			throw new Error(`unexpected type ${d.type}`);
+		}
+		return;
+	}
+
+	async emailVerify(token: string): Promise<void> {
+		const r = await fetch(new URL('/api/v1/email/verify', this.baseUrl.href).href, {
+			...await this.commonOpts('POST'),
+			body: new URLSearchParams({ token }),
+		})
+		if (r.status !== 200) {
+			throw new Error(`unexpected status ${r.status}`);
+		}
+		const d = await r.json();
+		if (d.type === 'not_yours') {
+			throw new Error('email is not yours');
+		}
+		if (d.type !== 'ok') {
+			throw new Error(`unexpected type ${d.type}`);
+		}
+		return;
 	}
 };
 
@@ -344,4 +504,4 @@ const verifiers = [
 ];
 
 export { Ap, Af, Client, verifiers };
-export type { Status, ApInput, AfInput, Identity, AxInput, UserLogin };
+export type { Status, ApInput, AfInput, Identity, AxInput, UserLogin, Grant };

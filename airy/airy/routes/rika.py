@@ -1,10 +1,9 @@
-from flask import Blueprint, url_for
-from ..db import User
-from flask import redirect
-from flask import render_template
+from flask import Blueprint, redirect, render_template, url_for
 from flask_wtf import FlaskForm
-from wtforms import StringField, RadioField
+from wtforms import RadioField, StringField
 from wtforms.validators import DataRequired
+
+from ..db import User
 
 rika = Blueprint("rika", __name__)
 

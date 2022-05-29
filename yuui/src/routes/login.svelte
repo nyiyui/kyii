@@ -83,9 +83,6 @@
 			const resp = await client.loginAttempt(afUuid, chalResp);
 			if (resp.success) {
 				({ done } = resp);
-				if (done) {
-					status = await client.status();
-				}
 				attemptResults.set(afUuid, {status: AttemptResultStatus.Success, msg: ""});
 			} else {
 				attemptResults.set(afUuid, {status: AttemptResultStatus.Fail, msg: resp.msg});

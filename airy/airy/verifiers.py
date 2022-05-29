@@ -1,6 +1,6 @@
 import base64
-from typing import Optional, Tuple
 import json
+from typing import Optional, Tuple
 
 import nacl.pwhash
 import pyotp
@@ -21,12 +21,26 @@ class VerificationError(Exception):
 class Verifier:
     @classmethod
     def gen(cls, gen_params: dict) -> Tuple[dict, Optional[dict]]:
+        """
+        Generate params from gen_params and return params and feedback.
+
+        :param gen_params: dict of parameters for generation
+        :return: Tuple of params and feedback
+        """
         raise NotImplemented()
 
     @classmethod
     def verify(
         cls, attempt: str, params: dict, state: Optional[dict] = None
     ) -> Tuple[dict, Optional[dict]]:
+        """
+        Verify attempt and return params and new state.
+
+        :param attempt: attempt to verify
+        :param params: params to verify against
+        :param state: state to verify against
+        :return: Tuple of new params and new state
+        """
         raise NotImplemented()
 
 
@@ -104,6 +118,7 @@ class TOTP(Verifier):
             digits=int(params["digits"]),
             interval=int(params["period"]),
         )
+        print(f"expected {totp.now()} got {attempt}")
         ok = totp.verify(attempt)
         if not ok:
             raise VerificationError("verify failed")

@@ -1,25 +1,104 @@
 <script lang="ts" type="module">
-	import { debugMode } from '$lib/store';
+	import { debugMode, apiBaseUrl } from '$lib/store';
 	import qrCode from 'qrcode';
 	import { newUrl } from '$lib/otp';
 	import Icon from '@iconify/svelte';
 	import AF from '$lib/AF.svelte';
-	import type { AfInput } from '$lib/api';
+	import AFChallenge from '$lib/AFChallenge.svelte';
+	import type { Client, AfInput } from '$lib/api';
+	import { Af } from '$lib/api';
+	import { AttemptResultStatus } from '$lib/util';
 	import Box from '$lib/Box.svelte';
+	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
+	import VerifiedChanges from '$lib/VerifiedChanges.svelte';
 
 	export let n: number;
 	export let af: AfInput;
-	export let feedback: any;
+	let feedback: any;
 	let verifier: string = af.verifier;
-	export let modified = false;
+	export let regen = false;
+	export let tafid: string | null;
+	export let client: Client;
+	let attempt: string;
+
+	let result: {
+		status: AttemptResultStatus,
+		msg?: string,
+	};
+
+	let tafSet = false;
+	let tafSynched = true;
+	let tafVerified = false;
+
+	async function setTaf() {
+		if (!tafid) {
+			tafid = await client.allocTaf();
+			console.log(`alloc taf ${tafid}`);
+		} else {
+			console.log(`already alloc taf ${tafid}`);
+		}
+		({ feedback } = await client.setTaf(tafid, af));
+		console.log('feedback');
+		console.log(feedback);
+		tafSet = true;
+		tafSynched = true;
+	}
+
+	async function deallocTaf() {
+		if (!tafid)
+			return;
+		console.log(`dealloc taf ${tafid}`);
+		await client.deallocTaf(tafid);
+		tafid = null;
+	}
+
+	async function setRegen() {
+		await setTaf();
+		if (af.verifier === 'otp_totp')
+			loadQr();
+	}
+
+	async function newRegen() {
+		regen = true;
+		af.params = {};
+	}
+
+	async function delRegen() {
+		regen = false;
+		await deallocTaf();
+		tafSet = false;
+		tafSynched = true;
+	}
+
+	function tafDesync() {
+		tafSynched = false;
+	}
+
+	async function callback(_: string, attempt: string) {
+		try {
+			let success: boolean;
+			let msg: string;
+			({ success, msg } = await client.attemptTaf(tafid, attempt));
+			result = {
+				status: success ? AttemptResultStatus.Success : AttemptResultStatus.Fail,
+				msg,
+			};
+			tafVerified = success;
+		} catch (e) {
+			result.status = AttemptResultStatus.Error;
+			result.msg = e.toString();
+		}
+	}
 
 	function updateVerifier() {
 		if (verifier === "pw") {
 			af.params = {password: ""};
 		} else if (verifier === "otp_totp") {
-			af.params = {};
+			af.params = {digits: 6, period: 30, algorithm: "SHA1"};
 		} else if (verifier === "ctrl_email") {
 			af.params = {email: ""};
+		} else if (verifier === "ctrl_tel") {
+			af.params = {tel: ""};
 		} else {
 			//throw new Error(`unknown verifier ${verifier}`);
 		}
@@ -33,25 +112,27 @@
 		} catch (e) {
 			console.log(e);
 		}
-		}
-
-	$: {
-		if (canvas !== undefined && feedback !== undefined && af.verifier === "otp_totp") {
-			loadQr();
-		}
 	}
+
+//	$: {
+//		if (canvas && feedback !== undefined && af.verifier === "otp_totp") {
+//			loadQr();
+//		}
+//	}
 
 	let canvas: HTMLCanvasElement;
 
 	async function loadQr() {
+		const s = await client.status();
 		const url = newUrl({
-						issuer: 'issuer',
-						user: "user",
+						issuer: `Kyii Airy ${$apiBaseUrl}`,
+						user: `${s.user.username}`,
 						key: feedback.secret_key,
 						algorithm: feedback.algorithm,
 						digits: feedback.digits,
 						period: feedback.period,
 					});
+		console.log(canvas);
 		qrCode.toCanvas(canvas, url.toString(), (error) => {
 			if (error) console.error(error);
 		});
@@ -60,7 +141,15 @@
 
 <div class="af-input" id={af.uuid}>
 	<div class="left">
-		<div class="name">
+		<div class="meta">
+			<h3>
+				{af.name}
+				{#if regen}
+					<UnsavedChanges />
+					<VerifiedChanges verified={tafVerified} />
+				{/if}
+			</h3>
+			<h4>Meta</h4>
 			<label>
 				Name
 				<input type="text" bind:value={af.name} />
@@ -77,6 +166,7 @@
 		</div>
 		{#if $debugMode}
 		<div class="debug">
+			<h4>Debug</h4>
 			<br/>
 			N: {n}
 			<br/>
@@ -86,30 +176,65 @@
 	</div>
 	<div class="right">
 		<div class="params">
-			{#if modified}
-				<em>Modified</em>
+			<h4>
+				Params
+				{#if !tafSynched}
+					<UnsavedChanges />
+				{/if}
+			</h4>
+			{#if regen}
+				<input class="delete" type="button" value="Delete Temporary AF" on:click={delRegen} />
+				<input type="button" value="Generate Temporary AF" on:click={setRegen} />
+			{:else}
+				<input class="new" type="button" value="Regenerate AF (create temporary AF)" on:click={newRegen} />
 			{/if}
-			{#if af.verifier === "pw"}
-				<label>
-					<Icon icon="mdi:dialpad" />
-					Password
-					<input type="password" bind:value={af.params.password} on:input={() => {modified = true}} />
-				</label>
-			{:else if af.verifier === "otp_totp"}
-				<label>
-					Regenerate
-					<input type="checkbox" bind:checked={modified} />
-				</label>
-			{:else if af.verifier === "ctrl_email"}
-				<label>
-					<Icon icon="mdi:at" />
-					Email Address
-					<input type="email" bind:value={af.params.email} on:input={() => {modified = true}} />
-				</label>
-			{/if}
+			<form>
+				{#if af.verifier === "pw"}
+					<label>
+						<Icon icon="mdi:dialpad" />
+						Password
+						<input type="password" bind:value={af.params.password} autocomplete="new-password" disabled={!regen} on:input={tafDesync} />
+					</label>
+				{:else if af.verifier === "otp_totp"}
+					<label>
+						Digits
+						<input type="number" bind:value={af.params.digits} disabled={!regen} on:input={tafDesync} />
+					</label>
+					<br/>
+					<label>
+						Period/Interval
+						<input type="interval" bind:value={af.params.period} disabled={!regen} on:input={tafDesync} />
+					</label>
+					<br/>
+					<label>
+						Algorithm
+						<select bind:value={af.params.algorithm} disabled on:input={tafDesync} >
+							<option value="SHA1">SHA1</option>
+						</select>
+					</label>
+				{:else if af.verifier === "ctrl_email"}
+					<label>
+						<Icon icon="mdi:at" />
+						Email Address
+						<input type="email" bind:value={af.params.email} disabled={!regen} on:input={tafDesync} />
+					</label>
+				{/if}
+			</form>
 		</div>
+		{#if tafSet}
+			<div class="taf">
+				<fieldset>
+					<legend>Preview</legend>
+					<AFChallenge af={new Af({ ...af, uuid: tafid })} bind:attempt={attempt} callback={callback} result={result} />
+					{#if $debugMode}
+						TAFID: <code>{tafid}</code>
+					{/if}
+				</fieldset>
+			</div>
+		{/if}
 		{#if feedback !== undefined}
 			<div class="feedback">
+				<h4>Feedback</h4>
 				{#if af.verifier === "otp_totp"}
 					{#if feedback === null}
 						<Box level="info">No feedback due to having no modifications (therefore no regenerations)</Box>

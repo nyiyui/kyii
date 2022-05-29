@@ -8,4 +8,4 @@ if (!baseUrl) {
 
 export const apiBaseUrl = writable(baseUrl);
 
-export const debugMode = writable(false);
+export const debugMode = writable(true);

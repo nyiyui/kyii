@@ -48,14 +48,18 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = "sqlite:///test.db"
 
-    # Airy Iori
     AIRY_ANONYMOUS_PERMS = {
         "api_v1.signup",
     }
     AIRY_DEFAULT_PERMS = AIRY_ANONYMOUS_PERMS | {
-        "api_v1.status2",
+        "api_v1.oauth.grants",
+        "api_v1.config.ax",
+        "api_v1.config.id",
+        "api_v1.config.g.self",
+        "api_v1.iori",
     }
 
+    # Airy Iori
     AIRY_RIKA_COLOUR_PRIMARY = "indigo"
     AIRY_RIKA_COLOUR_ACCENT = "deep_purple"
 

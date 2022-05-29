@@ -1,27 +1,34 @@
+import secrets
 from functools import wraps
 from typing import Set, Tuple
+
+from flask import current_app
 from flask_login import current_user
-from typing import Set
 
-from flask import current_app, g, redirect, request, url_for
 
-from .session import AIRY_IORI_USERS
-
-def has_perms(perms: Set[str]) -> Tuple[bool, str, set]:
-    default_perms = current_app.config.get("AIRY_DEFAULT_PERMS", set())
-    missing = perms - default_perms
+def has_perms(want: Set[str]) -> Tuple[bool, str, Set[str]]:
+    missing = want - current_app.config.get("AIRY_DEFAULT_PERMS", set())
     if len(missing) == 0:
         return True, "", set()
     if current_user.is_anonymous:
-        anon_perms = current_app.config.get("AIRY_ANONYMOUS_PERMS", set())
-        missing = perms - anon_perms
-        if len(missing) > 0:
-            return False, "anonymous", missing
-    elif not current_user.has_perms(perms):
-        return False, "user", missing
+        reason = "anonymous"
+        missing = want - current_app.config.get("AIRY_ANONYMOUS_PERMS", set())
+    else:
+        reason = "user"
+        missing = want - current_user.perms
+    return False, reason, missing
 
 
-def req_perms(perms: Set[str], handler):
+def all_perms() -> Set[str]:
+    default_perms = current_app.config.get("AIRY_DEFAULT_PERMS", set())
+    if current_user.is_anonymous:
+        user_perms = current_app.config.get("AIRY_ANONYMOUS_PERMS", set())
+    else:
+        user_perms = current_user.perms
+    return default_perms | user_perms
+
+
+def req_perms(perms: Set[str], handler, cond=lambda: True):
     if isinstance(perms, str):
         perms = set([perms])
     if isinstance(perms, tuple):
@@ -32,10 +39,17 @@ def req_perms(perms: Set[str], handler):
     def ret(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            ok, reason, missing = has_perms(perms)
-            if not ok:
-                handler(list(missing), reason)
-                return
+            if cond():
+                ok, reason, missing = has_perms(perms)
+                if not ok:
+                    handler(list(missing), reason)
+                    return
             return f(*args, **kwargs)
+
         return decorated_function
+
     return ret
+
+
+def gen_token() -> str:
+    return secrets.token_hex(32)

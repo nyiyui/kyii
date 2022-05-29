@@ -29,6 +29,7 @@
 		{#if $debugMode}
 			<br/>
 			UUID: <code>{ap.uuid}</code>
+			JSON: <code>{JSON.stringify(ap)}</code>
 		{/if}
 	</div>
 	<form class="reqs">

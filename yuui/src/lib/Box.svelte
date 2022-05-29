@@ -4,7 +4,7 @@
 	export let level: string;
 </script>
 
-<div class="box">
+<div class="box {level}">
 	{#if level === "info"}
 		<Icon icon="mdi:information-outline" />
 	{:else if level === "warn"}
@@ -16,29 +16,3 @@
 	{/if}
 	<slot />
 </div>
-
-{#if level === "info"}
-	<style>
-		.box {
-			color: var(--color-info);
-		}
-	</style>
-{:else if level === "warn"}
-	<style>
-		.box {
-			color: var(--color-warn);
-		}
-	</style>
-{:else if level === "error"}
-	<style>
-		.box {
-			color: var(--color-error);
-		}
-	</style>
-{:else if level === "ok"}
-	<style>
-		.box {
-			color: var(--color-ok);
-		}
-	</style>
-{/if}

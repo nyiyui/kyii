@@ -6,7 +6,13 @@
 
 	let client: Client;
 
-	let signedUp = false;
+	enum State {
+		Init,
+		SignedUp,
+		MissingPerms,
+	}
+
+	let state: State = State.Init;
 	// TODO: next, selfnext, etc
 
 	(async () => {
@@ -23,8 +29,13 @@
 
 	async function signup() {
 		const uid = await client.signup();
-		console.log(`signed up; uid is ${uid}`);
-		signedUp = true;
+		if (uid === false) {
+			console.error('missing perms');
+			state = State.MissingPerms;
+		} else {
+			console.log(`signed up; uid is ${uid}`);
+			state = State.SignedUp;
+		}
 	}
 </script>
 
@@ -37,9 +48,16 @@
 		<Box level="info">
 			You can choose your name, username, APs, AFs, etc <em>after</em> you create your account.
 		</Box>
-		<input type="button" disabled={signedUp} on:click={signup} value="Create Account" />
-		{#if signedUp}
+		<input type="button" disabled={state !== State.Init} on:click={signup} value="Create Account" />
+		{#if state === State.SignedUp}
 			<a href="/config">Next</a>
+		{:else if state === State.MissingPerms}
+			<Box level="error">
+				Forbidden (not enough perms).
+			</Box>
+			<Box level="info">
+				Try <a href="/login">logging in</a>.
+			</Box>
 		{/if}
 	</form>
 </main>

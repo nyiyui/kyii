@@ -1,25 +1,21 @@
 import secrets
-from typing import Optional
-from uuid import UUID
-from typing import List
-from marshmallow import Schema, fields, validate
-from flask_login import current_user
 import uuid
 from datetime import datetime
-from typing import List
+from typing import List, Optional, Set, Tuple
+from uuid import UUID
 
-from authlib.integrations.sqla_oauth2 import (
-    OAuth2AuthorizationCodeMixin,
-    OAuth2ClientMixin,
-    OAuth2TokenMixin,
-)
+from authlib.integrations.sqla_oauth2 import (OAuth2AuthorizationCodeMixin,
+                                              OAuth2ClientMixin,
+                                              OAuth2TokenMixin)
+from flask_login import current_user
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy_utils import EmailType  # TODO: use UUIDType
+from marshmallow import Schema, fields, validate
 from sqlalchemy import column
+from sqlalchemy_utils import EmailType  # TODO: use UUIDType
 from sqlalchemy_utils import ChoiceType, JSONType, UUIDType
 
 from . import verifiers
-from .verifiers import Pw
+from .verifiers import Pw, VerificationError
 
 db = SQLAlchemy()
 
@@ -33,9 +29,9 @@ class User(db.Model):
     id = db.Column(db.String(32), primary_key=True, nullable=False, default=gen_uuid)
     slug = db.Column(db.String(128), unique=True)  # null if unset
     name = db.Column(db.Unicode(256))
-    email = db.Column(EmailType, unique=True, nullable=True)
-    email_verified = db.Column(db.Boolean, unique=False, nullable=False, default=False)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
+    primary_group_id = db.Column(db.String(32), db.ForeignKey("group.id"))
+    primary_group = db.relationship("Group", foreign_keys=[primary_group_id])
     groups = db.relationship(
         "Group",
         secondary="user_groups",
@@ -45,6 +41,10 @@ class User(db.Model):
 
     def __str__(self):
         return f"<User {self.id} {self.slug}>"
+
+    @property
+    def all_groups(self):
+        return self.groups + [self.primary_group]
 
     # for flask-login
 
@@ -63,20 +63,15 @@ class User(db.Model):
     def get_user_id(self):
         return self.id
 
-    def has_perms(self, perms: List[str]):
-        # TODO: optimize…a lot
-        gids = [a[1] for a in db.session.query(user_groups).filter_by(user_id=self.id)]
-        return [
-            gp.perm_name
-            for gp in GroupPerms.query.filter(GroupPerms.group_id.in_(gids))
-        ]
+    @property
+    def perms(self) -> Set[str]:
+        return set(perm for g in self.groups for perm in g.perms)
 
 
-user_groups = db.Table(
-    "user_groups",
-    db.Column("user_id", db.String(32), db.ForeignKey("user.id"), primary_key=True),
-    db.Column("group_id", db.String(32), db.ForeignKey("group.id"), primary_key=True),
-)
+class UserGroups(db.Model):
+    __tablename__ = "user_groups"
+    user_id = db.Column(db.String(32), db.ForeignKey("user.id"), primary_key=True)
+    group_id = db.Column(db.String(32), db.ForeignKey("group.id"), primary_key=True)
 
 
 class Group(db.Model):
@@ -84,18 +79,59 @@ class Group(db.Model):
     id = db.Column(db.String(32), primary_key=True, nullable=False, default=gen_uuid)
     slug = db.Column(db.String(128), unique=True, nullable=False)
     name = db.Column(db.Unicode(256))
-    email = db.Column(EmailType, unique=True, nullable=True)
-    email_verified = db.Column(db.Boolean, unique=True, nullable=False)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
+
+    @property
+    def perms(self):
+        return [gp.perm_name for gp in self._perms]
 
     def __str__(self):
         return f"<Group {self.slug} {self.id}>"
+
+    @property
+    def for_api_v1_trusted(self):
+        return dict(
+            id=self.id,
+            slug=self.slug,
+            name=self.name,
+            emails=[email.for_api_v1_trusted for email in self.emails],
+            perms=self.perms,
+        )
+
+    for_api_v2 = for_api_v1_trusted
 
 
 class GroupPerms(db.Model):
     __tablename__ = "group_perms"
     group_id = db.Column(db.String(32), db.ForeignKey("group.id"), primary_key=True)
+    group = db.relationship("Group", backref="_perms", foreign_keys=[group_id])
     perm_name = db.Column(db.String(128), primary_key=True)
+
+
+class Email(db.Model):
+    __tablename__ = "email"
+    id = db.Column(db.String(32), primary_key=True, nullable=False, default=gen_uuid)
+    email = db.Column(EmailType, unique=True, nullable=False)
+    is_verified = db.Column(db.Boolean, nullable=False, default=False)
+    verify_token = db.Column(db.String(256), unique=True, nullable=True, default=None)
+    group_id = db.Column(
+        db.Integer, db.ForeignKey("group.id"), nullable=True, default=None
+    )
+    group = db.relationship("Group", backref="emails", uselist=False, foreign_keys=[group_id])
+
+    def unverify(self):
+        self.is_verified = False
+        self.verify_token = None
+
+    @property
+    def for_api_v1_trusted(self):
+        return dict(
+            id=self.id,
+            email=self.email,
+            is_verified=self.is_verified,
+        )
+
+    for_api_v2 = for_api_v1_trusted
 
 
 class UserLogin(db.Model):
@@ -103,26 +139,47 @@ class UserLogin(db.Model):
     id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
     name = db.Column(db.Unicode(256))
     user_id = db.Column(db.String(32), db.ForeignKey("user.id"), nullable=False)
-    user = db.relationship("User")
+    user = db.relationship("User", backref="logins", foreign_keys=[user_id])
     extra = db.Column(JSONType)
     against_id = db.Column(db.String(32), db.ForeignKey("ap.id"), nullable=True)
-    against = db.relationship("AP")
+    against = db.relationship("AP", backref="logins", foreign_keys=[against_id])
     start = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     last = db.Column(db.DateTime, nullable=True)
     end = db.Column(db.DateTime, nullable=True)
     reason_end = db.Column(db.String(32), nullable=True)
-    token_hash = db.Column(
-        db.String(512),
-    )
+    token_hash = db.Column(db.String(512))
+
+    def __str__(self):
+        return f"<UserLogin {self.id} for {self.user_id} against {self.against_id}>"
+
+    @property
+    def is_active(self):
+        return self.end is None
+
+    @property
+    def is_anonymous(self):
+        return False
 
     def gen_token(self) -> str:
         token = secrets.token_hex(32)  # 128 bits
         self.token_hash = Pw.gen(dict(password=token))[0]["hash"]
         return token
 
+    def verify_token(self, token: str) -> bool:
+        try:
+            Pw.verify(dict(password=token), self.token_hash)
+        except VerificationError:
+            return False
+        else:
+            return True
+
     def revoke(self, reason: str) -> None:
+        self.token_hash = None
         self.end = datetime.utcnow()
         self.end_reason = reason
+
+    def see(self):
+        self.last = datetime.utcnow()
 
     @property
     def for_api_v1_trusted(self):
@@ -133,7 +190,9 @@ class UserLogin(db.Model):
             against=dict(
                 name=self.against.name,
                 uuid=self.against_id,
-            ) if self.against is not None else None,
+            )
+            if self.against is not None
+            else None,
             start=self.start,
             last=self.last,
             end=self.end,
@@ -152,12 +211,13 @@ class AP(db.Model):
     id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
     name = db.Column(db.Unicode(256))
     user_id = db.Column(db.String(32), db.ForeignKey("user.id"), nullable=False)
-    user = db.relationship("User")
+    user = db.relationship("User", backref="ap", foreign_keys=[user_id])
     reqs = db.relationship(
         "AF",
         secondary=ap_reqs,
         lazy="subquery",
         backref=db.backref("req_by", lazy=True),
+        #foreign_keys=[ap_reqs.c.ap_id],
     )
 
     @property
@@ -181,7 +241,7 @@ class AF(db.Model):
     id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
     name = db.Column(db.Unicode(256))
     user_id = db.Column(db.String(32), db.ForeignKey("user.id"), nullable=False)
-    user = db.relationship("User")
+    user = db.relationship("User", foreign_keys=[user_id])
     verifier = db.Column(db.String(64), nullable=False)
     params = db.Column(
         JSONType
@@ -190,24 +250,39 @@ class AF(db.Model):
         JSONType
     )  # should be shorter-lived (e.g. preventing "replay attacks")
 
-    def __init__(self, name, user, verifier, gen_params):
-        self.name = name
-        self.user = user
-        self.verifier = verifier
-        self.regen_params(gen_params)
+    def __init__(self, *args, gen_params=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if gen_params is not None:
+            self.regen_params(gen_params)
 
     def regen_params(self, gen_params: dict) -> Optional[dict]:
-        self.params, feedback = verifiers.VERIFIERS[self.verifier].gen(gen_params)
+        self.params, feedback = self.__class__.gen_params(self.verifier, gen_params)
         return feedback
 
-    def verify(self, attempt: str):
-        verifier = verifiers.VERIFIERS[self.verifier]
-        new_params, new_state = verifier.verify(attempt, self.params, self.state)
+    @classmethod
+    def gen_params(
+        self, verifier: str, gen_params: dict
+    ) -> Tuple[dict, Optional[dict]]:
+        params, feedback = verifiers.VERIFIERS[verifier].gen(gen_params)
+        return params, feedback
+
+    def verify2(self, attempt: str):
+        print(self, self.params, self.state)
+        self.params, self.state = AF.verify(
+            self.verifier, attempt, self.params, self.state
+        )
+        db.session.commit()
+
+    @classmethod
+    def verify(
+        cls, verifier: str, attempt: str, params: dict, state: Optional[dict]
+    ) -> Tuple[dict, Optional[dict]]:
+        new_params, new_state = verifiers.VERIFIERS[verifier].verify(
+            attempt, params, state
+        )
         if new_params is None:
             raise TypeError("new_params is None")
-        self.params = new_params
-        self.state = new_state
-        db.session.commit()
+        return new_params, new_state
 
     @property
     def for_api_v1_trusted(self):
@@ -273,6 +348,10 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
             "uri": self.client_uri,
         }
 
+    @property
+    def for_api_v1_trusted(self) -> dict:
+        return self.as_dict()
+
 
 class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
     __tablename__ = "oauth2_code"
@@ -288,6 +367,15 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
     id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
     user_id = db.Column(db.String(32), db.ForeignKey("user.id", ondelete="CASCADE"))
     user = db.relationship("User")
+
+    @property
+    def for_api_v1_trusted(self) -> dict:
+        return dict(
+            client=self.client.for_api_v1,
+            scope=self.scope,
+            issued_at=self.issued_at,
+            expires_in=self.expires_in,
+        )
 
 
 def init_app(app):

@@ -22,7 +22,7 @@ a {
 	color: var(--color-1);
 }
 
-input, button, fieldset {
+input, fieldset {
 	background-color: var(--color-bg);
 	color: var(--color-fg);
 	border-style: solid;
@@ -33,7 +33,8 @@ input, button, fieldset {
 	margin: 2px;
 }
 
-input[type="button"]:hover {
+input[type="button"]:not([disabled]):hover,
+input[type="submit"]:not([disabled]):hover {
 	border-width: 2px;
 	margin: 1px;
 }
@@ -45,6 +46,24 @@ input:focus {
 
 input:disabled {
 	border-style: dashed;
+}
+
+/* Box */
+
+.info {
+	color: var(--color-info);
+}
+
+.warn {
+	color: var(--color-warn);
+}
+
+.error {
+	color: var(--color-error);
+}
+
+.ok {
+	color: var(--color-ok);
 }
 
 .delete {
@@ -59,14 +78,13 @@ input:disabled {
 	border-color: var(--color-ok);
 }
 
-.flex {
-	display: flex;
+.verify {
+	border-color: var(--color-neutral);
 }
 
-@media screen and ( max-width: 1000px ) {
-	.flex {
-		flex-direction: column;
-	}
+.flex {
+	display: flex;
+	flex-wrap: wrap;
 }
 
 .panel {

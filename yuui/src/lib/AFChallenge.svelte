@@ -1,6 +1,5 @@
 <script lang="ts" type="module">
 	import { debugMode } from '$lib/store';
-	import { newUrl } from '$lib/otp';
 	import Icon from '@iconify/svelte';
 	import AF from '$lib/AF.svelte';
 	import type { Af } from '$lib/api';
@@ -8,8 +7,8 @@
 
 	export let af: Af;
 	export let attempt: string;
-	export let callback;
-	export let result;
+	export let callback: (afid: string, attempt: string) => void;
+	export let result: { status: AttemptResultStatus, msg: string };
 </script>
 
 <div class="af-challenge">
@@ -28,7 +27,7 @@
 					Password
 					<input type="password" bind:value={attempt} autocomplete="current-password" />
 				</label>
-				<input type="button" value="Submit" on:click={() => callback(af.uuid, attempt)} />
+				<input type="button" value="Submit" disabled={!attempt} on:click={() => callback(af.uuid, attempt)} />
 			{:else if af.verifier === "otp_totp"}
 				<label id={af.uuid} class="af">
 					Challenge
@@ -44,17 +43,17 @@
 				<Icon icon="mdi:checkbox-blank-circle-outline" style="color: var(--color-neutral);" />
 			{:else}
 				{#if result.status === AttemptResultStatus.Success}
-					<Icon icon="mdi:check-circle" style="color: var(--color--ok);" />
+					<Icon class="ok" icon="mdi:check-circle" />
 				{:else if result.status === AttemptResultStatus.Fail}
-					<Icon icon="mdi:close-circle" style="color: var(--color-error);" />
+					<Icon class="error" icon="mdi:close-circle" />
 					{result.msg}
 				{:else if result.status === AttemptResultStatus.Error}
-					<Icon icon="mdi:alert-circle" style="color: var(--color-warn);" />
+					<Icon class="error" icon="mdi:alert-circle" />
 					{#if $debugMode}
 						{result.msg}
 					{/if}
 				{:else}
-					<Icon icon="mdi:alert-octagon" style="color: var(--color-error);" />
+					<Icon class="error" icon="mdi:alert-octagon" />
 					{result.msg}
 				{/if}
 			{/if}

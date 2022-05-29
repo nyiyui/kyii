@@ -2,39 +2,24 @@
 	import { page } from '$app/stores';
 	import { Client } from "../lib/api";
 	import { browser } from "$app/env";
-	import { apiBaseUrl } from "$lib/store";
-	import Icon from '@iconify/svelte';
+	import { debugMode, apiBaseUrl } from "$lib/store";
+	import Box from "$lib/Box.svelte";
+	import type { Grant } from '$lib/api';
 
 	let client: Client;
-
-	type Grant = {
-		args: any,
-		client: {
-			user_id: string,
-			name: string,
-			uri: string,
-		},
-		request: {
-			response_type: string,
-			redirect_uri: string,
-			scope: string,
-			state: string,
-		},
-	};
-
 	let csrfToken: string;
+	let grant: Grant | null;
 
-	let grant: Grant;
 	(async () => {
 		if (browser) {
-			grant = JSON.parse($page.url.searchParams.get('grant'));
 			client = new Client($apiBaseUrl);
-			// not using export function get in *.ts because it didn't work for moi…maybe a TODO: fix this?
-			const s = await client.status();
-			if (s === null)
+			if (!(await client.loggedIn()))
 				window.location.replace(`/login?selfnext=${encodeURIComponent(window.location.pathname)}&selfargs=${encodeURIComponent(window.location.search.slice(1))}`);
 
 			csrfToken = await client.getCsrfToken();
+			const azrqid = $page.url.searchParams.get('azrqid');
+			console.log(`AzRqID: ${azrqid}`);
+			grant = await client.getAzrq(azrqid);
 		}
 	})();
 </script>
@@ -44,17 +29,30 @@
 </svelte:head>
 
 <main>
-	{#if grant}
-	<a href="{grant.client.uri}">{grant.client.name}</a> is requesting:
-	<ul>
-		{#each grant.request.scope.split(' ') as scope}
-			<li><code>{scope}</code></li>
-		{/each}
-	</ul>
-	<form action="{$apiBaseUrl}/oauth/authorize?{new URLSearchParams(grant.args).toString()}" method="post">
-		<input type="hidden" name="_csrf_token" value="{csrfToken}" />
-		<input type="submit" name="action_allow" value="Allow" />
-		<input type="submit" name="action_deny" value="Deny" />
-	</form>
+	{#if grant === undefined}
+		Loading
+	{:else if grant === null}
+		<Box level="error">
+			Grant already used (may be authorized or denied).
+		</Box>
+		<Box level="info">
+			If you want to retry,
+			you may want to <input type="button" on:click={() => history.back()} value="go back" /> (again).
+		</Box>
+	{:else}
+		<a href="{grant.client.uri}">{grant.client.name}</a> is requesting:
+		<ul>
+			{#each grant.request.scope.split(' ') as scope}
+				<li><code>{scope}</code></li>
+			{/each}
+		</ul>
+		<div class="panel">
+			Grant: <pre>{JSON.stringify(grant, null, 2)}</pre>
+		</div>
+		<form action="{$apiBaseUrl}/oauth/authorize?{new URLSearchParams(grant.args).toString()}" method="post">
+			<input type="hidden" name="_csrf_token" value="{csrfToken}" />
+			<input class="update" type="submit" name="action_allow" value="Allow" />
+			<input class="delete" type="submit" name="action_deny" value="Deny" />
+		</form>
 	{/if}
 </main>

@@ -1,17 +1,12 @@
+from urllib.parse import urlencode, urljoin
+
+from flask import current_app, redirect, request, url_for
 from flask_admin import Admin
 from flask_admin.contrib import sqla
 from flask_login import current_user
 
-from .db import (
-    AF,
-    AP,
-    OAuth2AuthorizationCode,
-    OAuth2Client,
-    OAuth2Token,
-    User,
-    UserLogin,
-    db,
-)
+from .db import (AF, AP, OAuth2AuthorizationCode, OAuth2Client, OAuth2Token,
+                 User, UserLogin, db)
 
 
 class AiryModelView(sqla.ModelView):
@@ -19,7 +14,9 @@ class AiryModelView(sqla.ModelView):
         return current_user.is_authenticated
 
     def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for("login", next=request.url))
+        base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/login")
+        query = urlencode({"next": request.path, "args": urlencode(request.args)})
+        return redirect(f"{base}?{query}")
 
 
 admin = Admin(name="Kyii Airy", template_mode="bootstrap3")

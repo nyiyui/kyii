@@ -1,8 +1,8 @@
 """init
 
-Revision ID: b0e8385c7cd3
+Revision ID: 0705433eb228
 Revises: 
-Create Date: 2022-05-18 23:44:54.820534
+Create Date: 2022-05-26 20:14:03.511980
 
 """
 from alembic import op
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'b0e8385c7cd3'
+revision = '0705433eb228'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,23 +23,35 @@ def upgrade():
     sa.Column('id', sa.String(length=32), nullable=False),
     sa.Column('slug', sa.String(length=128), nullable=False),
     sa.Column('name', sa.Unicode(length=256), nullable=True),
-    sa.Column('email', sqlalchemy_utils.types.email.EmailType(length=255), nullable=True),
-    sa.Column('email_verified', sa.Boolean(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email'),
-    sa.UniqueConstraint('email_verified'),
     sa.UniqueConstraint('slug')
+    )
+    op.create_table('email',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('email', sqlalchemy_utils.types.email.EmailType(length=255), nullable=False),
+    sa.Column('is_verified', sa.Boolean(), nullable=False),
+    sa.Column('verify_token', sa.String(length=256), nullable=True),
+    sa.Column('group_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('verify_token')
+    )
+    op.create_table('group_perms',
+    sa.Column('group_id', sa.String(length=32), nullable=False),
+    sa.Column('perm_name', sa.String(length=128), nullable=False),
+    sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
+    sa.PrimaryKeyConstraint('group_id', 'perm_name')
     )
     op.create_table('user',
     sa.Column('id', sa.String(length=32), nullable=False),
     sa.Column('slug', sa.String(length=128), nullable=True),
     sa.Column('name', sa.Unicode(length=256), nullable=True),
-    sa.Column('email', sqlalchemy_utils.types.email.EmailType(length=255), nullable=True),
-    sa.Column('email_verified', sa.Boolean(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
+    sa.Column('primary_group_id', sa.String(length=32), nullable=True),
+    sa.ForeignKeyConstraint(['primary_group_id'], ['group.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email'),
     sa.UniqueConstraint('slug')
     )
     op.create_table('af',
@@ -48,6 +60,7 @@ def upgrade():
     sa.Column('user_id', sa.String(length=32), nullable=False),
     sa.Column('verifier', sa.String(length=64), nullable=False),
     sa.Column('params', sqlalchemy_utils.types.json.JSONType(), nullable=True),
+    sa.Column('state', sqlalchemy_utils.types.json.JSONType(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -57,12 +70,6 @@ def upgrade():
     sa.Column('user_id', sa.String(length=32), nullable=False),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
-    )
-    op.create_table('group_perms',
-    sa.Column('group_id', sa.String(length=32), nullable=False),
-    sa.Column('perm_name', sa.String(length=128), nullable=False),
-    sa.ForeignKeyConstraint(['group_id'], ['group.id'], ),
-    sa.PrimaryKeyConstraint('group_id', 'perm_name')
     )
     op.create_table('oauth2_client',
     sa.Column('client_id', sa.String(length=48), nullable=True),
@@ -130,7 +137,9 @@ def upgrade():
     sa.Column('extra', sqlalchemy_utils.types.json.JSONType(), nullable=True),
     sa.Column('against_id', sa.String(length=32), nullable=True),
     sa.Column('start', sa.DateTime(), nullable=False),
+    sa.Column('last', sa.DateTime(), nullable=True),
     sa.Column('end', sa.DateTime(), nullable=True),
+    sa.Column('reason_end', sa.String(length=32), nullable=True),
     sa.Column('token_hash', sa.String(length=512), nullable=True),
     sa.ForeignKeyConstraint(['against_id'], ['ap.id'], ),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
@@ -149,9 +158,10 @@ def downgrade():
     op.drop_table('oauth2_code')
     op.drop_index(op.f('ix_oauth2_client_client_id'), table_name='oauth2_client')
     op.drop_table('oauth2_client')
-    op.drop_table('group_perms')
     op.drop_table('ap')
     op.drop_table('af')
     op.drop_table('user')
+    op.drop_table('group_perms')
+    op.drop_table('email')
     op.drop_table('group')
     # ### end Alembic commands ###
