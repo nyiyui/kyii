@@ -672,6 +672,19 @@ class Client extends BaseClient {
 		return r.data.grants;
 	}
 
+	async grantsRevoke(grantId: string): Promise<boolean> {
+		const r = await this.fetch<{grants: Array<null>}>('oauth/grants/revoke', {
+			method: 'POST',
+			body: new URLSearchParams({ grant_id: grantId }),
+		})
+		if (r.errors.length === 1 && r.errors[0].code === 'no_grants') {
+			return false
+		} else {
+			this.assertNoErrors(r);
+			return true;
+		}
+	}
+
 	async getAzrq(azrqid: UUID): Promise<Grant | null> {
 		const r = await this.fetch<{azrq: Grant | null}>(`oauth/azrq?azrqid=${encodeURIComponent(azrqid)}`, {
 			method: 'GET',

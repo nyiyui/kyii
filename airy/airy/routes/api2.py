@@ -690,7 +690,7 @@ def oauth_clients():
     return "", 501
 
 
-@bp.route("/oauth/grants", methods=("GET", "POST"))
+@bp.route("/oauth/grants", methods=("GET",))
 @req_perms(("api_v2.oauth.grants",))
 def oauth_grants():
     tokens = list(
@@ -698,6 +698,19 @@ def oauth_grants():
         for token in OAuth2Token.query.filter_by(user=current_user)
     )
     return make_resp(data=dict(grants=tokens))
+
+
+@bp.route("/oauth/grants/revoke", methods=("POST",))
+@req_perms(("api_v2.oauth.grants",))
+def oauth_grants_revoke():
+    grant_id = request.form["grant_id"]
+    try:
+        grant = OAuthGrant.query.filter_by(id=grant_id).one()
+    except NoResultFound:
+        return make_resp(error=dict(code='grant_not_found', message="grant not found"))
+    grant.revoke()
+    db.session.commit()
+    return make_resp()
 
 
 @bp.route("/oauth/azrq", methods=("GET",))
