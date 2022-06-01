@@ -3,7 +3,8 @@ from functools import wraps
 from typing import Set, Tuple
 
 from flask import current_app
-from flask_login import current_user
+
+from .ul import current_user
 
 
 def has_perms(want: Set[str]) -> Tuple[bool, str, Set[str]]:

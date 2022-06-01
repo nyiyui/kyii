@@ -52,11 +52,13 @@ class Config:
         "api_v1.signup",
     }
     AIRY_DEFAULT_PERMS = AIRY_ANONYMOUS_PERMS | {
+        "api_v2.oauth.grants",
         "api_v1.oauth.grants",
         "api_v1.config.ax",
         "api_v1.config.id",
         "api_v1.config.g.self",
         "api_v1.iori",
+        "api_v1.ul",
     }
 
     # Airy Iori

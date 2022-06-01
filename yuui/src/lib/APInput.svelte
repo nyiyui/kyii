@@ -1,19 +1,20 @@
 <script lang="ts" type="module">
 	import { debugMode } from '$lib/store';
-	import type { AfInput, ApInput } from '$lib/api';
+	import type { AfInput, ApInput } from '$lib/api2';
+	import type { UUID } from "uuid";
 
 	export let ap: ApInput;
-	export let afs: Map<number, AfInput>;
-	const afReq = new Array<boolean>();
+	export let afs: Array<AfInput>;
+	const afReq = new Map<UUID, boolean>();
 	$: {
-		for (const i in ap.reqs) {
-			afReq[ap.reqs[i]] = true;
+		for (const req of ap.reqs) {
+			afReq.set(req.id, false);
 		}
 
 		const newReqs = new Array<number>();
-		for (const n in afReq) {
-			if (afReq[n]) {
-				newReqs.push(Number.parseInt(n));
+		for (const [key, val] of afReq.entries()) {
+			if (val) {
+				newReqs.push(key);
 			}
 		}
 		ap.reqs = newReqs;
@@ -33,10 +34,10 @@
 		{/if}
 	</div>
 	<form class="reqs">
-		{#each [...afs] as [n, af]}
+		{#each afs as af}
 			<label>
 				{af.name}
-				<input type="checkbox" bind:checked={afReq[n]}>
+				<input type="checkbox" bind:checked={afReq[af.uuid]}>
 			</label>
 			<br />
 		{/each}

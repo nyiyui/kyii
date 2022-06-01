@@ -1,22 +1,25 @@
 <script lang="ts" type="module">
-	import { apiBaseUrl } from "$lib/store";
-	import { Client } from "$lib/api";
-	import type { UserLogin } from '$lib/api';
+	import BoxError from "$lib/BoxError.svelte";
+	import { client } from "$lib/api2";
+	import type { UserLogin } from '$lib/api2';
 	import { browser } from "$app/env";
 	import UserLoginInput from '$lib/UserLoginInput.svelte';
 
-	let client: Client;
 	let uls = new Array<UserLogin>();
+	let error = '';
 
 	(async () => {
 		if (browser) {
-			client = new Client($apiBaseUrl);
 			if (!await client.loggedIn()) {
 				console.log('not logged in');
 				window.location.replace("/login");
 			}
 
-			uls = await client.listUls();
+			try {
+				uls = await client.ulsList();
+			} catch (e) {
+				error = e.message;
+			}
 		}
 	})();
 </script>
@@ -26,6 +29,7 @@
 </svelte:head>
 
 <main class="logout">
+	<BoxError msg={error} passive />
 	{#each Array.from(uls.entries()) as [i, ul]}
 		<div class="user-login">
 			<UserLoginInput

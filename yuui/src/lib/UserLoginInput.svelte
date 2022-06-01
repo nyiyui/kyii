@@ -1,6 +1,6 @@
 <script lang="ts" type="module">
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
-	import type { UserLogin, Client } from '$lib/api';
+	import type { UserLogin, Client } from '$lib/api2';
 	export let ul: UserLogin;
 	export let client: Client;
 	export let deleteCallback: () => void;
@@ -8,16 +8,18 @@
 
 	async function revoke() {
 		await client.revokeUl(ul.uuid);
+		console.log(`revoke UL ${ul.uuid}`);
 	}
 
 	async function delete_() {
 		await client.deleteUl(ul.uuid);
-		console.log('callback');
+		console.log(`delete UL ${ul.uuid}; callback`);
 		deleteCallback();
 	}
 
 	async function updateName() {
 		await client.editUl(ul.uuid, ul.name);
+		console.log(`edit UL ${ul.uuid}`);
 		unsavedChanges = false;
 	}
 </script>

@@ -1,10 +1,8 @@
 <script lang="ts" type="module">
-	import { Client } from "$lib/api";
-	import { apiBaseUrl } from "$lib/store";
+	import { client } from "$lib/api2";
+	import { MissingPermsError } from "$lib/api2";
 	import { browser } from "$app/env";
 	import Box from '$lib/Box.svelte';
-
-	let client: Client;
 
 	enum State {
 		Init,
@@ -17,7 +15,6 @@
 
 	(async () => {
 		if (browser) {
-			client = new Client($apiBaseUrl);
 			// not using export function get in *.ts because it didn't work for moi…maybe a TODO: fix this?
 			const s = await client.status();
 			if (s !== null) {
@@ -28,13 +25,16 @@
 	})();
 
 	async function signup() {
-		const uid = await client.signup();
-		if (uid === false) {
-			console.error('missing perms');
-			state = State.MissingPerms;
-		} else {
-			console.log(`signed up; uid is ${uid}`);
+		try {
+			await client.signup();
 			state = State.SignedUp;
+		}	catch (e) {
+			if (e instanceof MissingPermsError) {
+				console.log(e);
+				state = State.MissingPerms;
+			} else {
+				throw e;
+			}
 		}
 	}
 </script>
@@ -56,7 +56,7 @@
 				Forbidden (not enough perms).
 			</Box>
 			<Box level="info">
-				Try <a href="/login">logging in</a>.
+				Try <a href="/login">logging in</a> or <a href="/iori/switch">switching</a>.
 			</Box>
 		{/if}
 	</form>

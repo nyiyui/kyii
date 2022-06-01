@@ -7,6 +7,7 @@ from uuid import UUID
 from authlib.integrations.sqla_oauth2 import (OAuth2AuthorizationCodeMixin,
                                               OAuth2ClientMixin,
                                               OAuth2TokenMixin)
+from blake3 import blake3
 from flask_login import current_user
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields, validate
@@ -45,6 +46,10 @@ class User(db.Model):
     @property
     def all_groups(self):
         return self.groups + [self.primary_group]
+
+    @property
+    def for_api_v2(self):
+        return dict(uid=self.id, slug=self.slug, name=self.name)
 
     # for flask-login
 
@@ -117,7 +122,9 @@ class Email(db.Model):
     group_id = db.Column(
         db.Integer, db.ForeignKey("group.id"), nullable=True, default=None
     )
-    group = db.relationship("Group", backref="emails", uselist=False, foreign_keys=[group_id])
+    group = db.relationship(
+        "Group", backref="emails", uselist=False, foreign_keys=[group_id]
+    )
 
     def unverify(self):
         self.is_verified = False
@@ -160,18 +167,18 @@ class UserLogin(db.Model):
     def is_anonymous(self):
         return False
 
+    @property
+    def is_authenticated(self):
+        return True
+
     def gen_token(self) -> str:
         token = secrets.token_hex(32)  # 128 bits
-        self.token_hash = Pw.gen(dict(password=token))[0]["hash"]
+        self.token_hash = blake3(token.encode("utf-8")).hexdigest()
         return token
 
-    def verify_token(self, token: str) -> bool:
-        try:
-            Pw.verify(dict(password=token), self.token_hash)
-        except VerificationError:
-            return False
-        else:
-            return True
+    def verify_token(self, attempt_token: str) -> bool:
+        attempt_hash = blake3(attempt_token.encode("utf-8")).hexdigest()
+        return attempt_hash == self.token_hash
 
     def revoke(self, reason: str) -> None:
         self.token_hash = None
@@ -217,7 +224,7 @@ class AP(db.Model):
         secondary=ap_reqs,
         lazy="subquery",
         backref=db.backref("req_by", lazy=True),
-        #foreign_keys=[ap_reqs.c.ap_id],
+        # foreign_keys=[ap_reqs.c.ap_id],
     )
 
     @property
@@ -367,12 +374,30 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
     id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
     user_id = db.Column(db.String(32), db.ForeignKey("user.id", ondelete="CASCADE"))
     user = db.relationship("User")
+    client_id = db.Column(db.String(48), db.ForeignKey("oauth2_client.id"))
+    client = db.relationship("OAuth2Client")
 
     @property
     def for_api_v1_trusted(self) -> dict:
         return dict(
-            client=self.client.for_api_v1,
+            client=OAuth2Client.query.filter_by(client_id=self.client_id).one().as_dict(),
             scope=self.scope,
+            issued_at=self.issued_at,
+            expires_in=self.expires_in,
+        )
+
+    @property
+    def for_api_v2(self) -> dict:
+        return dict(
+            id=self.id,
+            client=OAuth2Client.query.filter_by(client_id=self.client_id).one().as_dict(),
+            request=dict(
+                scope=self.scope,
+                issued_at=self.issued_at,
+                expires_at=self.issued_at+self.expires_in,
+                token_type=self.token_type,
+                has_refresh_token=bool(self.refresh_token),
+            ),
             issued_at=self.issued_at,
             expires_in=self.expires_in,
         )

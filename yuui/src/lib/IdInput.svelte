@@ -1,11 +1,10 @@
 <script lang="ts" type="module">
-	import type { Client, Identity } from "$lib/api";
+	import type { Client, Identity } from "$lib/api2";
 	import Icon from '@iconify/svelte';
-	import Box from '../lib/Box.svelte';
 	import BoxError from '../lib/BoxError.svelte';
 	import { onMount } from 'svelte';
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
-	import EmailVerified from '$lib/EmailVerified.svelte';
+	//import EmailVerified from '$lib/EmailVerified.svelte';
 
 	export let client: Client;
 
@@ -13,19 +12,22 @@
 	let slug: string;
 	let slugTaken: boolean|null;
 	let name: string;
-	let email: string;
 	let idUnsavedChanges = false;
-	let gUnsavedChanges = false;
+	//let gUnsavedChanges = false;
 	let submitIdError: string;
-	let gErrors = new Map<string, string>();
+	//let gErrors = new Map<string, string>();
 
 	let id: Identity;
 
 	onMount(async () => {
-		id = await client.getId();
-		({ slug, name, email } = id);
-		initSlug = slug;
-		slugFind();
+		try {
+			id = await client.getId();
+			({ slug, name } = id);
+			initSlug = slug;
+			slugFind();
+		} catch (err) {
+			submitIdError = `アイデンティティの取得: ${err.toString()}`;
+		}
 	});
 	async function slugFind() {
 		idUnsavedChanges = true;
@@ -33,12 +35,12 @@
 			slugTaken = null;
 			return;
 		}
-		slugTaken = (await client.username(slug)).exists; // TODO: fix naming inconsistency
+		slugTaken = (await client.userExists(slug)); // TODO: fix naming inconsistency
 	}
 
 	async function submitId() {
 		try {
-			await client.submitId({ slug, name, email });
+			await client.submitId({ slug, name });
 			submitIdError = '';
 			idUnsavedChanges = false;
 			console.log('submitId done');
@@ -48,17 +50,17 @@
 		}
 	}
 
-	async function submitGEmail(gid: string, email: string) {
-		try {
-			await client.submitGEmail(gid, email);
-			gErrors[gid] = '';
-			gUnsavedChanges = false;
-			console.log('submitGEmail done');
-		} catch (e) {
-			console.error(`submitGEmail: ${e}`);
-			gErrors[gid] = e.toString();
-		}
-	}
+	//async function submitGEmail(gid: string, email: string) {
+	//	try {
+	//		await client.submitGEmail(gid, email);
+	//		gErrors[gid] = '';
+	//		gUnsavedChanges = false;
+	//		console.log('submitGEmail done');
+	//	} catch (e) {
+	//		console.error(`submitGEmail: ${e}`);
+	//		gErrors[gid] = e.toString();
+	//	}
+	//}
 </script>
 
 <div class="flex">
@@ -118,6 +120,7 @@
 				<div class="group">
 					{group.name}
 					(<code>{group.slug}</code>)
+					<!--
 					{#if group.email}
 						<a href="mailto:{group.email}">
 							{group.email}
@@ -142,6 +145,7 @@
 						<input class="verify" type="button" value="Verify Email" on:cilck={() => submitGEmail(group.id, group.email)} />
 						<BoxError msg={gErrors[group.id]} />
 					{/if}
+					-->
 					<details>
 						<summary>{group.perms.length} perm(s)</summary>
 						<ul>

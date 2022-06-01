@@ -1,5 +1,21 @@
 import { browser } from "$app/env";
-import type { UUID } from "@types/uuid";
+import type { UUID } from "uuid";
+import { get } from 'svelte/store';
+import { storage } from '$lib/store';
+
+type Ulos = Map<UUID, ULO>;
+type Ulid = UUID | "anonymous";
+
+function marshalMap(u: Ulos): string {
+	return JSON.stringify(Array.from(u.entries()));
+}
+function unmarshalMap(s: string): Ulos {
+	return new Map(JSON.parse(s));
+}
+const ulos = storage<Ulos>('user-login-options', new Map(), marshalMap, unmarshalMap);
+const currentUlid = storage<Ulid>('current-user-login-id', "anonymous");
+
+const prefix = "/api/v2/";
 
 class Response<T> {
 	data: T;
@@ -7,7 +23,7 @@ class Response<T> {
 
 	constructor(raw) {
 		this.data = raw.data;
-		this.errors = raw.errors;
+		this.errors = raw.errors ? raw.errors.map(e => new ResponseError(e)) : [];
 	}
 
 	hasErrors() {
@@ -23,6 +39,12 @@ class ResponseError {
 	code: string;
 	message: string;
 	data;
+	
+	constructor(raw) {
+		this.code = raw.code;
+		this.message = raw.message;
+		this.data = raw.data;
+	}
 
 	toString(): string {
 		return `${this.code}: ${this.message}`;
@@ -63,8 +85,12 @@ class ManyErrors extends Error {
 type LoginAttemptResp = {
 	success: boolean,
 	done: boolean,
-	msg: string,
-	token: string,
+	msg?: string,
+	uid?: UUID,
+	ulid?: UUID,
+	slug?: string,
+	name?: string,
+	token?: string,
 }
 
 type TAF = {
@@ -72,25 +98,29 @@ type TAF = {
 	feedback,
 }
 
+type Client = {
+	user_id: string,
+	name: string,
+	uri: string,
+}
+
 type Grant = {
+	id: string,
 	args,
-	client: {
-		user_id: string,
-		name: string,
-		uri: string,
-	},
+	client: Client,
 	request: {
-		response_type: string,
-		redirect_uri: string,
 		scope: string,
-		state: string,
+		issued_at: number,
+		expires_at: number,
+		token_type: string,
+		has_refresh_token: boolean,
 	},
 };
 
 type UserLogin = {
 	uuid: string,
 	name: string,
-	extra: any,
+	extra,
 	against: { uuid: string, name: string },
 	start: Date,
 	last: Date,
@@ -105,25 +135,6 @@ class Ax {
 	constructor(aps, afs) {
 		this.aps = aps;
 		this.afs = afs;
-	}
-
-	toInput(): AxInput {
-		const res: AxInput = {
-			aps: [],
-			del_aps: [],
-			afs: new Map(),
-			del_afs: [],
-		};
-		for (const iter of this.afs.entries()) {
-			const i = iter[0];
-			let af = iter[1];
-			af = new Af(af);
-			res.afs.set(i, af.toInput());
-		}
-		for (const ap of this.aps) {
-			res.aps.push(new Ap(ap).toInput());
-		}
-		return res;
 	}
 }
 
@@ -234,7 +245,6 @@ type Email = {
 type AxInput = {
 	aps: Array<ApInput>,
 	del_aps: Array<string>,
-	afs: Map<UUID, AfInput>,
 	del_afs: Array<string>,
 }
 
@@ -251,17 +261,100 @@ type AfInput = {
 	params,
 }
 
+type ULO = {
+	uid: string,
+	ulid: string,
+	slug: string,
+	name: string,
+	token: string,
+};
+
+type LooseULO = ULO | "anonymous";
+
+type User = {
+	uid: string,
+	name: string,
+	slug: string,
+}
+
 class BaseClient {
-	protected baseUrl: URL;
-	protected token?: string;
+	public baseUrl: URL;
+	protected currentToken?: string;
+	public currentUid?: UUID;
+	public currentUlid?: UUID;
+	private disabled: boolean;
 
 	constructor(baseUrl: string) {
-		if (!browser) throw new TypeError("can only use in a browser");
+		//if (!browser) throw new TypeError("can only use in a browser");
+		this.disabled = !browser;
 		this.baseUrl = new URL(baseUrl);
+		if (browser) this.loadCurrent();
+	}
+
+	get currentUlo(): ULO {
+		if (this.currentUlid === undefined) {
+			return "anonymous";
+		}
+		return get(ulos).get(this.currentUlid);
+	}
+
+	toString(): string {
+		return `[BaseClient ${this.baseUrl} ${this.currentToken}]`;
+	}
+
+	uloWith(ulid: UUID): BaseClient {
+		const this2 = new BaseClient(this.baseUrl.toString());
+		this2.uloUse(ulid);
+		return this2;
+	}
+
+	public uloDel(ulid: UUID) {
+		const ulos2 = get(ulos);
+		ulos2.delete(ulid);
+		ulos.set(ulos2);
+	}
+
+	public uloUse(ulid: UUID) {
+		console.log(ulos);
+		console.log(get(ulos));
+		const ulo = get(ulos).get(ulid);
+		if (ulo === undefined)
+			throw new Error(`No such ULO: ${ulid}`);
+		if (ulo === "anonymous")
+			throw new TypeError("cannot use anonymous user");
+		console.log(`use ulo with ulid ${ulid}: ${JSON.stringify(ulo)}`);
+		this.currentToken = ulo.token;
+		this.currentUid = ulo.uid;
+		this.currentUlid = ulid;
+		currentUlid.set(ulid);
+	}
+
+	protected uloAdd(ulo: ULO) {
+		if (ulo === "anonymous")
+			throw new TypeError("cannot add anonymous user");
+		const ulos2 = get(ulos);
+		ulos2.set(ulo.ulid, ulo);
+		ulos.set(ulos2);
+	}
+
+	private loadCurrent() {
+		const c = get(currentUlid);
+		if (c === "anonymous") {
+			this.uloReset();
+		} else if (c) {
+			this.uloUse(c);
+		}
+	}
+
+	public uloReset() {
+		this.currentToken = null;
+		this.currentUid = null;
+		this.currentUlid = null;
+		currentUlid.set("anonymous");
 	}
 
 	async getCsrfToken(): Promise<string> {
-		const r = await this.fetch<{csrf_token: string}>(new URL(`/api/v1/csrf_token`, this.baseUrl.href), {
+		const r = await this.fetch<{csrf_token: string}>(`csrf_token`, {
 			method: 'GET',
 		})
 		this.assertNoErrors(r);
@@ -274,28 +367,36 @@ class BaseClient {
 			credentials: 'include',
 			headers: {
 				...(method !== 'GET') ? {'X-CSRFToken': await this.getCsrfToken()} : {},
-				...(this.token !== null) ? {'X-Airy-Token': this.token} : {},
+				...this.currentToken ? {'X-Airy-Token': this.currentToken} : {},
 				...headers,
 			},
 		};
 	}
 
-	protected async assertNoErrors<T>(res: Response<T>) {
+	protected assertNoErrors<T>(res: Response<T>) {
 		if (res.hasErrors()) {
-			const errors = res.errors.map(e => e.toError());
-			throw new ManyErrors(errors);
+			if (res.errors.length === 1) {
+				throw res.errors[0].toError();
+			} else {
+				const errors = res.errors.map(e => e.toError());
+				throw new ManyErrors(errors);
+			}
 		}
 	}
 
-	protected async fetch<T>(url: URL, opts): Promise<Response<T>> {
-		const r = await fetch(url.href, {
+	protected async fetch<T>(url: string, opts): Promise<Response<T>> {
+		if (this.disabled) throw new TypeError("can only fetch in a browser");
+		const prefix2 = new URL(prefix, this.baseUrl);
+		console.log(`fetch ${url} with token ${this.currentToken}`);
+		const r = await fetch(new URL(url, prefix2.href).href, {
 			...opts,
-			...this.commonOpts(opts.method, opts.headers),
+			...(await this.commonOpts(opts.method, opts.headers)),
 		});
 		if (r.status !== 200) {
 			throw new TypeError(`unexpected status ${r.status}`);
 		}
 		const r2 = new Response<T>(await r.json());
+		console.log(r2);
 		return r2;
 	}
 }
@@ -304,9 +405,15 @@ class Client extends BaseClient {
 	// ================================
 	// Miscellaenous
 	// ================================
+	
+	uloWith(ulid: UUID): Client {
+		const this2 = new Client(this.baseUrl.toString());
+		this2.uloUse(ulid);
+		return this2;
+	}
 
 	async userExists(slug: string): Promise<boolean> {
-		const r = await this.fetch<{exists: boolean}>(new URL(`/api/v1/user/exists?slug=${encodeURIComponent(slug)}`, this.baseUrl.href), {
+		const r = await this.fetch<{exists: boolean}>(`user/exists?slug=${encodeURIComponent(slug)}`, {
 			method: 'GET',
 		})
 		this.assertNoErrors(r);
@@ -317,40 +424,66 @@ class Client extends BaseClient {
 	// Login/Logout
 	// ================================
 
-	async loggedIn(): Promise<boolean> {
-		const r = await this.fetch<{logged_in: boolean}>(new URL(`/api/v1/logged_in`, this.baseUrl.href), {
+	async synchedLogin(): Promise<User|null> {
+		const r = await this.fetch<{user: User|null}>(`login/sync`, {
 			method: 'GET',
 		})
 		this.assertNoErrors(r);
-		return r.data.logged_in;
+		return r.data.user;
+	}
+
+	async syncLogin(): Promise<void> {
+		const r = await this.fetch<null>(`login/sync`, {
+			method: 'POST',
+		})
+		this.assertNoErrors(r);
+		console.log(`synched login with token ${this.currentToken}`);
+	}
+
+	async loggedIn(): Promise<boolean> {
+		return !!this.currentToken;
+		// lazy
+		//const r = await this.fetch<{logged_in: boolean}>(`logged_in`, {
+		//	method: 'GET',
+		//})
+		//this.assertNoErrors(r);
+		//return r.data.logged_in;
 	}
 
 	async status(): Promise<Status> {
-		const r = await this.fetch<Status>(new URL(`/api/v1/status`, this.baseUrl.href), {
+		const r = await this.fetch<Status>(`status`, {
 			method: 'GET',
 		})
-		this.assertNoErrors(r);
-		return r.data;
+		if (r.errors.length === 1 && r.errors[0].code === 'not_logged_in') {
+			throw new TypeError("not logged in");
+		} else {
+			this.assertNoErrors(r);
+			return r.data;
+		}
 	}
 
 	async loginStop(): Promise<void> {
-		const r = await this.fetch<void>(new URL(`/api/v1/login_stop`, this.baseUrl.href), {
+		const r = await this.fetch<void>(`login/stop`, {
 			method: 'POST',
 		});
 		this.assertNoErrors(r);
 	}
 
 	async loginStart(slug: string): Promise<{aps: Array<Ap>}> {
-		const r = await this.fetch<{aps: Array<Ap>}>(new URL(`/api/v1/login_start`, this.baseUrl.href), {
+		const r = await this.fetch<{aps: Array<Ap>}>(`login/start`, {
 			method: 'POST',
 			body: new URLSearchParams({ slug }),
 		})
-		this.assertNoErrors(r);
-		return r.data;
+		if (r.errors.length === 1 && r.errors[0].code === 'user_not_found') {
+			return null;
+		} else {
+			this.assertNoErrors(r);
+			return r.data;
+		}
 	}
 
 	async loginChoose(apid: UUID): Promise<{afs: Array<Af>}> {
-		const r = await this.fetch<{afs: Array<Af>}>(new URL(`/api/v1/login_choose`, this.baseUrl.href), {
+		const r = await this.fetch<{afs: Array<Af>}>(`login/choose`, {
 			method: 'POST',
 			body: new URLSearchParams({ apid }),
 		})
@@ -359,28 +492,49 @@ class Client extends BaseClient {
 	}
 
 	async loginAttempt(afid: string, attempt: string, setToken = true): Promise<LoginAttemptResp> {
-		const r = await this.fetch<LoginAttemptResp>(new URL(`/api/v1/login_attempt`, this.baseUrl.href), {
+		const r = await this.fetch<LoginAttemptResp>(`login/attempt`, {
 			method: 'POST',
 			body: new URLSearchParams({ afid, attempt }),
 		})
+		if (r.errors.length === 1 && r.errors[0].code === 'verification_failed') {
+			return {
+				success: false,
+				done: false,
+				msg: r.errors[0].data,
+			};
+		} else {
+			this.assertNoErrors(r);
+			if (r.data.done && setToken) {
+				this.uloAdd({
+					uid: r.data.uid,
+					ulid: r.data.ulid,
+					slug: r.data.slug,
+					name: r.data.name,
+					token: r.data.token,
+				});
+				this.uloUse(r.data.ulid);
+			}
+			return {
+				success: true,
+				...r.data,
+			};
+		}
+	}
+
+	async logout(setToken = true): Promise<void> {
+		const r = await this.fetch<void>(`logout`, {
+			method: 'POST',
+		});
 		this.assertNoErrors(r);
-		if (r.data.done && setToken) {
-			this.token = r.data.token;
+		if (setToken) {
+			this.currentToken = null;
+			this.currentUid = null;
 		}
 		return r.data;
 	}
 
-	async logout(setToken = true): Promise<void> {
-		const r = await this.fetch<void>(new URL(`/api/v1/logout`, this.baseUrl.href), {
-			method: 'POST',
-		});
-		this.assertNoErrors(r);
-		this.token = null;
-		return r.data;
-	}
-
 	async signup(): Promise<{token: string}> {
-		const r = await this.fetch<{token: string}>(new URL(`/api/v1/signup`, this.baseUrl.href), {
+		const r = await this.fetch<{token: string}>(`signup`, {
 			method: 'POST',
 		});
 		this.assertNoErrors(r);
@@ -392,14 +546,14 @@ class Client extends BaseClient {
 	// ================================
 
 	async getAx(): Promise<Ax> {
-		const r = await this.fetch<Ax>(new URL(`/api/v1/config/ax`, this.baseUrl.href), {
+		const r = await this.fetch<Ax>(`config/ax`, {
 			method: 'GET',
 		})
 		return new Ax(r.data.aps, r.data.afs);
 	}
 
 	async submitAx(req: AxInput): Promise<void> {
-		await this.fetch(new URL(`/api/v1/config/ax`, this.baseUrl.href), {
+		await this.fetch(`config/ax`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -413,7 +567,7 @@ class Client extends BaseClient {
 	// ================
 
 	async allocTaf(): Promise<UUID> {
-		const r = await this.fetch<{tafid: UUID}>(new URL('/api/v1/config/ax/taf/alloc', this.baseUrl.href), {
+		const r = await this.fetch<{tafid: UUID}>('config/ax/taf/alloc', {
 			method: 'POST',
 		})
 		this.assertNoErrors(r);
@@ -421,7 +575,7 @@ class Client extends BaseClient {
 	}
 
 	async deallocTaf(tafid: UUID): Promise<void> {
-		const r = await this.fetch<void>(new URL(`/api/v1/config/ax/taf/dealloc?tafid=${encodeURIComponent(tafid)}`, this.baseUrl.href), {
+		const r = await this.fetch<void>(`config/ax/taf/dealloc?tafid=${encodeURIComponent(tafid)}`, {
 			method: 'POST',
 			body: new URLSearchParams({ tafid }),
 		})
@@ -429,7 +583,7 @@ class Client extends BaseClient {
 	}
 
 	async setTaf(tafid: string, af: AfInput): Promise<TAF> {
-		const r = await this.fetch<{taf: TAF}>(new URL(`/api/v1/config/ax/taf/set`, this.baseUrl.href), {
+		const r = await this.fetch<{taf: TAF}>(`config/ax/taf/set`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -440,7 +594,7 @@ class Client extends BaseClient {
 	}
 
 	async attemptTaf(tafid: UUID, attempt: string): Promise<{success: boolean, msg?: string}> {
-		const r = await this.fetch(new URL(`/api/v1/config/ax/taf/attempt`, this.baseUrl.href), {
+		const r = await this.fetch(`config/ax/taf/attempt`, {
 			method: 'POST',
 			body: new URLSearchParams({ tafid, attempt }),
 		});
@@ -458,14 +612,15 @@ class Client extends BaseClient {
 
 
 	async getId(): Promise<Id> {
-		const r = await this.fetch<{user: Id}>(new URL(`/api/v1/config/id`, this.baseUrl.href), {
+		const r = await this.fetch<{user: Id}>(`config/id`, {
 			method: 'GET',
 		})
+		console.warn('getId', r);
 		return r.data.user;
 	}
 
 	async submitId(req: IdInput): Promise<void> {
-		await this.fetch<null>(new URL(`/api/v1/config/id`, this.baseUrl.href), {
+		await this.fetch<null>(`config/id`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
@@ -479,14 +634,15 @@ class Client extends BaseClient {
 	// ================================
 
 	async ulsList(): Promise<Array<UserLogin>> {
-		const r = await this.fetch<{uls: Array<UserLogin>}>(new URL('/api/v1/uls', this.baseUrl.href), {
+		const r = await this.fetch<{uls: Array<UserLogin>}>('uls', {
 			method: 'GET',
 		})
+		this.assertNoErrors(r);
 		return r.data.uls;
 	}
 
 	private async actionUl(action: string, ulid: string, name?: string): Promise<void> {
-		await this.fetch<null>(new URL(`/api/v1/uls/${action}`, this.baseUrl.href), {
+		await this.fetch<null>(`uls/${action}`, {
 			method: 'POST',
 			body: new URLSearchParams({ ulid, ...(name ? { name } : {}) }),
 		})
@@ -508,10 +664,17 @@ class Client extends BaseClient {
 	// OAuth
 	// ================================
 
-	async getAzrq(azrqid: UUID): Promise<Grant | null> {
-		const r = await this.fetch<{azrq: Grant | null}>(new URL(`/api/v1/azrq`, this.baseUrl.href), {
+	async grantsList(): Promise<Array<Grant>> {
+		const r = await this.fetch<{grants: Array<Grant>}>('oauth/grants', {
 			method: 'GET',
-			body: new URLSearchParams({ azrqid }),
+		})
+		this.assertNoErrors(r);
+		return r.data.grants;
+	}
+
+	async getAzrq(azrqid: UUID): Promise<Grant | null> {
+		const r = await this.fetch<{azrq: Grant | null}>(`oauth/azrq?azrqid=${encodeURIComponent(azrqid)}`, {
+			method: 'GET',
 		})
 		if (r.errors.length === 1 && r.errors[0].code === 'azrq_not_found') {
 			return null;
@@ -526,7 +689,7 @@ class Client extends BaseClient {
 	// ================================
 
 	async emailVerifyStart(emailId: number): Promise<void> {
-		const r = await this.fetch<null>(new URL(`/api/v1/email/verify/start`, this.baseUrl.href), {
+		const r = await this.fetch<null>(`email/verify/start`, {
 			method: 'POST',
 			body: new URLSearchParams({ email_id: emailId.toString() }),
 		})
@@ -538,7 +701,7 @@ class Client extends BaseClient {
 	}
 
 	async emailInfo(token: string): Promise<string> {
-		const r = await this.fetch<{email: string}>(new URL(`/api/v1/email/info?token=${encodeURIComponent(token)}`, this.baseUrl.href), {
+		const r = await this.fetch<{email: string}>(`email/info?token=${encodeURIComponent(token)}`, {
 			method: 'GET',
 		})
 		if (r.errors.length === 1 && r.errors[0].code === 'token_not_found') {
@@ -550,7 +713,7 @@ class Client extends BaseClient {
 	}
 
 	async emailVerify(token: string): Promise<void> {
-		const r = await this.fetch<null>(new URL(`/api/v1/email/verify`, this.baseUrl.href), {
+		const r = await this.fetch<null>(`email/verify`, {
 			method: 'POST',
 			body: new URLSearchParams({ token }),
 		})
@@ -570,5 +733,17 @@ const verifiers = [
 	'ctrl_email',
 ];
 
+
+const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
+
+if (!baseUrl) {
+	throw new Error(`invalid API Base URL: ${baseUrl}`);
+}
+
+const client = new Client(baseUrl);
+
+export { client, ulos };
 export { Ap, Af, Client, verifiers };
-export type { Status, ApInput, AfInput, Identity, AxInput, UserLogin, Grant };
+export type { Status, ApInput, AfInput, Id, AxInput, UserLogin, Grant, User };
+export type { ULO, LooseULO };
+export { MissingPermsError, ManyErrors };

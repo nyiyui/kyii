@@ -3,18 +3,15 @@
 	import AxInput from '$lib/AxInput.svelte';
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
 	import Autosaved from '$lib/Autosaved.svelte';
-	import { Client } from "$lib/api";
-	import { debugMode, apiBaseUrl } from "$lib/store";
+	import { client } from "$lib/api2";
+	import { debugMode } from "$lib/store";
 	import { browser } from "$app/env";
 	import Box from '../lib/Box.svelte';
 
 	let axUnsavedChanges = false;
 
-	let client: Client;
-
 	(async () => {
 		if (browser) {
-			client = new Client($apiBaseUrl);
 			if (!await client.loggedIn()) {
 				window.location.replace("/login");
 			}
@@ -37,7 +34,7 @@
 	</h2>
 	<AxInput bind:unsavedChanges={axUnsavedChanges} {client} />
 	<h2>Client-Specific <Autosaved /></h2>
-	<h3>Debug Mode</h3>
+	<h3 id="debug">Debug Mode</h3>
 	<label>
 		On
 		<input type="radio" bind:group={$debugMode} value={true} />
@@ -52,6 +49,6 @@
 	<h3>Etc</h3>
 	<label>
 		Airy API Base URL
-		<input type="url" bind:value={$apiBaseUrl} />
+		<input type="url" value={client.baseUrl.toString()} disabled />
 	</label>
 </main>

@@ -1,17 +1,17 @@
 <script lang="ts" type="modue">
+	import User from '$lib/header/User.svelte';
 	import { page } from '$app/stores';
-	import { debugMode, apiBaseUrl } from '$lib/store';
+	import { debugMode } from '$lib/store';
 	import { t, locale, locales } from '$lib/translations';
 	import logo from '../../../static/favicon.svg';
 	import { browser } from '$app/env';
 
-	import { Client } from '../../lib/api';
-	let client: Client;
+	import { client, ulos as ulosStore } from '$lib/api2';
+	import { get } from 'svelte/store';
 
 	let loggedIn: boolean;
 	(async () => {
 		if (browser) {
-			client = new Client($apiBaseUrl);
 			loggedIn = await client.loggedIn();
 		}
 	})();
@@ -25,25 +25,28 @@
 					<img id="logo" src={logo} alt={$t('header.home')} />
 				</a>
 				{#if $debugMode}
-					(debug mode)
+					<a href="/config#debug">(debug mode)</a>
 				{/if}
 			</li>
 			<li class:active={$page.url.pathname === '/about'}>
 				<a sveltekit:prefetch href="/about">About{$t('header.about')}</a>
+			</li>
+			<li class:active={$page.url.pathname === '/ui'}>
+				<a sveltekit:prefetch href="/ui">UI Test{$t('header.ui')}</a>
 			</li>
 			{#if loggedIn === undefined}
 			<li>
 				<span role="status">loading{$t('header.loading')}</span>
 			</li>
 			{:else if loggedIn}
-			<li class:active={$page.url.pathname === '/logout'}>
-				<a sveltekit:prefetch href="/logout">Logout{$t('header.logout')}</a>
-			</li>
 			<li class:active={$page.url.pathname === '/config'}>
 				<a sveltekit:prefetch href="/config">Config{$t('header.config')}</a>
 			</li>
 			<li class:active={$page.url.pathname === '/uls'}>
 				<a sveltekit:prefetch href="/uls">Sessions{$t('header.uls')}</a>
+			</li>
+			<li class:active={$page.url.pathname === '/grants'}>
+				<a sveltekit:prefetch href="/grants">Grants{$t('header.grants')}</a>
 			</li>
 			{:else}
 			<li class:active={$page.url.pathname === '/login'}>
@@ -59,6 +62,11 @@
 						<option value="{value}">{value} {$t(`lang.${value}`)}</option>
 				  {/each}
 				</select>
+			</li>
+			<li class="iori" class:active={$page.url.pathname === '/iori'}>
+				<a sveltekit:prefetch href="/iori">Switch ({browser ? get(ulosStore).size : '?'}){$t('header.iori')}</a>
+				from
+				<User />
 			</li>
 		</ul>
 	</nav>
@@ -82,5 +90,9 @@
 
 	#nav a {
 		text-decoration: none;
+	}
+
+	.iori {
+		float: right;
 	}
 </style>

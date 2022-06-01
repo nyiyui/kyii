@@ -1,38 +1,18 @@
 <script lang="ts" type="module">
 	// TODO: call loginStop
 	import { page } from '$app/stores';
-	import { Ap, Af, Client } from "../lib/api";
-	import type { Status } from "../lib/api";
-	import { browser } from "$app/env";
+	import { getNext } from '$lib/util';
+	import { Ap, Af, client } from "../lib/api2";
 	import Icon from '@iconify/svelte';
 	import AFChallenge from '../lib/AFChallenge.svelte';
 	import { AttemptResultStatus } from '$lib/util';
-	import { apiBaseUrl } from '$lib/store';
 
 	let username: string;
 	let usernameFound: boolean|undefined = undefined;
 	let apUuid: string;
 	let attempts: Map<string, string> = new Map();
 
-	let client: Client;
-
-	function getNext(): string | null {
-		// eh, even if argsRaw is malicious it shouldn't do much?
-		const nextRel = $page.url.searchParams.get('next');
-		if (nextRel !== null) {
-			const argsRaw = $page.url.searchParams.get('args') || '';
-			return (nextRel !== null) ? new URL(nextRel, $apiBaseUrl).toString() + '?' + argsRaw : null;
-		}
-		const selfnextRel = $page.url.searchParams.get('selfnext');
-		if (selfnextRel !== null) {
-			const argsRaw = $page.url.searchParams.get('selfargs') || '';
-			console.log(selfnextRel);
-			return (selfnextRel !== null) ? selfnextRel + '?' + argsRaw : null;
-		}
-		return null;
-	}
-
-	let next: string | null;
+	let next = getNext($page.url.searchParams);
 
 	let done: boolean;
 	let aps: Array<Ap> = [];
@@ -43,23 +23,9 @@
 	// not set: not attempted
 	// true: ok
 
-	(async () => {
-		if (browser) {
-			client = new Client($apiBaseUrl);
-			// not using export function get in *.ts because it didn't work for moi…maybe a TODO: fix this?
-			next = getNext();
-			const s = await client.status();
-			if (s !== null) {
-				console.log('already logged in; redirecting to next');
-				window.location.replace(next || "/");
-			}
-			console.log('not logged in');
-		}
-	})();
-
 	async function usernameFind() {
 		const resp = await client.loginStart(username);
-		if (resp === undefined) {
+		if (!resp) {
 			usernameFound = false;
 			return;
 		}
@@ -159,9 +125,6 @@
 	}
 	#login-as {
 		display: flex;
-	}
-	.ax-input:not(:last-child) {
-		margin-bottom: 16px;
 	}
 	#login-status {
 		text-align: right;

@@ -1,7 +1,9 @@
 from functools import wraps
 from typing import Optional, Tuple
 
-from flask import _request_ctx_stack, current_app, has_request_context, request
+from flask import (_request_ctx_stack, abort, current_app, has_request_context,
+                   jsonify, request)
+from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.local import LocalProxy
 
 from .db import User, UserLogin, db, gen_uuid
@@ -39,10 +41,10 @@ def login_user(u: User, apid: Optional[str]) -> Tuple[UserLogin, str]:
         },
         against_id=apid,
     )
-    token = ul.gen_token()  # TODO: revisit token-based api
+    token_secret = ul.gen_token()
     db.session.add(ul)
     db.session.commit()
-    return ul, token
+    return ul, f"ul{ul.id}:{token_secret}"
 
 
 def logout_user() -> None:
@@ -57,9 +59,11 @@ def logout_user() -> None:
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not current_ul:
+        if current_ul.is_authenticated:
+            print('authenticated')
+            return f(*args, **kwargs)
+        else:
             return current_app.ul_manager.unauthorized()
-        return f(*args, **kwargs)
 
     return decorated_function
 
@@ -84,6 +88,10 @@ class AnonymousUserLogin:
         return True
 
     @property
+    def is_authenticated(self):
+        return False
+
+    @property
     def user(self):
         return AnonymousUser()
 
@@ -97,7 +105,7 @@ class ULManager:
         app.ul_manager = self
 
     def unauthorized(self):
-        return (
+        resp = jsonify(
             dict(
                 errors=[
                     dict(
@@ -105,18 +113,26 @@ class ULManager:
                         message="Unauthorized",
                     )
                 ]
-            ),
-            401,
+            )
         )
+        resp.status_code = 401
+        return resp
 
     def __get_ul(self, token):
-        UserLogin.query.filter_by(token=token).first()
+        return UserLogin.query.filter_by(token=token).first()
 
     def _load_ul(self):
         ul = None
         token = request.headers.get(TOKEN_HEADER)
         if token is not None:
-            ul = self.get_ul_by_token(token)
+            ulid, token_secret = token.split(":", 1)
+            ulid = ulid.split("ul", 1)[1]
+            try:
+                ul = UserLogin.query.filter_by(id=ulid).one()
+            except NoResultFound:
+                abort(self.unauthorized())
+            if ul.verify_token(token_secret):
+                _request_ctx_stack.top.airy_ul = ul
         else:
             ul = AnonymousUserLogin()
         _request_ctx_stack.top.airy_ul = ul

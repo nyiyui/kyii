@@ -425,7 +425,7 @@ def api_config_ax_taf_set():
     jsonschema.validate(data, V1_CONFIG_AX_TAF_SET)
     name, verifier, gen_params = data["name"], data["verifier"], data["gen_params"]
     params, feedback = AF.gen_params(verifier, gen_params)
-    print('taf/set', data)
+    print("taf/set", data)
     tafid = data["tafid"]
     session["tafs"] = session.get("tafs", set())
     session["tafs"].add(tafid)
@@ -445,7 +445,7 @@ def api_config_ax_taf_set():
 def api_config_ax_taf_attempt():
     tafid = str(UUID(request.form["tafid"]))
     attempt = request.form["attempt"]
-    print('taf/attempt', request.form)
+    print("taf/attempt", request.form)
     key = f"taf-{tafid}"
     if key not in session:
         return jsonify(dict(type="taf_nonexistent"))
@@ -556,7 +556,10 @@ def api_config_id():
                 uuid=current_user.id,
                 slug=current_user.slug,
                 name=current_user.name,
-                emails=[email.for_api_v1_trusted for email in current_user.primary_group.emails],
+                emails=[
+                    email.for_api_v1_trusted
+                    for email in current_user.primary_group.emails
+                ],
                 perms=list(current_user.perms),
                 default_perms=list(current_app.config["AIRY_DEFAULT_PERMS"]),
                 primary_group=current_user.primary_group.for_api_v1_trusted,

@@ -14,7 +14,7 @@ class AiryModelView(sqla.ModelView):
         return current_user.is_authenticated
 
     def inaccessible_callback(self, name, **kwargs):
-        base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/login")
+        base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/closet")
         query = urlencode({"next": request.path, "args": urlencode(request.args)})
         return redirect(f"{base}?{query}")
 

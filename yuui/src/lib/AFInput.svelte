@@ -1,12 +1,12 @@
 <script lang="ts" type="module">
-	import { debugMode, apiBaseUrl } from '$lib/store';
+	import { debugMode } from '$lib/store';
 	import qrCode from 'qrcode';
 	import { newUrl } from '$lib/otp';
 	import Icon from '@iconify/svelte';
 	import AF from '$lib/AF.svelte';
 	import AFChallenge from '$lib/AFChallenge.svelte';
-	import type { Client, AfInput } from '$lib/api';
-	import { Af } from '$lib/api';
+	import type { AfInput } from '$lib/api2';
+	import { client, Af } from '$lib/api2';
 	import { AttemptResultStatus } from '$lib/util';
 	import Box from '$lib/Box.svelte';
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
@@ -14,11 +14,10 @@
 
 	export let n: number;
 	export let af: AfInput;
-	let feedback: any;
+	let feedback;
 	let verifier: string = af.verifier;
 	export let regen = false;
 	export let tafid: string | null;
-	export let client: Client;
 	let attempt: string;
 
 	let result: {
@@ -38,8 +37,7 @@
 			console.log(`already alloc taf ${tafid}`);
 		}
 		({ feedback } = await client.setTaf(tafid, af));
-		console.log('feedback');
-		console.log(feedback);
+		console.log(`feedback ${feedback}`);
 		tafSet = true;
 		tafSynched = true;
 	}
@@ -125,7 +123,7 @@
 	async function loadQr() {
 		const s = await client.status();
 		const url = newUrl({
-						issuer: `Kyii Airy ${$apiBaseUrl}`,
+						issuer: `Kyii Airy ${client.baseUrl}`,
 						user: `${s.user.username}`,
 						key: feedback.secret_key,
 						algorithm: feedback.algorithm,
@@ -224,39 +222,39 @@
 		{#if tafSet}
 			<div class="taf">
 				<fieldset>
-					<legend>Preview</legend>
+					<legend>Preview (temporary AF)</legend>
 					<AFChallenge af={new Af({ ...af, uuid: tafid })} bind:attempt={attempt} callback={callback} result={result} />
 					{#if $debugMode}
 						TAFID: <code>{tafid}</code>
 					{/if}
 				</fieldset>
 			</div>
-		{/if}
-		{#if feedback !== undefined}
-			<div class="feedback">
-				<h4>Feedback</h4>
-				{#if af.verifier === "otp_totp"}
-					{#if feedback === null}
-						<Box level="info">No feedback due to having no modifications (therefore no regenerations)</Box>
+			{#if feedback !== undefined}
+				<div class="feedback">
+					<h4>Feedback</h4>
+					{#if af.verifier === "otp_totp"}
+						{#if feedback === null}
+							<Box level="info">No feedback due to having no modifications (therefore no regenerations)</Box>
+						{:else}
+							<details>
+								<summary>QR Code</summary>
+								<canvas bind:this={canvas} />
+							</details>
+							<details>
+								<summary>Raw Config</summary>
+								Secret Key: <code>{feedback.secret_key}</code>
+								Algorithm: {feedback.algorithm}
+								Digits: {feedback.digits}
+								Period/interval: {feedback.period}
+							</details>
+						{/if}
 					{:else}
-						<details>
-							<summary>QR Code</summary>
-							<canvas bind:this={canvas} />
-						</details>
-						<details>
-							<summary>Raw Config</summary>
-							Secret Key: <code>{feedback.secret_key}</code>
-							Algorithm: {feedback.algorithm}
-							Digits: {feedback.digits}
-							Period/interval: {feedback.period}
-						</details>
+						{#if $debugMode}
+							Feedback: <code>{JSON.stringify(feedback)}</code>
+						{/if}
 					{/if}
-				{:else}
-					{#if $debugMode}
-						Feedback: <code>{JSON.stringify(feedback)}</code>
-					{/if}
-				{/if}
-			</div>
+				</div>
+			{/if}
 		{/if}
 	</div>
 </div>

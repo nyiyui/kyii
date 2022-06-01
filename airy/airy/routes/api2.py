@@ -9,13 +9,16 @@ from flask_cors import CORS
 from flask_mail import Message
 from sqlalchemy.exc import NoResultFound
 
-from ..db import AF, AP, Email, OAuth2Token, User, UserLogin, ap_reqs, db
+from ..etc import login_ul
+from flask_login import current_user as current_user2
+
+from ..db import AF, AP, Email, OAuth2Token, User, UserLogin, ap_reqs, db, Group
 from ..etc import mail
 from ..session import API_V1_APID, API_V1_SOLVED, API_V1_UID
 from ..ul import (current_ul, current_user, login_required, login_user,
                   logout_user)
-from ..util import all_perms, gen_token, has_perms
-from ..util import req_perms as _req_perms
+from ..util2 import all_perms, gen_token, has_perms
+from ..util2 import req_perms as _req_perms
 from ..verifiers import VerificationError
 
 # TODO: decide if adding per-UL sessions
@@ -78,13 +81,15 @@ RETURN_SCHEMA = {
 }
 
 
-def make_resp(data: dict, errors: List[dict] = None, error: dict = None) -> Response:
-    if dict is not None:
+def make_resp(
+    data: dict = None, errors: List[dict] = None, error: dict = None
+) -> Response:
+    if error is not None:
         if errors is None:
             errors = [error]
         else:
             raise TypeError("use either error or errors.")
-    resp = jsonify(dict(data=data, error=error))
+    resp = jsonify(dict(data=data, errors=errors))
     resp.status_code = 200
     return resp
 
@@ -116,10 +121,22 @@ def api_csrf_token():
 ########################################################################################
 
 
+@bp.route("/login/sync", methods=("GET", "POST"))
+@login_required
+def api_login_sync():
+    if request.method == "GET":
+        return make_resp(data=dict(user=current_user2.for_api_v2 if current_user2.is_authenticated else None))
+    elif request.method == "POST":
+        print('user2', session)
+        login_ul(current_ul, remember=True)
+        session.modified = True
+        print('user2', session)
+        return make_resp()
+
+
 @bp.route("/logged_in", methods=("GET",))
 def api_logged_in():
-    ul = current_ul
-    return make_resp(data=dict(logged_in=ul is not None))
+    return make_resp(data=dict(logged_in=current_ul.is_authenticated))
 
 
 @bp.route("/status", methods=("GET",))
@@ -211,14 +228,20 @@ def login_attempt():
     done = len(session[API_V1_SOLVED] ^ set(af.id for af in ap.reqs)) == 0
     data = dict(done=done)
     if done:
-        login_clear()
         ul, token = login_user(u, session[API_V1_APID])
+        login_clear()
+        data["uid"] = u.id
+        data["ulid"] = ul.id
+        data["slug"] = u.slug
+        data["name"] = u.name
         data["token"] = token
     return make_resp(data=data)
 
 
 @bp.route("/logout", methods=("POST",))
+@login_required
 def logout():
+    print(current_ul)
     # TODO: merge with uls_revoke?
     logout_user()
     return make_resp()
@@ -425,7 +448,6 @@ def api_config_ax_taf_set():
     jsonschema.validate(data, CONFIG_AX_TAF_SET)
     name, verifier, gen_params = data["name"], data["verifier"], data["gen_params"]
     params, feedback = AF.gen_params(verifier, gen_params)
-    print(data)
     tafid = data["tafid"]
     session["tafs"] = session.get("tafs", set())
     session["tafs"].add(tafid)
@@ -447,7 +469,6 @@ def api_config_ax_taf_set():
 def api_config_ax_taf_attempt():
     tafid = str(UUID(request.form["tafid"]))
     attempt = request.form["attempt"]
-    print(request.form)
     key = f"taf-{tafid}"
     if key not in session:
         return jsonify(dict(type="taf_nonexistent"))
@@ -459,7 +480,9 @@ def api_config_ax_taf_attempt():
         new_params, new_state = AF.verify(verifier, attempt, params, state)
     except VerificationError as e:
         taf["solved"] = False
-        return make_resp(error=dict(code="verification_failed", message=f"failed: {e}", data=str(e)))
+        return make_resp(
+            error=dict(code="verification_failed", message=f"failed: {e}", data=str(e))
+        )
     else:
         taf["solved"] = True
         taf["params"] = new_params
@@ -525,7 +548,7 @@ def email_verify():
             current_user not in email.users
             and email.groups & current_user.all_groups == set()
         ):
-            return jsonify(dict(type="not_allowed")) # TODO: make more user-friendly
+            return jsonify(dict(type="not_allowed"))  # TODO: make more user-friendly
 
         if current_app.config["KYII_YUUI"]:
             base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/email-verify")
@@ -539,7 +562,9 @@ def email_verify():
         token = request.form["token"]
         email: Email = Email.query.filter_by(verify_token=token).one()
         if request.form["email"] != email.email:
-            return make_resp(error=dict(code="email_mismatch", message="email and email_id mismatch"))
+            return make_resp(
+                error=dict(code="email_mismatch", message="email and email_id mismatch")
+            )
         if token != email.verify_token:
             return make_resp(error=dict(code="token_invalid", message="token invalid"))
         email.verify_token = None
@@ -572,7 +597,11 @@ CONFIG_ID_SCHEMA = {  # TODO: move this to separate file?
                         "type": "object",
                         "properties": {
                             "id": {"type": "integer", "minimum": 1},
-                            "email": {"type": "string", "minLength": 1, "maxLength": 256},
+                            "email": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 256,
+                            },
                         },
                     },
                 },
@@ -598,7 +627,7 @@ CONFIG_ID_SCHEMA = {  # TODO: move this to separate file?
 @login_required
 def api_config_id():
     if request.method == "GET":
-        return dict(
+        return make_resp(data=dict(
             user=dict(
                 slug=current_user.slug,
                 name=current_user.name,
@@ -608,7 +637,7 @@ def api_config_id():
                 primary_group=current_user.primary_group.for_api_v1_trusted,
                 groups=[g.for_api_v1_trusted for g in current_user.groups],
             )
-        )
+        ))
     elif request.method == "POST":
         data = request.form
         errors = []
@@ -628,14 +657,22 @@ def api_config_id():
             try:
                 e = Email.query.filter_by(group=pg, id=email_data["id"]).delete()
             except NoResultFound:
-                errors += dict(code='email_not_found', message=f"Email {email_data['id']} not found", data=dict(email_id=email_data["id"]))
+                errors += dict(
+                    code="email_not_found",
+                    message=f"Email {email_data['id']} not found",
+                    data=dict(email_id=email_data["id"]),
+                )
             e.email = email_data["email"]
             e.unverify()
         for email_data in data["emails"]["delete"]:
             try:
                 Email.query.filter_by(group=pg, id=email_data).delete()
             except NoResultFound:
-                errors += dict(code='email_not_found', message=f"Email {email_data} not found", data=dict(email_id=email_data))
+                errors += dict(
+                    code="email_not_found",
+                    message=f"Email {email_data} not found",
+                    data=dict(email_id=email_data),
+                )
         db.session.commit()
         return make_resp()
 
@@ -657,10 +694,10 @@ def oauth_clients():
 @req_perms(("api_v2.oauth.grants",))
 def oauth_grants():
     tokens = list(
-        token.for_api_v1_trusted
+        token.for_api_v2
         for token in OAuth2Token.query.filter_by(user=current_user)
     )
-    return make_resp(data=dict(tokens=tokens))
+    return make_resp(data=dict(grants=tokens))
 
 
 @bp.route("/oauth/azrq", methods=("GET",))
@@ -697,15 +734,13 @@ def api_perms_has():
 @login_required
 @req_perms(("api_v1.ul",))
 def uls_list():
-    # TODO: fix weird db queries (e.g. this one) using db.relationships etc
     uls = UserLogin.query.filter_by(user=current_user)
-    cul = current_ul
     return make_resp(
         data=dict(
             uls=[
                 dict(
                     **ul.for_api_v1_trusted,
-                    **(dict(current=True) if ul.id == cul.id else {}),
+                    **(dict(current=True) if ul.id == current_ul.id else {}),
                 )
                 for ul in uls
             ],

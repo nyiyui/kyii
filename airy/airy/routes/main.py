@@ -23,7 +23,7 @@ bp = Blueprint("main", __name__)
 @login_manager.unauthorized_handler
 def unauthorized_callback():
     if current_app.config["KYII_YUUI"]:
-        base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/login")
+        base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/closet")
         query = urlencode({"next": request.path, "args": urlencode(request.args)})
         return redirect(f"{base}?{query}")
     else:
@@ -35,6 +35,13 @@ def unauthorized_callback():
 def init_app(app):
     app.register_blueprint(bp)
 
+
+@bp.route("/login-check", methods=("GET",))
+def login_check():
+    return jsonify(
+        user=repr(current_user),
+        session=repr(session),
+    )
 
 @bp.route("/", methods=("GET", "POST"))
 @login_required

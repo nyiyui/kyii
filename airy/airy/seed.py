@@ -3,7 +3,8 @@ import json
 
 from passlib.hash import django_pbkdf2_sha256
 
-from .db import AF, AP, Group, GroupPerms, OAuth2Client, User, db, gen_uuid, Email
+from .db import (AF, AP, Email, Group, GroupPerms, OAuth2Client, User, db,
+                 gen_uuid)
 
 
 def init_app(app):
@@ -15,11 +16,14 @@ def init_app(app):
         db.session.add(sus)
 
         db.session.commit()
-        email = Email(email="root@nyiyui.ca", is_verified=True, group=sus)
-        db.session.add(email)
+        # email = Email(email="root@nyiyui.ca", is_verified=True, group=sus)
+        # db.session.add(email)
 
         nyiyui = User(
-            id=gen_uuid(), slug="nyiyui", name="Yui Shibata", primary_group=sus,
+            id=gen_uuid(),
+            slug="nyiyui",
+            name="Yui Shibata",
+            primary_group=sus,
         )
         db.session.add(nyiyui)
         db.session.commit()
@@ -27,9 +31,25 @@ def init_app(app):
         print(gp, gp.group_id, gp.perm_name)
         db.session.add(gp)
 
-        af1 = AF(
-            name="One", user=nyiyui, verifier="pw"
+        asuna_g = Group(slug="asuna", name="Superusers")
+        db.session.add(asuna_g)
+        asuna = User(
+            id=gen_uuid(),
+            slug="asuna",
+            name="Yuuki Asuna",
+            primary_group=asuna_g,
         )
+        db.session.add(asuna)
+        db.session.commit()
+
+        af0 = AF(name="Zero", user=asuna, verifier="pw")
+        af0.regen_params(gen_params=dict(password="yuuki"))
+        db.session.add(af0)
+
+        ap0 = AP(name="Primary", user=asuna, reqs=[af0])
+        db.session.add(ap0)
+
+        af1 = AF(name="One", user=nyiyui, verifier="pw")
         af1.regen_params(gen_params=dict(password="abc"))
         db.session.add(af1)
 

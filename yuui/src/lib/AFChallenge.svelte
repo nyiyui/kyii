@@ -2,13 +2,13 @@
 	import { debugMode } from '$lib/store';
 	import Icon from '@iconify/svelte';
 	import AF from '$lib/AF.svelte';
-	import type { Af } from '$lib/api';
+	import type { Af } from '$lib/api2';
 	import { AttemptResultStatus } from '$lib/util';
 
 	export let af: Af;
 	export let attempt: string;
 	export let callback: (afid: string, attempt: string) => void;
-	export let result: { status: AttemptResultStatus, msg: string };
+	export let result: { status: AttemptResultStatus, msg?: string };
 </script>
 
 <div class="af-challenge">
@@ -46,9 +46,10 @@
 					<Icon class="ok" icon="mdi:check-circle" />
 				{:else if result.status === AttemptResultStatus.Fail}
 					<Icon class="error" icon="mdi:close-circle" />
-					{result.msg}
+					fail: {result.msg}
 				{:else if result.status === AttemptResultStatus.Error}
 					<Icon class="error" icon="mdi:alert-circle" />
+					error
 					{#if $debugMode}
 						{result.msg}
 					{/if}

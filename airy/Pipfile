@@ -27,6 +27,7 @@ pytest = "*"
 flake8 = "*"
 flake8-import-order = "*"
 flake8-isort = "*"
+blake3 = "*"
 
 [dev-packages]
 

@@ -10,6 +10,7 @@
 	--color-info: #ccf;
 	--color-warn: #ffc;
 	--color-error: #fcc;
+	--color-debug: #fc0;
 }
 
 body {
@@ -50,20 +51,28 @@ input:disabled {
 
 /* Box */
 
-.info {
+.box.info {
 	color: var(--color-info);
 }
 
-.warn {
+.box.warn {
 	color: var(--color-warn);
 }
 
-.error {
+.box.error {
 	color: var(--color-error);
 }
 
-.ok {
+.box.ok {
 	color: var(--color-ok);
+}
+
+.box.debug {
+	color: var(--color-debug);
+}
+
+input[type="button"].warn , .button.warn {
+	border-color: var(--color-warn);
 }
 
 .delete {
@@ -74,11 +83,15 @@ input:disabled {
 	border-color: var(--color-info);
 }
 
-.update {
+input[type="button"].ok, .button.ok, .update {
 	border-color: var(--color-ok);
 }
 
 .verify {
+	border-color: var(--color-neutral);
+}
+
+input[type="button"].neutral, .button.neutral {
 	border-color: var(--color-neutral);
 }
 

@@ -1,39 +1,80 @@
 <script lang="ts" type="module">
-	//import Select from 'svelte-select';
-	import { onMount } from 'svelte';
+	import Box from '$lib/Box.svelte';
 	import ULOView from '$lib/iori/ULO.svelte';
+	import { client, ulos as ulosStore } from '$lib/api2';
+	import type { UUID } from 'uuid';
+	import type { User, ULO } from '$lib/api2';
+	import { get } from 'svelte/store';
+	import { createEventDispatcher } from 'svelte';
+	import { debugMode } from '$lib/store';
 
-	import type { Client, ULO } from '$lib/api';
+	export let anonymous = true;
 
-	export let client: Client;
+	const dispatch = createEventDispatcher();
 
-	let ulos: Array<ULO>;
-	//let items = ulosToItems(ulos);
+	let currentUlid = client.currentUlid;
 
-	let value: {value: string, label: string};
+	async function choose(ulid) {
+		if (ulid === null) {
+			client.uloReset();
+			currentUlid = null;
+		} else {
+			client.uloUse(ulid);
+			currentUlid = client.currentUlid;
+		}
+		await client.syncLogin();
+		await reload();
+		dispatch( 'choose', { ulid } );
+	}
 
-	//function ulosToItems(ulos: Array<ULO>): Array<{value: string, label: string}> {
-	//	return ulos.map(ulo => {
-	//		return {
-	//			value: ulo.id,
-	//			label: ulo.name,
-	//		};
-	//	});
-	//}
+	let ulos: Array<[UUID, ULO]>;
+	reload();
 
-	onMount(async () => {
-		ulos = await client.getULOs();
-	});
+	async function reload() {
+		ulos = [...get(ulosStore).entries()];
+		synched = await client.synchedLogin();
+	}
 
-	client.watchULOs().onmessage = (e) => {
-		ulos = JSON.parse(e.data);
-	};
+	let synched: User;
 </script>
 
-<!--<Select {items} bind:value={value} on:select={switchULO} />-->
-
 <div class="switcher">
-	{#each ulos as ulo}
-		<ULOView {ulo} on:choose={() => client.setULO(ulo.id)} />
+	<Box level="debug">
+		{#if synched}
+			Synched:
+			{synched.name}
+			(<code>{synched.slug}</code>)
+			(<code>{synched.uid}</code>)
+		{:else if synched === null}
+			Not synched
+		{:else}
+			loading
+		{/if}
+	</Box>
+	Switch:
+	{#each ulos as [_, ulo]}
+		<div class="ulo-view">
+			<ULOView {ulo} on:choose={() => choose(ulo.ulid)} on:reload={reload} currentUlid={currentUlid} />
+		</div>
 	{/each}
+	{#if anonymous}
+		<div class="ulo-view">
+			<ULOView ulo="anonymous" on:choose={() => choose(null)} currentUlid={currentUlid} />
+		</div>
+	{/if}
+	<div class="ulo-view">
+		<Box level="info">
+			Or, you can
+			<a href="/login">login</a>, or
+			<a href="/signup">signup</a>.
+		</Box>
+	</div>
 </div>
+
+<style>
+	.ulo-view:not(:last-child) {
+		padding-bottom: 1em;
+		border-bottom: 1px solid #ccc;
+		margin-bottom: 1em;
+	}
+</style>

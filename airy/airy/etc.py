@@ -2,6 +2,7 @@ from typing import Optional
 
 from flask import session
 from flask_login import LoginManager
+from flask_login import login_user as login_user2
 from flask_mail import Mail
 from flask_wtf.csrf import CSRFProtect
 
@@ -31,6 +32,10 @@ def load_user(uid: str) -> User:
     if ul.end is not None:
         return None
     return User.query.get(uid)
+
+def login_ul(ul: UserLogin, **kwargs):
+    session["ulid"] = ul.id
+    login_user2(ul.user, **kwargs)
 
 
 mail = Mail()

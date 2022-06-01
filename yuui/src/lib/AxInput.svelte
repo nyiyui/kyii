@@ -1,6 +1,5 @@
 <script lang="ts" type="module">
-	import type { Client } from "$lib/api";
-	import type { ApInput, AfInput } from "$lib/api";
+	import type { Client, ApInput, AfInput } from "$lib/api2";
 	import AFInput from '../lib/AFInput.svelte';
 	import APInput from '../lib/APInput.svelte';
 	import { onMount } from 'svelte';
@@ -26,9 +25,8 @@
 	}
 
 	let tafids = new Map<number, string>();
-	let afs = new Map<number, AfInput>();
+	let afs = new Array<AfInput>();
 	let regens = new Map<number, boolean>();
-	let largestAfN = 0;
 	let delAfs = new Array<string>();
 	export let unsavedChanges = false;
 	let submitAxError: string;
@@ -40,8 +38,7 @@
 	}
 
 	function newAf() {
-		largestAfN ++;
-		afs.set(largestAfN, {uuid: '', name: "New AF", verifier: null, params: {}});
+		afs.push({uuid: '', name: "New AF", verifier: null, params: {}});
 		afs = afs;
 	}
 
@@ -49,12 +46,8 @@
 		if (uuid !== '') {
 			delAfs.push(uuid);
 		}
-		afs.delete(n);
+		afs.slice(n, 1);
 		afs = afs;
-	}
-
-	function getLargestAfN(): number {
-		return Math.max(largestAfN, ...Array.from(afs.entries()).map(kv => kv[0]));
 	}
 
 	async function submitAx() {
@@ -62,7 +55,7 @@
 			const preparedAps = aps.map(ap => ({
 				uuid: ap.uuid,
 				name: ap.name,
-				taf_reqs: ap.reqs.map(n => tafids[n]),
+				reqs: ap.reqs.map(n => tafids[n]),
 			}));
 			console.log(`aps: ${JSON.stringify(preparedAps)}`);
 			await client.submitAx({
@@ -81,8 +74,7 @@
 
 	onMount(async () => {
 		const ax = await client.getAx();
-		({ aps, afs } = ax.toInput());
-		largestAfN = getLargestAfN();
+		({ aps, afs } = ax);
 		tafids = new Map();
 		regens = new Map();
 		Array.from(afs.entries()).forEach(([n, af]) => {
@@ -106,7 +98,7 @@
 		</div>
 		<div class="panel flex-in">
 			<h3>AFs</h3>
-			{#each [...afs] as [n, af]}
+			{#each [...afs.entries()] as [n, af]}
 				<div class="ax-input">
 					<AFInput {n} bind:af={af} bind:tafid={tafids[n]} bind:regen={regens[n]} {client} />
 					<input class="delete" type="button" on:click={() => delAf(n, af.uuid)} value="Delete" />

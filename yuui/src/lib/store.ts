@@ -1,11 +1,35 @@
-import { writable } from 'svelte/store';
+import { browser } from '$app/env';
+import { writable, get } from 'svelte/store';
+import type { Writable } from 'svelte/store';
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL as string;
+// Some code by Spenhouet <https://stackoverflow.com/users/2230045/spenhouet> on https://stackoverflow.com/a/68785061/12070265.
 
-if (!baseUrl) {
-	throw new Error(`invalid API Base URL: ${baseUrl}`);
+const storage = <T>(key: string, initValue: T, marshal = JSON.stringify, unmarshal = JSON.parse): Writable<T> => {
+    const store = writable(initValue);
+    if (!browser) return store;
+
+    const storedValueStr = localStorage.getItem(key);
+    if (storedValueStr != null) store.set(unmarshal(storedValueStr));
+
+    store.subscribe((val) => {
+        if ([null, undefined].includes(val)) {
+            localStorage.removeItem(key)
+        } else {
+            localStorage.setItem(key, marshal(val))
+        }
+    })
+
+    window.addEventListener('storage', () => {
+        const storedValueStr = localStorage.getItem(key);
+        if (storedValueStr == null) return;
+
+        const localValue: T = unmarshal(storedValueStr)
+        if (localValue !== get(store)) store.set(localValue);
+    });
+
+    return store;
 }
 
-export const apiBaseUrl = writable(baseUrl);
+export const debugMode = storage('debugMode', true);
 
-export const debugMode = writable(true);
+export { storage };
