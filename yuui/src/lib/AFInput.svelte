@@ -6,11 +6,14 @@
 	import AF from '$lib/AF.svelte';
 	import AFChallenge from '$lib/AFChallenge.svelte';
 	import type { AfInput } from '$lib/api2';
-	import { client, Af } from '$lib/api2';
+	import { client, Af, encodeBase64, decodeBase64 } from '$lib/api2';
 	import { AttemptResultStatus } from '$lib/util';
 	import Box from '$lib/Box.svelte';
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
 	import VerifiedChanges from '$lib/VerifiedChanges.svelte';
+	import { createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher();
 
 	export let n: number;
 	export let af: AfInput;
@@ -23,23 +26,28 @@
 	let result: {
 		status: AttemptResultStatus,
 		msg?: string,
+		feedback,
 	};
 
 	let tafSet = false;
 	let tafSynched = true;
 	let tafVerified = false;
 
-	async function setTaf() {
+	async function genTaf(af): Promise<{ feedback, done: boolean }> {
 		if (!tafid) {
 			tafid = await client.allocTaf();
 			console.log(`alloc taf ${tafid}`);
 		} else {
 			console.log(`already alloc taf ${tafid}`);
 		}
-		({ feedback } = await client.setTaf(tafid, af));
+		let done: boolean;
+		({ feedback, done } = await client.genTaf(tafid, af));
 		console.log(`feedback ${feedback}`);
-		tafSet = true;
-		tafSynched = true;
+		if (done) {
+			tafSet = true;
+			tafSynched = true;
+		}	
+		return { feedback, done };
 	}
 
 	async function deallocTaf() {
@@ -51,9 +59,53 @@
 	}
 
 	async function setRegen() {
-		await setTaf();
-		if (af.verifier === 'otp_totp')
-			loadQr();
+		if (af.verifier === 'webauthn') {
+			let feedbackRaw;
+			let done: boolean;
+			({ feedback: feedbackRaw, done } = await genTaf({
+				...af,
+				params: { state: '1_generate', },
+			}));
+			if (done) {
+				throw new TypeError('webauthn unexpected done');
+			}
+			let feedback = JSON.parse(feedbackRaw);
+			feedback = {
+				...feedback,
+				challenge: decodeBase64(feedback.challenge),
+				user: {
+					...feedback.user,
+					id: decodeBase64(feedback.user.id),
+				},
+			}
+			console.log(`feedback2`, feedback);
+			const credential = await navigator.credentials.create({ publicKey: feedback }) as PublicKeyCredential;
+			console.log('webauthn credential', credential);
+			const credentialJSON = JSON.stringify({
+				id: credential.id,
+				rawId: encodeBase64(credential.rawId),
+				response: {
+					clientDataJSON: encodeBase64(credential.response.clientDataJSON),
+					attestationObject: encodeBase64((credential.response as AuthenticatorAttestationResponse).attestationObject),
+				},
+				type: credential.type,
+			});
+			console.log('webauthn credential json', credentialJSON);
+			({ feedback, done } = await client.genTaf(tafid, {
+				...af,
+				params: { state: '2_verify', credential: credentialJSON, require_user_verification: af.params.require_user_verification || false },
+			}, true));
+			if (!done) {
+				throw new TypeError('webauthn unexpected not done');
+			}
+			tafSet = true;
+			tafSynched = true;
+		} else {
+			await genTaf(af);
+			if (af.verifier === 'otp_totp')
+				loadQr();
+			dispatch('reload');
+		}
 	}
 
 	async function newRegen() {
@@ -66,23 +118,70 @@
 		await deallocTaf();
 		tafSet = false;
 		tafSynched = true;
+		dispatch('reload');
 	}
 
 	function tafDesync() {
 		tafSynched = false;
 	}
 
-	async function callback(_: string, attempt: string) {
+	async function callback(_: string, attempt: string): any {
 		try {
-			let success: boolean;
-			let msg: string;
-			({ success, msg } = await client.attemptTaf(tafid, attempt));
-			result = {
-				status: success ? AttemptResultStatus.Success : AttemptResultStatus.Fail,
-				msg,
-			};
-			tafVerified = success;
+			if (af.verifier === 'webauthn') {
+				let success: boolean;
+				let msg: string;
+				let done: boolean;
+				let verifyFeedback;
+				({ success, done, msg, feedback: verifyFeedback } = await client.verifyTaf(tafid, JSON.stringify({ state: '1_generate' })));
+				if (done) {
+					throw new TypeError('webauthn unexpected done');
+				}
+				if (!success) {
+					throw new TypeError('webauthn unexpected not success: ' + msg);
+				}
+				let ao = JSON.parse(verifyFeedback);
+				ao = {
+					...ao,
+					challenge: decodeBase64(ao.challenge),
+					allowCredentials: ao.allowCredentials.map(c => ({
+						...c,
+						id: decodeBase64(c.id),
+					})),
+				};
+				console.log('webauthn ao', ao);
+				const assertion = await navigator.credentials.get({ publicKey: ao }) as PublicKeyCredential;
+				console.log('webauthn assertion', assertion);
+				({ success, done, msg, feedback: verifyFeedback } = await client.verifyTaf(tafid, JSON.stringify({ state: '2_verify', credential: JSON.stringify(assertion) }), true));
+				if (!done) {
+					throw new TypeError('webauthn unexpected not done');
+				}
+				if (!success) {
+					throw new TypeError('webauthn unexpected not success: ' + msg);
+				}
+				result = {
+					status: success ? AttemptResultStatus.Success : AttemptResultStatus.Fail,
+					msg,
+					feedback: verifyFeedback,
+				};
+				tafVerified = done;
+				return null;
+			} else {
+				let success: boolean;
+				let msg: string;
+				let done: boolean;
+				let verifyFeedback;
+				({ success, done, msg, feedback: verifyFeedback } = await client.verifyTaf(tafid, attempt));
+				result = {
+					status: success ? AttemptResultStatus.Success : AttemptResultStatus.Fail,
+					msg,
+					feedback: verifyFeedback,
+				};
+				tafVerified = done;
+				return verifyFeedback;
+			}
 		} catch (e) {
+			console.error('callback error', e);
+			result = result || {};
 			result.status = AttemptResultStatus.Error;
 			result.msg = e.toString();
 		}
@@ -93,10 +192,8 @@
 			af.params = {password: ""};
 		} else if (verifier === "otp_totp") {
 			af.params = {digits: 6, period: 30, algorithm: "SHA1"};
-		} else if (verifier === "ctrl_email") {
-			af.params = {email: ""};
-		} else if (verifier === "ctrl_tel") {
-			af.params = {tel: ""};
+		} else if (verifier === "limited") {
+			af.params = {times: 0};
 		} else {
 			//throw new Error(`unknown verifier ${verifier}`);
 		}
@@ -138,53 +235,41 @@
 </script>
 
 <div class="af-input" id={af.uuid}>
-	<div class="left">
+	<div class="top">
+		<h4>
+			<span contenteditable="true" bind:textContent={af.name}></span>
+			{#if regen}
+				<UnsavedChanges />
+				<VerifiedChanges verified={tafVerified} />
+			{/if}
+		</h4>
+		<input class="delete" type="button" on:click={() => dispatch('delete')} value="Delete" />
+	</div>
+	<div class="non-top">
 		<div class="meta">
-			<h3>
-				{af.name}
-				{#if regen}
-					<UnsavedChanges />
-					<VerifiedChanges verified={tafVerified} />
-				{/if}
-			</h3>
-			<h4>Meta</h4>
-			<label>
-				Name
-				<input type="text" bind:value={af.name} />
-			</label>
-			<br/>
+			<h5>Meta</h5>
 			<label>
 				Verifier
 				<!-- (below)TODO: make this like a dropdown or sth -->
 				<input type="text" bind:value={verifier} />
 			</label>
-		</div>
-		<div class="verifier">
 			<AF verifier={af.verifier} />
+			<Box level="debug">
+				N: {n}; UUID: <code>{af.uuid}</code>
+			</Box>
 		</div>
-		{#if $debugMode}
-		<div class="debug">
-			<h4>Debug</h4>
-			<br/>
-			N: {n}
-			<br/>
-			UUID: <code>{af.uuid}</code>
-		</div>
-		{/if}
-	</div>
-	<div class="right">
 		<div class="params">
-			<h4>
+			<h5>
 				Params
 				{#if !tafSynched}
 					<UnsavedChanges />
 				{/if}
-			</h4>
+			</h5>
 			{#if regen}
 				<input class="delete" type="button" value="Delete Temporary AF" on:click={delRegen} />
 				<input type="button" value="Generate Temporary AF" on:click={setRegen} />
 			{:else}
-				<input class="new" type="button" value="Regenerate AF (create temporary AF)" on:click={newRegen} />
+				<input class="new" type="button" value="Regenerate AF (allocate TAF)" on:click={newRegen} />
 			{/if}
 			<form>
 				{#if af.verifier === "pw"}
@@ -210,28 +295,34 @@
 							<option value="SHA1">SHA1</option>
 						</select>
 					</label>
-				{:else if af.verifier === "ctrl_email"}
+				{:else if af.verifier === "limited"}
 					<label>
-						<Icon icon="mdi:at" />
-						Email Address
-						<input type="email" bind:value={af.params.email} disabled={!regen} on:input={tafDesync} />
+						<Icon icon="mdi:timer-outline" />
+						Times
+						<input type="number" bind:value={af.params.times} disabled={!regen} on:input={tafDesync} />
+					</label>
+				{:else if af.verifier === "webauthn"}
+					<label>
+						Require User Verification
+						<input type="checkbox" bind:value={af.params.require_user_verification} disabled={!regen} on:input={tafDesync} />
 					</label>
 				{/if}
 			</form>
 		</div>
 		{#if tafSet}
-			<div class="taf">
-				<fieldset>
-					<legend>Preview (temporary AF)</legend>
-					<AFChallenge af={new Af({ ...af, uuid: tafid })} bind:attempt={attempt} callback={callback} result={result} />
-					{#if $debugMode}
-						TAFID: <code>{tafid}</code>
-					{/if}
-				</fieldset>
+			<div class="taf panel">
+				<h5>Preview (temporary AF)</h5>
+				<Box level="info">
+					State is temporary.
+				</Box>
+				<Box level="debug">
+					TAFID: <code>{tafid}</code>
+				</Box>
+				<AFChallenge af={new Af({ ...af, uuid: tafid })} bind:attempt={attempt} callback={callback} result={result} tafid={tafid} />
 			</div>
-			{#if feedback !== undefined}
+			{#if feedback}
 				<div class="feedback">
-					<h4>Feedback</h4>
+					<h5>Feedback</h5>
 					{#if af.verifier === "otp_totp"}
 						{#if feedback === null}
 							<Box level="info">No feedback due to having no modifications (therefore no regenerations)</Box>
@@ -260,24 +351,28 @@
 </div>
 
 <style>
-	.af-input {
-		display: flex;
-	}
-	@media screen and ( max-width: 1200px ) {    
-	  .af-input {    
-	    flex-direction: column;    
-	  }    
-	}
 	.af-input > div {
 		flex: 50%;
 	}
-	.verifier {
-		font-size: 14px;
-	}
-	.params {
-		text-align: right;
-	}
 	.af-input:not(:last-child) {
 		margin-bottom: 16px;
+	}
+
+	.non-top {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	.meta {
+		margin-right: 16px;
+	}
+
+	.top {
+		display: flex;
+		align-items: flex-start;
+	}
+
+	.top h4 {
+		flex-grow: 1;
 	}
 </style>

@@ -1,21 +1,10 @@
-from pathlib import Path
-import urllib.parse
-
-from authlib.jose import JsonWebKey
-
-
 def init_app(app):
-    app.config["HOST"] = "http://localhost:5000"
+    app.config["HOST"] = "https://airy.kyii.nyiyui.ca"
     JWT_CONFIG = app.config["JWT_CONFIG"] = dict(
-        key=JsonWebKey.import_key(Path("./jwt.pem").read_text()),
+        key=JsonWebKey.import_key(Path("/opt/kyii-airy-etc/key.pem").read_text()),
         alg="RS256",
         iss=app.config["HOST"],
         exp=60 * 60,
-    )
-    app.config.update(
-        dict(
-            KYII_YUUI_ORIGIN="http://localhost:3000",
-        )
     )
     app.config.update(
         dict(
@@ -23,15 +12,11 @@ def init_app(app):
             OAUTH2_JWT_ISS=JWT_CONFIG["iss"],
             OAUTH2_JWT_KEY=JWT_CONFIG["key"],
             OAUTH2_JWT_ALG=JWT_CONFIG["alg"],
-            UPLOAD_PATH=Path("/tmp/kyii-airy"),
-            VERIFIER_WEBAUTHN=dict(
-                # https://github.com/w3c/webauthn/issues/963#issuecomment-399898625
-                rp_id=urllib.parse.urlparse(app.config["KYII_YUUI_ORIGIN"]).hostname,
-                rp_name="Airy",
-            ),
         )
     )
-    print(app.config["UPLOAD_PATH"])
+    app.config[
+        "SQLALCHEMY_DATABASE_URI"
+    ] = "mysql://kyii_airy_user:very_secure_password@database/kyii_airy_db"
     from logging.config import dictConfig
 
     dictConfig(

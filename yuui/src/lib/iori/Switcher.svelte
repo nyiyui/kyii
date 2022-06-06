@@ -1,12 +1,15 @@
 <script lang="ts" type="module">
+	import { _ } from 'svelte-i18n';
 	import Box from '$lib/Box.svelte';
+	import Loading from '$lib/Loading.svelte';
 	import ULOView from '$lib/iori/ULO.svelte';
 	import { client, ulos as ulosStore } from '$lib/api2';
 	import type { UUID } from 'uuid';
-	import type { User, ULO } from '$lib/api2';
+	import type { ULO } from '$lib/api2';
+	import { User } from '$lib/api2';
+	import { UnauthenticatedError } from '$lib/api2';
 	import { get } from 'svelte/store';
 	import { createEventDispatcher } from 'svelte';
-	import { debugMode } from '$lib/store';
 
 	export let anonymous = true;
 
@@ -22,7 +25,15 @@
 			client.uloUse(ulid);
 			currentUlid = client.currentUlid;
 		}
-		await client.syncLogin();
+		try {
+			await client.loginSync();
+		} catch (err) {
+			if (err instanceof UnauthenticatedError) {
+				synched = err;
+			} else {
+				throw err;
+			}
+		}
 		await reload();
 		dispatch( 'choose', { ulid } );
 	}
@@ -32,26 +43,36 @@
 
 	async function reload() {
 		ulos = [...get(ulosStore).entries()];
-		synched = await client.synchedLogin();
+		try {
+			synched = await client.synchedLogin();
+		} catch (err) {
+			if (err instanceof UnauthenticatedError) {
+				synched = err;
+			} else {
+				throw err;
+			}
+		}
 	}
 
-	let synched: User;
+	let synched: User | UnauthenticatedError;
 </script>
 
 <div class="switcher">
 	<Box level="debug">
-		{#if synched}
+		{#if synched instanceof User}
 			Synched:
 			{synched.name}
 			(<code>{synched.slug}</code>)
 			(<code>{synched.uid}</code>)
 		{:else if synched === null}
 			Not synched
-		{:else}
-			loading
+		{:else if synched === undefined}
+			<Loading />
+		{:else if synched instanceof Error}
+			<Box level="error">Error: {synched.message}</Box>
 		{/if}
 	</Box>
-	Switch:
+	{$_('iori.switcher.switch')}
 	{#each ulos as [_, ulo]}
 		<div class="ulo-view">
 			<ULOView {ulo} on:choose={() => choose(ulo.ulid)} on:reload={reload} currentUlid={currentUlid} />
@@ -64,9 +85,7 @@
 	{/if}
 	<div class="ulo-view">
 		<Box level="info">
-			Or, you can
-			<a href="/login">login</a>, or
-			<a href="/signup">signup</a>.
+			{@html $_('iori.switcher.or')}
 		</Box>
 	</div>
 </div>

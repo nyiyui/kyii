@@ -43,6 +43,7 @@ def login_check():
         session=repr(session),
     )
 
+
 @bp.route("/", methods=("GET", "POST"))
 @login_required
 def home():

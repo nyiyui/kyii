@@ -3,6 +3,7 @@
 - [Introduction](./intro.md)
 - [Services](./services.md)
   - [OAuth Authorization server/OpenID Connect Provider](./services/oauth-oidc.md)
+- [Config](./config.md)
 - [Authentication](./authn.md)
   - [APs](./authn/aps.md)
   - [AFs](./authn/afs.md)

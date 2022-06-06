@@ -43,18 +43,18 @@ def init_app(app):
         db.session.commit()
 
         af0 = AF(name="Zero", user=asuna, verifier="pw")
-        af0.regen_params(gen_params=dict(password="yuuki"))
+        af0.regen(gen_params=dict(password="yuuki"))
         db.session.add(af0)
 
         ap0 = AP(name="Primary", user=asuna, reqs=[af0])
         db.session.add(ap0)
 
         af1 = AF(name="One", user=nyiyui, verifier="pw")
-        af1.regen_params(gen_params=dict(password="abc"))
+        af1.regen(gen_params=dict(password="abc"))
         db.session.add(af1)
 
         af2 = AF(name="Two", user=nyiyui, verifier="otp_totp")
-        af2.regen_params(gen_params={})
+        af2.regen(gen_params={})
         af2.name = f"Two with secret key {af2.params['secret_key']}"
         print(af2, af2.params, af2.state)
         db.session.add(af2)

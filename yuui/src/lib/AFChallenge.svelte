@@ -1,14 +1,25 @@
 <script lang="ts" type="module">
-	import { debugMode } from '$lib/store';
+	import { _ } from 'svelte-i18n';
 	import Icon from '@iconify/svelte';
 	import AF from '$lib/AF.svelte';
+	import Box from '$lib/Box.svelte';
+	import BoxError from '$lib/BoxError.svelte';
 	import type { Af } from '$lib/api2';
 	import { AttemptResultStatus } from '$lib/util';
+	import { client } from '$lib/api2';
 
 	export let af: Af;
+	export let tafid;
 	export let attempt: string;
-	export let callback: (afid: string, attempt: string) => void;
-	export let result: { status: AttemptResultStatus, msg?: string };
+	export let callback: (afid: string, attempt: string) => Promise<any>;
+	export let result: { status: AttemptResultStatus, msg?: string, feedback?: string };
+
+	async function webauthnSubmit() {
+		const feedback = await callback(af.uuid, JSON.stringify({ state: '1_generate' }));
+		const assertion = await navigator.credentials.get(feedback);
+		console.log('webauthn assertion', assertion);
+		await callback(af.uuid, JSON.stringify({ state: '2_verify', assertion }));
+	}
 </script>
 
 <div class="af-challenge">
@@ -24,18 +35,20 @@
 		<div class="challenge">
 			{#if af.verifier === "pw"}
 				<label id={af.uuid} class="af">
-					Password
+					{$_('af.pw.pw')}
 					<input type="password" bind:value={attempt} autocomplete="current-password" />
 				</label>
-				<input type="button" value="Submit" disabled={!attempt} on:click={() => callback(af.uuid, attempt)} />
+				<input type="button" value="{$_('af.submit')}" disabled={!attempt} on:click={() => callback(af.uuid, attempt)} />
 			{:else if af.verifier === "otp_totp"}
 				<label id={af.uuid} class="af">
-					Challenge
+					{$_('af.otp_totp.label')}
 					<input type="password" bind:value={attempt} autocomplete="one-time-code" />
 				</label>
-				<input type="button" value="Submit" on:click={() => callback(af.uuid, attempt)} />
-			{:else if af.verifier === "ctrl_email"}
-				<strong>TODO</strong>
+				<input type="button" value={$_('af.submit')} on:click={() => callback(af.uuid, attempt)} />
+			{:else if af.verifier === "limited"}
+				<input type="button" value={$_('af.submit')} on:click={() => callback(af.uuid, attempt)} />
+			{:else if af.verifier === "webauthn"}
+				<input type="button" value="{$_('af.submit')}" on:click={() => callback(af.uuid, attempt)} />
 			{/if}
 		</div>
 		<div class="result">
@@ -43,19 +56,27 @@
 				<Icon icon="mdi:checkbox-blank-circle-outline" style="color: var(--color-neutral);" />
 			{:else}
 				{#if result.status === AttemptResultStatus.Success}
-					<Icon class="ok" icon="mdi:check-circle" />
+					<BoxError msg={null} />
 				{:else if result.status === AttemptResultStatus.Fail}
-					<Icon class="error" icon="mdi:close-circle" />
-					fail: {result.msg}
+					<Box level="error">
+						fail: {result.msg}
+					</Box>
 				{:else if result.status === AttemptResultStatus.Error}
-					<Icon class="error" icon="mdi:alert-circle" />
-					error
-					{#if $debugMode}
-						{result.msg}
-					{/if}
+					<Box level="error">
+						error: {result.msg}
+					</Box>
 				{:else}
-					<Icon class="error" icon="mdi:alert-octagon" />
-					{result.msg}
+					<Box level="error">
+						unexpected: {result.msg}
+					</Box>
+				{/if}
+				<Box level="debug">
+					Feedback: {JSON.stringify(result.feedback)}
+				</Box>
+				{#if result.feedback}
+					{#if af.verifier === "limited"}
+						Remaining: {result.feedback.remaining}
+					{/if}
 				{/if}
 			{/if}
 		</div>

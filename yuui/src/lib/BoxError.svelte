@@ -2,7 +2,7 @@
 	import Box from '../lib/Box.svelte';
 
 	export let msg: string | null;
-	export let passive: boolean;
+	export let passive = false;
 </script>
 
 {#if msg}

@@ -1,13 +1,13 @@
 <script context="module">
-	import { t } from '$lib/translations';
+	import { _ } from 'svelte-i18n'
 </script>
 
 <svelte:head>
-	<title>About</title>
+	<title>{$_('header.about')}</title>
 </svelte:head>
 
 <div class="content">
-	<h1>{$t('about.title')}</h1>
+	<h1>{$_('header.about')}</h1>
 
 	<p>
 		<a href={import.meta.env.VITE_PAIMON_BASE_URL.toString()}>Docs</a>

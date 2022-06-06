@@ -1,23 +1,24 @@
 <script lang="ts" type="module">
-	import type { Client, Identity } from "$lib/api2";
+	import { client } from "$lib/api2";
+	import type { Id } from "$lib/api2";
 	import Icon from '@iconify/svelte';
 	import BoxError from '../lib/BoxError.svelte';
+	import { debugMode } from '$lib/store';
 	import { onMount } from 'svelte';
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
 	//import EmailVerified from '$lib/EmailVerified.svelte';
-
-	export let client: Client;
 
 	let initSlug: string;
 	let slug: string;
 	let slugTaken: boolean|null;
 	let name: string;
-	let idUnsavedChanges = false;
+	export let idUnsavedChanges = false;
 	//let gUnsavedChanges = false;
 	let submitIdError: string;
+	let submitIdLoading = false;
 	//let gErrors = new Map<string, string>();
 
-	let id: Identity;
+	let id: Id;
 
 	onMount(async () => {
 		try {
@@ -39,6 +40,7 @@
 	}
 
 	async function submitId() {
+		submitIdLoading = true;
 		try {
 			await client.submitId({ slug, name });
 			submitIdError = '';
@@ -48,6 +50,7 @@
 			console.error(`submitId: ${e}`);
 			submitIdError = e.toString();
 		}
+		submitIdLoading = false;
 	}
 
 	//async function submitGEmail(gid: string, email: string) {
@@ -64,22 +67,23 @@
 </script>
 
 <div class="flex">
-	<div class="panel flex-in">
-		<h3>
+	<div class="flex-in">
+		<h2>
 			Personal
 			{#if idUnsavedChanges}
 				<UnsavedChanges />
 			{/if}
-		</h3>
+		</h2>
 		<form class="identity">
 			<label>
-				UUID
-				<input type="text" value={id ? id.uuid : ""} disabled />
+				<span class="label">User ID</span>
+				<input type="text" value={id ? id.uid : ""} disabled />
 			</label>
 			<br />
 			<label>
-				Slug
+				<span class="label">Slug</span>
 				<input id="slug" type="text" autocomplete="username" bind:value={slug} on:input={slugFind} />
+				<span class="status">
 				{#if slugTaken === true}
 					<Icon icon="mdi:alert" style="color: var(--color-error);" />
 					Taken
@@ -95,10 +99,13 @@
 				{:else}
 					Loading
 				{/if}
+				</span>
 			</label>
 			<br/>
 			<label>
+				<span class="label">Name</span>
 				<input id="name" type="name" autocomplete="name" bind:value={name} on:input={() => idUnsavedChanges = true} />
+				<span class="status">
 				{#if name === ""}
 					<Icon icon="mdi:cancel" style="color: var(--color-error);" />
 					Cannot be blank
@@ -107,14 +114,16 @@
 				{:else}
 					Loading
 				{/if}
+				</span>
 			</label>
 			<br/>
-			<input class="update" type="button" on:click={submitId} value="Update" />
+			<input class="update" type="button" on:click={submitId} value="Update" disabled={submitIdLoading} />
 			<BoxError msg={submitIdError} />
 		</form>
 	</div>
-	<div class="panel flex-in">
-		<h3>Groups</h3>
+	{#if $debugMode}
+	<div class="flex-in">
+		<h2>Groups</h2>
 		{#if id}
 			{#each id.groups as group}
 				<div class="group">
@@ -159,8 +168,8 @@
 			{/each}
 		{/if}
 	</div>
-	<div class="panel flex-in">
-		<h3>Perms</h3>
+	<div class="flex-in">
+		<h2>Perms</h2>
 		{#if id}
 			<div class="flex">
 				<div class="flex-in">
@@ -186,10 +195,28 @@
 			</div>
 		{/if}
 	</div>
+	{/if}
 </div>
 
 <style>
 	.flex-in {
 		flex: 50%;
+	}
+
+	label {
+		display: flex;
+		flex-direction: row;
+	}
+
+	.identity .label {
+		flex: 10%;
+	}
+
+	.identity input {
+		flex: 50%;
+	}
+
+	.identity .status {
+		flex-grow: 1;
 	}
 </style>

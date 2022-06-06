@@ -1,4 +1,5 @@
 <script lang="ts" type="module">
+	import { _ } from 'svelte-i18n';
 	import { debugMode } from '$lib/store';
 	import Icon from '@iconify/svelte';
 	import Box from '$lib/Box.svelte';
@@ -18,10 +19,10 @@
 	<a href={url}>
 	{#if verifier === "pw"}
 		<Icon icon="mdi:dialpad" />
-		Password
+		{$_('af.pw.label')}
 	{:else if verifier === "otp_totp"}
 		<Icon icon="mdi:clock-outline" />
-		TOTP
+		{$_('af.otp_totp.label')}
 	{:else if verifier === "ctrl_email" && $debugMode}
 		<Icon icon="mdi:at" />
 		Control of Email Address
@@ -49,6 +50,9 @@
 	{:else if verifier === "webauthn" && $debugMode}
 		<Icon icon="mdi:key" />
 		WebAuthn
+	{:else if verifier === "limited" && $debugMode}
+		<Icon icon="mdi:timer-outline" />
+		{$_('af.limited.label')}
 		(TODO)
 	{:else}
 		<Box level="error">
@@ -60,3 +64,9 @@
 	{/if}
 	</a>
 {/if}
+
+<style>
+	a {
+		font-size: 14px;
+	}
+</style>

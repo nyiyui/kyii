@@ -1,16 +1,14 @@
 from flask import Flask
 from flask_migrate import Migrate
 
-from . import admin, db, etc, routes, seed
+from . import admin, config, db, etc, routes, seed
 from .oauth2 import config_oauth
 from .session import session
 
 
 def create_app():
     app = Flask(__name__)
-    from . import config
-
-    app.config.from_object(config.init_app(app))
+    config.init_app(app)
     __setup_app(app)
     return app
 

@@ -1,39 +1,60 @@
 <script lang="ts">
-	import Header from '$lib/header/Header.svelte';
-	import type { Load } from '@sveltejs/kit';
-  import { t, locale, loadTranslations } from '$lib/translations';
-	import '../app.css';
-	
-  export const load: Load = async ({ url }) => {
-    const { pathname } = url;
-    const defaultLocale = 'en-CA';
-    const initLocale = locale.get() || defaultLocale;
-    await loadTranslations(initLocale, pathname);
-    return {};
+  import { waitLocale } from 'svelte-i18n'
+
+  export async function preload() {
+    return waitLocale()
   }
+
+	import { isLoading } from 'svelte-i18n'
+
+	import '../i18n';
 </script>
 
-<Header />
+<script lang="ts" context="module">
+	import GlobalBar from '$lib/header/GlobalBar.svelte';
+	import Header from '$lib/header/Header.svelte';
+	import '../app.css';
+</script>
 
-<main>
-	<slot />
-</main>
-
-<footer>
-	<p>visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to learn SvelteKit</p>
-	{$t('common.home')}
-</footer>
+{#if $isLoading}
+	<p>
+		Loading…
+		読込中…
+	</p>
+{:else}
+	<header>
+		<GlobalBar />
+		<Header />
+	</header>
+	
+	<main>
+		<slot />
+	</main>
+	
+	<footer>
+	</footer>
+{/if}
 
 <style>
+	header {
+		display: flex;
+		flex-direction: column;
+
+		position: fixed;
+		top: 0;
+		width: 100%;
+	}
+
 	main {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
 		padding: 1rem;
 		width: 100%;
-		max-width: 1024px;
 		margin: 0 auto;
 		box-sizing: border-box;
+
+		margin-top: 71px;
 	}
 
 	footer {
@@ -42,10 +63,6 @@
 		justify-content: center;
 		align-items: center;
 		padding: 40px;
-	}
-
-	footer a {
-		font-weight: bold;
 	}
 
 	@media (min-width: 480px) {

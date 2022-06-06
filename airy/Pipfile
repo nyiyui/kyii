@@ -23,13 +23,15 @@ marshmallow = "*"
 flask-wtf = "*"
 jsonschema = "*"
 flask-mail = "*"
+blake3 = "*"
+pillow = "*"
+webauthn = "*"
+
+[dev-packages]
 pytest = "*"
 flake8 = "*"
 flake8-import-order = "*"
 flake8-isort = "*"
-blake3 = "*"
-
-[dev-packages]
 
 [requires]
 python_version = "3.10"

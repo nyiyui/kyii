@@ -12,16 +12,20 @@ services:
       - main
   yuui:
     build: ./yuui/
+    ports:
+      - 3000:3000
     environment:
-      HOST: "0.0.0.0"
-      PORT: "3000"
+      #HOST: "0.0.0.0"
+      #PORT: "3000"
+      NGINX_HOST: "yuui.kyii.nyiyui.ca"
+      NGINX_PORT: "3000"
   nginx:
     build: ./nginx/
     restart: always
     ports:
       - 8080:8080
     environment:
-      NGINX_HOST: "localhost"
+      NGINX_HOST: "airy.kyii.nyiyui.ca"
       NGINX_PORT: "8080"
     networks:
       - main

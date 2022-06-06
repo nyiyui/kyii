@@ -1,14 +1,17 @@
 <script lang="ts" type="module">
-	import type { Client, ApInput, AfInput } from "$lib/api2";
+	import { client } from "$lib/api2";
+	import type { ApInput, AfInput } from "$lib/api2";
 	import AFInput from '../lib/AFInput.svelte';
 	import APInput from '../lib/APInput.svelte';
 	import { onMount } from 'svelte';
+	import Loading from '../lib/Loading.svelte';
+	import Box from '../lib/Box.svelte';
 	import BoxError from '../lib/BoxError.svelte';
-
-	export let client: Client;
 
 	let aps = new Array<ApInput>();
 	let delAps = new Array<string>();
+	let preparedAx;
+	let warnings: Array<any>;
 
 	function newAp() {
 		aps.push({uuid: '', name: '', reqs: []});
@@ -24,7 +27,7 @@
 		aps = aps;
 	}
 
-	let tafids = new Map<number, string>();
+	let tafids = {};
 	let afs = new Array<AfInput>();
 	let regens = new Map<number, boolean>();
 	let delAfs = new Array<string>();
@@ -43,28 +46,41 @@
 	}
 
 	function delAf(n: number, uuid: string) {
+		console.log('delAf', n, uuid);
 		if (uuid !== '') {
 			delAfs.push(uuid);
+			delAfs = delAfs;
 		}
-		afs.slice(n, 1);
+		console.log('delAf2', afs);
+		afs.splice(n, 1);
 		afs = afs;
+	}
+
+	$: {
+		afs;
+		console.log('afs reload');
+	}
+
+	function reload() {
+		console.log('afs explicit reload');
+		afs = afs;
+	}
+
+	$: {
+		console.log('prepare', aps);
+		preparedAx = {
+			aps,
+			del_aps: delAps,
+			del_afs: delAfs.concat(
+				Array.from(regens.entries()).filter(([_, regen]) => regen).map(([n, _]) => tafids[n])
+			),
+		};
 	}
 
 	async function submitAx() {
 		try {
-			const preparedAps = aps.map(ap => ({
-				uuid: ap.uuid,
-				name: ap.name,
-				reqs: ap.reqs.map(n => tafids[n]),
-			}));
-			console.log(`aps: ${JSON.stringify(preparedAps)}`);
-			await client.submitAx({
-				aps: preparedAps,
-				del_aps: delAps,
-				del_afs: delAfs.concat(
-					Array.from(regens.entries()).filter(([_, regen]) => regen).map(([n, _]) => tafids[n])
-				),
-			});
+			const data = await client.submitAx(preparedAx);
+			warnings = data.warnings || [];
 			submitAxError = '';
 			unsavedChanges = false;
 		} catch(e) {
@@ -73,9 +89,11 @@
 	}
 
 	onMount(async () => {
+		await client.clearTafs();
 		const ax = await client.getAx();
+		console.log('getAx2', ax.aps);
 		({ aps, afs } = ax);
-		tafids = new Map();
+		tafids = {};
 		regens = new Map();
 		Array.from(afs.entries()).forEach(([n, af]) => {
 			tafids[n] = af.uuid;
@@ -86,34 +104,60 @@
 
 <div class="ax-input">
 	<div class="flex">
-		<div class="panel flex-in">
-			<h3>APs</h3>
-			{#each Array.from(aps.entries()) as [i, ap]}
-				<div class="ax-input">
-					<APInput bind:ap={ap} {afs} />
-					<input class="delete" type="button" on:click={() => delAp(i)} value="Delete" />
-				</div>
-			{/each}
-			<input class="new" type="button" on:click={newAp} value="New" />
+		<div class="flex-in">
+			<h2>APs</h2>
+			{#if aps}
+				<input class="new" type="button" on:click={newAp} value="New" />
+				{#each Array.from(aps.entries()) as [i, ap]}
+					<APInput bind:ap={ap} {afs} afids={tafids} on:delete={() => delAp(i)} />
+				{/each}
+			{:else}
+				<Loading />
+			{/if}
 		</div>
-		<div class="panel flex-in">
-			<h3>AFs</h3>
-			{#each [...afs.entries()] as [n, af]}
-				<div class="ax-input">
-					<AFInput {n} bind:af={af} bind:tafid={tafids[n]} bind:regen={regens[n]} {client} />
-					<input class="delete" type="button" on:click={() => delAf(n, af.uuid)} value="Delete" />
-				</div>
-			{/each}
-			<input class="new" type="button" on:click={newAf} value="New" />
+		<div class="flex-in">
+			<h2>AFs</h2>
+			<Box level="debug">{JSON.stringify(afs)}</Box>
+			{#if afs}
+				<input class="new" type="button" on:click={newAf} value="New" />
+				{#each [...afs.entries()] as [n, af]}
+					<div class="ax-input">
+						<AFInput {n} bind:af={af} bind:tafid={tafids[n]} bind:regen={regens[n]} on:reload={reload} on:delete={() => delAf(n, af.uuid)} />
+					</div>
+				{/each}
+			{:else}
+				<Loading />
+			{/if}
 		</div>
 	</div>
 	<input class="update" type="button" on:click={submitAx} value="Update" />
 	<BoxError msg={submitAxError} />
+	{#if warnings && warnings.length > 0}
+		{#each warnings as warning}
+			<Box level="warn">{warning}</Box>
+		{/each}
+	{/if}
+	<Box level="debug">
+		Prepared:
+		<pre>{JSON.stringify(preparedAx, null, 2)}</pre>
+		Warnings:
+		<pre>{JSON.stringify(warnings, null, 2)}</pre>
+	</Box>
 </div>
 
 <style>
+	/*
 	.flex-in {
 		flex: 50%;
+	}
+	*/
+
+	.flex {
+		flex-wrap: wrap;
+	}
+
+	.flex-in {
+		flex-grow: 1;
 	}
 
 	.ax-input:not(:last-child) {

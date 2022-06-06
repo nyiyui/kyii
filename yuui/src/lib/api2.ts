@@ -1,3 +1,4 @@
+import bops from 'bops';
 import { browser } from "$app/env";
 import type { UUID } from "uuid";
 import { get } from 'svelte/store';
@@ -72,6 +73,13 @@ class MissingPermsError extends TypeError {
 	}
 }
 
+class UnauthenticatedError extends TypeError {
+	constructor() {
+		super('Unauthenticated');
+		this.name = 'Unauthenticated';
+	}
+}
+
 class ManyErrors extends Error {
 	errors: Array<Error>;
 
@@ -83,8 +91,10 @@ class ManyErrors extends Error {
 }
 
 type LoginAttemptResp = {
-	success: boolean,
-	done: boolean,
+	success: boolean;
+	cur_done: boolean,
+	all_done: boolean,
+	feedback?,
 	msg?: string,
 	uid?: UUID,
 	ulid?: UUID,
@@ -96,9 +106,10 @@ type LoginAttemptResp = {
 type TAF = {
 	tafid: UUID,
 	feedback,
+	done: boolean,
 }
 
-type Client = {
+type OClient = {
 	user_id: string,
 	name: string,
 	uri: string,
@@ -107,7 +118,7 @@ type Client = {
 type Grant = {
 	id: string,
 	args,
-	client: Client,
+	client: OClient,
 	request: {
 		scope: string,
 		issued_at: number,
@@ -132,9 +143,10 @@ class Ax {
 	aps: Array<Ap>;
 	afs: Array<Af>;
 
-	constructor(aps, afs) {
-		this.aps = aps;
-		this.afs = afs;
+	constructor(raw) {
+		this.aps = raw.aps.map(a => new Ap(a));
+		this.afs = raw.afs.map(a => new Af(a));
+		console.log("axc-done", this.aps, raw.aps);
 	}
 }
 
@@ -144,9 +156,11 @@ class Ap {
 	reqs: Array<UUID>;
 
 	constructor(ap) {
+		console.log('apc', ap);
 		this.uuid = ap.uuid;
 		this.name = ap.name;
 		this.reqs = ap.reqs;
+		console.log('apc2', this);
 	}
 
 	toInput(): ApInput {
@@ -271,10 +285,10 @@ type ULO = {
 
 type LooseULO = ULO | "anonymous";
 
-type User = {
-	uid: string,
-	name: string,
-	slug: string,
+class User {
+	uid: string;
+	name: string;
+	slug: string;
 }
 
 class BaseClient {
@@ -291,7 +305,7 @@ class BaseClient {
 		if (browser) this.loadCurrent();
 	}
 
-	get currentUlo(): ULO {
+	get currentUlo(): LooseULO {
 		if (this.currentUlid === undefined) {
 			return "anonymous";
 		}
@@ -392,11 +406,16 @@ class BaseClient {
 			...opts,
 			...(await this.commonOpts(opts.method, opts.headers)),
 		});
+		if (r.status === 401) {
+			throw new UnauthenticatedError();
+		}
 		if (r.status !== 200) {
 			throw new TypeError(`unexpected status ${r.status}`);
 		}
-		const r2 = new Response<T>(await r.json());
-		console.log(r2);
+		const raw = await r.json();
+		console.log('raw', raw);
+		const r2 = new Response<T>(raw);
+		console.log('r2', r2);
 		return r2;
 	}
 }
@@ -432,7 +451,7 @@ class Client extends BaseClient {
 		return r.data.user;
 	}
 
-	async syncLogin(): Promise<void> {
+	async loginSync(): Promise<void> {
 		const r = await this.fetch<null>(`login/sync`, {
 			method: 'POST',
 		})
@@ -499,12 +518,13 @@ class Client extends BaseClient {
 		if (r.errors.length === 1 && r.errors[0].code === 'verification_failed') {
 			return {
 				success: false,
-				done: false,
+				cur_done: false,
+				all_done: false,
 				msg: r.errors[0].data,
 			};
 		} else {
 			this.assertNoErrors(r);
-			if (r.data.done && setToken) {
+			if (r.data.all_done && setToken) {
 				this.uloAdd({
 					uid: r.data.uid,
 					ulid: r.data.ulid,
@@ -549,22 +569,45 @@ class Client extends BaseClient {
 		const r = await this.fetch<Ax>(`config/ax`, {
 			method: 'GET',
 		})
-		return new Ax(r.data.aps, r.data.afs);
+		console.log('getAx1', r.data);
+		console.log('getAx3', new Ax(r.data));
+		return new Ax(r.data);
 	}
 
-	async submitAx(req: AxInput): Promise<void> {
-		await this.fetch(`config/ax`, {
+	async submitAx(req: AxInput): Promise<{warnings}> {
+		const r = await this.fetch<{warnings}>(`config/ax`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify(req),
 		})
+		this.assertNoErrors(r);
+		return r.data;
+	}
+
+	// ================================
+	// User: Public
+	// ================================
+
+	async user(uid: string): Promise<User> {
+		const r = await this.fetch<User>(`user/${uid}`, {
+			method: 'GET',
+		})
+		this.assertNoErrors(r);
+		return r.data;
 	}
 
 	// ================
 	// TAF
 	// ================
+
+	async clearTafs(): Promise<void> {
+		const r = await this.fetch<null>('config/ax/taf/clear', {
+			method: 'POST',
+		})
+		this.assertNoErrors(r);
+	}
 
 	async allocTaf(): Promise<UUID> {
 		const r = await this.fetch<{tafid: UUID}>('config/ax/taf/alloc', {
@@ -582,27 +625,27 @@ class Client extends BaseClient {
 		this.assertNoErrors(r);
 	}
 
-	async setTaf(tafid: string, af: AfInput): Promise<TAF> {
-		const r = await this.fetch<{taf: TAF}>(`config/ax/taf/set`, {
+	async genTaf(tafid: string, af: AfInput, cont = false): Promise<TAF> {
+		const r = await this.fetch<{taf: TAF}>(`config/ax/taf/gen`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify({ tafid, name: af.name, verifier: af.verifier, gen_params: af.params }),
+			body: JSON.stringify({ cont, tafid, name: af.name, verifier: af.verifier, gen_params: af.params }),
 		});
 		return r.data.taf;
 	}
 
-	async attemptTaf(tafid: UUID, attempt: string): Promise<{success: boolean, msg?: string}> {
-		const r = await this.fetch(`config/ax/taf/attempt`, {
+	async verifyTaf(tafid: UUID, attempt: string): Promise<{success: boolean, done: boolean, feedback?, msg?: string}> {
+		const r = await this.fetch<{ done: boolean, feedback? }>(`config/ax/taf/verify`, {
 			method: 'POST',
 			body: new URLSearchParams({ tafid, attempt }),
 		});
 		if (r.errors.length === 1 && r.errors[0].code === 'verification_failed') {
-			return { success: false, msg: r.errors[0].data };
+			return { success: false, done: false, msg: r.errors[0].data };
 		} else {
 			this.assertNoErrors(r);
-			return { success: true };
+			return { success: true , done: r.data.done, feedback: r.data.feedback };
 		}
 	}
 
@@ -620,13 +663,25 @@ class Client extends BaseClient {
 	}
 
 	async submitId(req: IdInput): Promise<void> {
-		await this.fetch<null>(`config/id`, {
+		const r = await this.fetch<null>(`config/id`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json',
 			},
 			body: JSON.stringify(req),
 		})
+		this.assertNoErrors(r);
+	}
+
+	async submitImg(req: IdInput): Promise<void> {
+		const r = await this.fetch<null>(`config/id`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(req),
+		})
+		this.assertNoErrors(r);
 	}
 
 	// ================================
@@ -642,10 +697,11 @@ class Client extends BaseClient {
 	}
 
 	private async actionUl(action: string, ulid: string, name?: string): Promise<void> {
-		await this.fetch<null>(`uls/${action}`, {
+		const r = await this.fetch<null>(`uls/${action}`, {
 			method: 'POST',
 			body: new URLSearchParams({ ulid, ...(name ? { name } : {}) }),
 		})
+		this.assertNoErrors(r);
 	}
 
 	async revokeUl(ulid: string): Promise<void> {
@@ -672,17 +728,12 @@ class Client extends BaseClient {
 		return r.data.grants;
 	}
 
-	async grantsRevoke(grantId: string): Promise<boolean> {
-		const r = await this.fetch<{grants: Array<null>}>('oauth/grants/revoke', {
+	async grantsRevoke(grantId: string): Promise<void> {
+		const r = await this.fetch<null>('oauth/grants/revoke', {
 			method: 'POST',
 			body: new URLSearchParams({ grant_id: grantId }),
 		})
-		if (r.errors.length === 1 && r.errors[0].code === 'no_grants') {
-			return false
-		} else {
-			this.assertNoErrors(r);
-			return true;
-		}
+		this.assertNoErrors(r);
 	}
 
 	async getAzrq(azrqid: UUID): Promise<Grant | null> {
@@ -756,7 +807,30 @@ if (!baseUrl) {
 const client = new Client(baseUrl);
 
 export { client, ulos };
-export { Ap, Af, Client, verifiers };
-export type { Status, ApInput, AfInput, Id, AxInput, UserLogin, Grant, User };
+export { Ap, Af, Client, User, verifiers };
+export type { Status, ApInput, AfInput, Id, AxInput, UserLogin, Grant, OClient };
 export type { ULO, LooseULO };
-export { MissingPermsError, ManyErrors };
+export { MissingPermsError, UnauthenticatedError, ManyErrors };
+
+function doc(path: string) {
+	return new URL(path, import.meta.env.VITE_PAIMON_BASE_URL as string).href;
+}
+
+export { doc };
+
+function fixBase64(s: string): string {
+	while(s.length % 4 !== 0) {
+		s += '=';
+	}
+	return s;
+}
+
+function encodeBase64(a: ArrayBuffer): string {
+	return bops.to(new Uint8Array(a), 'base64');
+}
+
+function decodeBase64(s: string): Uint8Array {
+	return bops.from(fixBase64(s), 'base64');
+}
+
+export { encodeBase64, decodeBase64 };

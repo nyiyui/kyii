@@ -39,7 +39,7 @@ class Config:
 
     # Yuui
     KYII_YUUI = True
-    KYII_YUUI_ORIGIN = "http://localhost:3000"
+    KYII_YUUI_ORIGIN = "https://yuui.kyii.nyiyui.ca"
 
     # Flask-Admin
     FLASK_ADMIN_SWATCH = "paper"
@@ -50,9 +50,12 @@ class Config:
 
     AIRY_ANONYMOUS_PERMS = {
         "api_v1.signup",
+        "api_v2.user.img",
     }
     AIRY_DEFAULT_PERMS = AIRY_ANONYMOUS_PERMS | {
+        "api_v2.config.id",
         "api_v2.oauth.grants",
+        "api_v2.config.ax",
         "api_v1.oauth.grants",
         "api_v1.config.ax",
         "api_v1.config.id",
@@ -61,16 +64,25 @@ class Config:
         "api_v1.ul",
     }
 
-    # Airy Iori
+    # Airy Rika
     AIRY_RIKA_COLOUR_PRIMARY = "indigo"
     AIRY_RIKA_COLOUR_ACCENT = "deep_purple"
 
+    # Images
+    UPLOAD_PATH: Path = Path("/tmp/kyii-airy")
+
+    # Verifiers
+    VERIFIER_WEBAUTHN = dict(
+        rp_id="https://yuui.kyii.nyiyui.ca",
+        rp_name="Airy",
+    )
+
 
 def init_app(app):
+    app.config.from_object(Config)
     try:
         from . import local_config
     except ImportError:
         pass
     else:
         local_config.init_app(app)
-    return Config

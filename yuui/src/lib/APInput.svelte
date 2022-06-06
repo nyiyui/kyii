@@ -1,62 +1,104 @@
 <script lang="ts" type="module">
-	import { debugMode } from '$lib/store';
+	import Box from '$lib/Box.svelte';
 	import type { AfInput, ApInput } from '$lib/api2';
-	import type { UUID } from "uuid";
+	import { doc } from '$lib/api2';
+	import { createEventDispatcher } from 'svelte';
+
+	const dispatch = createEventDispatcher();
 
 	export let ap: ApInput;
 	export let afs: Array<AfInput>;
-	const afReq = new Map<UUID, boolean>();
+	export let afids;
+	let afReq = {};
+	const afInputs = {};
 	$: {
 		for (const req of ap.reqs) {
-			afReq.set(req.id, false);
+			afReq[req] = true;
 		}
+		console.log('APInput1', afReq);
+	}
 
-		const newReqs = new Array<number>();
-		for (const [key, val] of afReq.entries()) {
-			if (val) {
-				newReqs.push(key);
-			}
+	function getAfid(af: AfInput, n: number) {
+		return af.uuid || afids[n];
+	}
+
+//	$: {
+//		const newReqs = new Array<number>();
+//		console.log(1, afReq);
+//		for (const [key, val] of Object.entries(afReq)) {
+//			console.log(2, key, val);
+//			if (val) {
+//				newReqs.push(key);
+//			}
+//		}
+//		console.log(33, newReqs);
+//		ap.reqs = newReqs;
+//		console.log(3, ap.uuid, ap.reqs, afReq);
+//		console.log(4, ap);
+//	}
+
+	function setReq(afid) {
+		const value = afInputs[afid].checked;
+		console.log('APInput4', afid, value);
+		const i = ap.reqs.indexOf(afid);
+		if (value && i === -1) {
+			ap.reqs.push(afid);
+		} else if (!value && i !== -1) {
+			ap.reqs.splice(i, 1);
 		}
-		ap.reqs = newReqs;
+		afReq = afReq;
 	}
 </script>
 
 <div class="ap-input" id={ap.uuid}>
 	<div class="name">
-		<label>
-			Name
-			<input type="text" bind:value={ap.name} />
-		</label>
-		{#if $debugMode}
-			<br/>
+		<div class="top">
+			<h4 contenteditable="true" bind:textContent={ap.name}></h4>
+			<input class="delete" type="button" on:click={() => dispatch('delete')} value="Delete" />
+		</div>
+		<Box level="debug">
 			UUID: <code>{ap.uuid}</code>
-			JSON: <code>{JSON.stringify(ap)}</code>
-		{/if}
-	</div>
-	<form class="reqs">
-		{#each afs as af}
-			<label>
-				{af.name}
-				<input type="checkbox" bind:checked={afReq[af.uuid]}>
-			</label>
 			<br />
-		{/each}
-	</form>
+			JSON: <code>{JSON.stringify(ap)}</code>
+		</Box>
+		<form>
+			<h5>Requires</h5>
+			{#each [...afs.entries()] as [n, af]}
+				<label>
+					<input type="checkbox" checked={afReq[getAfid(af, n)]} on:input={() => setReq(getAfid(af, n))} bind:this={afInputs[af.uuid]} disabled={!getAfid(af, n)} />
+					{af.name}
+					{#if !getAfid(af, n)}
+						<Box level="warn">This AF is <a href={doc('/config.html#vafs')} target="blank" rel="noopener noreferrer">virtual</a>.</Box>
+					{/if}
+					<Box level="debug"><code>{getAfid(af, n)}</code></Box>
+				</label>
+				<br />
+			{/each}
+		</form>
+	</div>
 </div>
 
 <style>
 	.ap-input {
 		display: flex;
 	}
-	@media screen and ( max-width: 1200px ) {    
+	/*
+	@media screen and ( max-width: 600px ) {    
 	  .ap-input {    
 	    flex-direction: column;    
 	  }    
 	}
+	*/
 	.ap-input > div {
-		flex: 50%;
+		flex-grow: 1;
 	}
-	.reqs {
-		text-align: right;
+
+	.top {
+		display: flex;
+		align-items: flex-start;
+	}
+
+	.top h4 {
+		flex-grow: 1;
 	}
 </style>

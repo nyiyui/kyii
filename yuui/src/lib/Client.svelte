@@ -4,4 +4,4 @@
 	export let client: Client;
 </script>
 
-<a href={client.uri}>{client.name}</a> by <code>{client.user_id}</code>
+<a href={client.uri}>{client.name}</a> by <a href="/user/{client.user_id}"><code>{client.user_id}</code></a>

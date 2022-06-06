@@ -1,18 +1,24 @@
 <script lang="ts" type="module">
 	// TODO: call loginStop
+	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import { getNext } from '$lib/util';
 	import { Ap, Af, client } from "../lib/api2";
 	import Icon from '@iconify/svelte';
 	import AFChallenge from '../lib/AFChallenge.svelte';
 	import { AttemptResultStatus } from '$lib/util';
+	import { browser } from "$app/env";
 
 	let username: string;
 	let usernameFound: boolean|undefined = undefined;
 	let apUuid: string;
 	let attempts: Map<string, string> = new Map();
 
-	let next = getNext($page.url.searchParams);
+	let next;
+
+	if (browser) {
+		next = getNext($page.url.searchParams);
+	}
 
 	let done: boolean;
 	let aps: Array<Ap> = [];
@@ -47,11 +53,12 @@
 	async function attempt(afUuid: string, chalResp: string) {
 		try {
 			const resp = await client.loginAttempt(afUuid, chalResp);
-			if (resp.success) {
-				({ done } = resp);
-				attemptResults.set(afUuid, {status: AttemptResultStatus.Success, msg: ""});
+			let common = { feedback: resp.feedback };
+			if (resp.cur_done) {
+				done = resp.all_done;
+				attemptResults.set(afUuid, {status: AttemptResultStatus.Success, msg: "", ...common});
 			} else {
-				attemptResults.set(afUuid, {status: AttemptResultStatus.Fail, msg: resp.msg});
+				attemptResults.set(afUuid, {status: AttemptResultStatus.Fail, msg: resp.msg, ...common});
 			}
 		} catch (e) {
 			attemptResults.set(afUuid, {status: AttemptResultStatus.Error, msg: e.toString()});
@@ -68,11 +75,11 @@
 	<form id="login">
 		<div id="login-top">
 			<div id="login-u">
-				<label for="username">Username</label>
+				<label for="username">{$_('login.username')}</label>
 				<input id="username" type="username" autocomplete="username" bind:value={username} on:input={usernameFind} />
 				{#if usernameFound === false}
 					<Icon icon="mdi:account-cancel" style="color: #fcc;" />
-					User not found
+					{$_('login.user_not_found')}
 				{:else}
 					<Icon icon="mdi:account-check" style="color: #cfc;" />
 				{/if}
@@ -81,7 +88,7 @@
 		{#if usernameFound}
 			<div class="flex">
 				<div class="panel flex-in">
-					<h2>APs</h2>
+					<h2>{$_('login.aps')}</h2>
 					{#each aps as ap}
 						<label>
 							<input type="radio" id="{ap.uuid}" bind:group={apUuid} name="ap" value="{ap.uuid}" on:change={choose} />
@@ -91,7 +98,7 @@
 					{/each}
 				</div>
 				<div class="panel flex-in">
-					<h2>AFs</h2>
+					<h2>{$_('login.afs')}</h2>
 					{#each afs as af}
 						<AFChallenge bind:af bind:attempt={attempts[af.uuid]} callback={attempt} result={attemptResults.get(af.uuid)} />
 					{/each}
@@ -101,15 +108,15 @@
 		<div id="login-bottom">
 			<div id="login-status">
 				{#if done === true}
-					Logged In
 					<Icon icon="mdi:check-circle" style="color: #cfc;" />
+					{$_('login.logged_in')}
 					<br />
-					{#if next !== null}
-						<a href={next.toString()}>Next</a>
+					{#if next}
+						<a href={next.toString()}>{$_('login.next')}</a>
 					{/if}
 				{:else}
-					Pending
 					<Icon icon="mdi:checkbox-blank-circle-outline" style="color: #ccc;" />
+					{$_('login.pending')}
 				{/if}
 			</div>
 		</div>

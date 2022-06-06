@@ -5,7 +5,11 @@
 	import { page } from '$app/stores';
 	import { getNext } from '$lib/util';
 
-	let next = getNext($page.url.searchParams);
+	let next;
+
+	if (browser) {
+		next = getNext($page.url.searchParams);
+	}
 </script>
 
 <svelte:head>
@@ -13,7 +17,7 @@
 </svelte:head>
 
 <main>
-	{#if next !== null}
+	{#if next}
 		<Box level="info">
 			Please move
 			<a href={next.toString()}>next</a>

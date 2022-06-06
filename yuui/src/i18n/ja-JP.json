@@ -1,0 +1,86 @@
+{
+  "global_bar": {
+    "self": "ゆうい",
+    "kiki": "きき"
+  },
+  "header": {
+    "home": "ゆうい",
+    "about": "ゆういについて",
+    "ui": "UIテスト",
+    "loading": "読込中…",
+    "config": "設定",
+    "uls": "セッション",
+    "grants": "認可",
+    "login": "ログイン",
+    "signup": "登録",
+    "iori": "違うアカウントを使う"
+  },
+  "config": {
+    "id": {
+      "title": "アイデンティティー"
+    },
+    "ax": {
+      "title": "認証",
+      "login_required": "認証方法を設定する為には<a href=\"/login\">ログイン</a>が必要です。"
+    },
+    "client": {
+      "title": "アプリ固有",
+      "help": "この設定はこのアプリ固有であり、セッションとは関連してません。",
+      "etc": "その他の設定",
+      "api_base_url": "エアリーAPIの元URL",
+      "debug_mode": "デバッグモード",
+      "debug_mode_on": "オン",
+      "debug_mode_off": "オフ",
+      "debug_mode_help": "これは、ゆういが既に有るなデータのみを表示します（デバッグモードがオフの場合は非表示になります）。",
+      "lang": {
+        "title": "言語",
+        "current": "日本語",
+        "help": "変えるにはユーザーエージェントの言語設定を変えて下さい。"
+      },
+      "cs": {
+        "title": "カラーテーマ",
+        "light": "明色",
+        "dark": "暗色",
+        "help": "変えるにはユーザーエージェントのカラーテーマ設定を変えて下さい。"
+      }
+    }
+  },
+  "login": {
+    "username": "ユーザー名",
+    "user_not_found": "ユーザーが見つかりません。",
+    "aps": "認証パス",
+    "afs": "認証方法",
+    "logged_in": "ログインしました。",
+    "next": "次へ",
+    "pending": "認証して下さい。"
+  },
+  "iori": {
+    "anonymous": "匿名",
+    "switcher": {
+      "switch": "アカウントを切り替え：",
+      "or": "または、<a href=\"/login?selfnext=/iori\">ログイン</a>して下さい。"
+    },
+    "ulo": {
+      "choose": "選択",
+      "logout": "ログアウト",
+      "delete": "削除・忘却"
+    },
+    "user": {
+      "profile": "プロフィール"
+    }
+  },
+  "af": {
+    "submit": "送信",
+    "pw": {
+      "label": "パスワード",
+      "pw": "パスワード"
+    },
+    "otp_totp": {
+      "label": "TOTP",
+      "challenge": "チャレンジ"
+    },
+    "limited": {
+      "label": "回数制限"
+    }
+  }
+}

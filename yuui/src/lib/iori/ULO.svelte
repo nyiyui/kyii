@@ -1,6 +1,8 @@
 <script lang="ts" type="module">
+	import { _ } from "svelte-i18n";
 	import User from '$lib/iori/User.svelte';
 	import BoxError from '$lib/BoxError.svelte';
+	import Box from '$lib/Box.svelte';
 	import { createEventDispatcher } from 'svelte';
 	import type { LooseULO } from '$lib/api2';
 	import { client } from '$lib/api2';
@@ -36,20 +38,19 @@
 
 {#if ulo === "anonymous"}
 	{#if currentUlid === null}(chosen){/if}
-	<em>Anonymous</em>
-	<input class="action ok" type="button" value="Choose" on:click={() => dispatch('choose')} disabled={currentUlid === null} />
+	<em>{$_('iori.anonymous')}</em>
+	<input class="action ok" type="button" value={$_('iori.ulo.choose')} on:click={() => dispatch('choose')} disabled={currentUlid === null} />
 {:else}
 	{#if currentUlid === ulo.ulid}(chosen){/if}
 	<User uid={ulo.uid} name={ulo.name} slug={ulo.slug} />
-	<input class="action ok" type="button" value="Choose" on:click={() => dispatch('choose')} disabled={currentUlid === ulo.ulid} />
+	<input class="action ok" type="button" value={$_('iori.ulo.choose')} on:click={() => dispatch('choose')} disabled={currentUlid === ulo.ulid} />
 	{#if $debugMode}
-		<input class="action delete" type="button" value="Delete/Forget" on:click={forget} disabled={currentUlid === ulo.ulid} />
+		<input class="action delete" type="button" value={$_('iori.ulo.delete')} on:click={forget} disabled={currentUlid === ulo.ulid} />
 	{/if}
-	<input class="action warn" type="button" value="Logout" on:click={logout} disabled={currentUlid === ulo.ulid} />
-	{#if $debugMode}
-		<br/>
+	<input class="action warn" type="button" value={$_('iori.ulo.logout')} on:click={logout} disabled={currentUlid === ulo.ulid} />
+	<Box level="debug">
 		<code>{JSON.stringify(ulo)}</code>
-	{/if}
+	</Box>
 {/if}
 <BoxError msg={err ? err.toString() : null} passive />
 

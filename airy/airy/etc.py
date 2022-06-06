@@ -33,6 +33,7 @@ def load_user(uid: str) -> User:
         return None
     return User.query.get(uid)
 
+
 def login_ul(ul: UserLogin, **kwargs):
     session["ulid"] = ul.id
     login_user2(ul.user, **kwargs)

@@ -60,10 +60,10 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if current_ul.is_authenticated:
-            print('authenticated')
+            print("authenticated")
             return f(*args, **kwargs)
         else:
-            return current_app.ul_manager.unauthorized()
+            return current_app.ul_manager.unauthenticated()
 
     return decorated_function
 
@@ -104,12 +104,12 @@ class ULManager:
     def init_app(self, app):
         app.ul_manager = self
 
-    def unauthorized(self):
+    def unauthenticated(self):
         resp = jsonify(
             dict(
                 errors=[
                     dict(
-                        code="unauthorized",
+                        code="unauthenticated",
                         message="Unauthorized",
                     )
                 ]
@@ -130,7 +130,7 @@ class ULManager:
             try:
                 ul = UserLogin.query.filter_by(id=ulid).one()
             except NoResultFound:
-                abort(self.unauthorized())
+                abort(self.unauthenticateunauthenticateunauthenticated())
             if ul.verify_token(token_secret):
                 _request_ctx_stack.top.airy_ul = ul
         else:

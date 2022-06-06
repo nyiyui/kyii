@@ -1,0 +1,8 @@
+#!/bin/env sh
+
+(cd ./airy && pipenv run bash -c 'FLASK_DEBUG=true FLASK_APP=airy.app flask run') &
+(cd ./yuui && npm run dev) &
+(cd ./paimon && mdbook serve -p 1314) &
+xdg-open 'http://localhost:3000'
+
+wait

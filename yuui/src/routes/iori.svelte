@@ -4,11 +4,15 @@
 	import { page } from '$app/stores';
 	import { getNext } from '$lib/util';
 
-	let next = getNext($page.url.searchParams);
+	let next;
+
+	if (browser) {
+		next = getNext($page.url.searchParams);
+	}
 </script>
 
 <main>
-	{#if next !== null}
+	{#if next}
 		<a href={next.toString()}>Next</a>
 	{/if}
 	{#if browser}

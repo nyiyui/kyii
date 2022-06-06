@@ -15,8 +15,6 @@ from sqlalchemy import column
 from sqlalchemy_utils import EmailType  # TODO: use UUIDType
 from sqlalchemy_utils import ChoiceType, JSONType, UUIDType
 
-from . import verifiers
-from .verifiers import Pw, VerificationError
 
 db = SQLAlchemy()
 
@@ -256,40 +254,31 @@ class AF(db.Model):
     state = db.Column(
         JSONType
     )  # should be shorter-lived (e.g. preventing "replay attacks")
+    gen_done = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+    )  # is generation done?
 
     def __init__(self, *args, gen_params=None, **kwargs):
         super().__init__(*args, **kwargs)
         if gen_params is not None:
-            self.regen_params(gen_params)
+            self.regen(gen_params)
 
-    def regen_params(self, gen_params: dict) -> Optional[dict]:
-        self.params, feedback = self.__class__.gen_params(self.verifier, gen_params)
+    def regen(self, gen_params: dict) -> Optional[dict]:
+        from . import verifiers
+        self.params, self.state, feedback, self.gen_done = verifiers.gen(
+            self.verifier, gen_params, self.state
+        )
         return feedback
 
-    @classmethod
-    def gen_params(
-        self, verifier: str, gen_params: dict
-    ) -> Tuple[dict, Optional[dict]]:
-        params, feedback = verifiers.VERIFIERS[verifier].gen(gen_params)
-        return params, feedback
-
-    def verify2(self, attempt: str):
+    def verify(self, attempt: str) -> Tuple[Optional[dict], bool]:
         print(self, self.params, self.state)
-        self.params, self.state = AF.verify(
+        from . import verifiers
+        self.params, self.state, feedback, done = verifiers.verify(
             self.verifier, attempt, self.params, self.state
         )
-        db.session.commit()
-
-    @classmethod
-    def verify(
-        cls, verifier: str, attempt: str, params: dict, state: Optional[dict]
-    ) -> Tuple[dict, Optional[dict]]:
-        new_params, new_state = verifiers.VERIFIERS[verifier].verify(
-            attempt, params, state
-        )
-        if new_params is None:
-            raise TypeError("new_params is None")
-        return new_params, new_state
+        return feedback, done
 
     @property
     def for_api_v1_trusted(self):
@@ -377,10 +366,16 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
     client_id = db.Column(db.String(48), db.ForeignKey("oauth2_client.id"))
     client = db.relationship("OAuth2Client")
 
+    def revoke(self):
+        # TODO: properly implement
+        self.expires_in = 0
+
     @property
     def for_api_v1_trusted(self) -> dict:
         return dict(
-            client=OAuth2Client.query.filter_by(client_id=self.client_id).one().as_dict(),
+            client=OAuth2Client.query.filter_by(client_id=self.client_id)
+            .one()
+            .as_dict(),
             scope=self.scope,
             issued_at=self.issued_at,
             expires_in=self.expires_in,
@@ -390,11 +385,13 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
     def for_api_v2(self) -> dict:
         return dict(
             id=self.id,
-            client=OAuth2Client.query.filter_by(client_id=self.client_id).one().as_dict(),
+            client=OAuth2Client.query.filter_by(client_id=self.client_id)
+            .one()
+            .as_dict(),
             request=dict(
                 scope=self.scope,
                 issued_at=self.issued_at,
-                expires_at=self.issued_at+self.expires_in,
+                expires_at=self.issued_at + self.expires_in,
                 token_type=self.token_type,
                 has_refresh_token=bool(self.refresh_token),
             ),

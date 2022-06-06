@@ -1,25 +1,28 @@
+import os
+from pathlib import Path
 from typing import List
 from urllib.parse import urlencode, urljoin
 from uuid import UUID, uuid4
 
 import jsonschema
 from flask import (Blueprint, Response, abort, current_app, jsonify, redirect,
-                   render_template, request, session, url_for)
+                   render_template, request, send_file, session, url_for)
 from flask_cors import CORS
+from flask_login import current_user as current_user2
 from flask_mail import Message
 from sqlalchemy.exc import NoResultFound
 
-from ..etc import login_ul
-from flask_login import current_user as current_user2
-
-from ..db import AF, AP, Email, OAuth2Token, User, UserLogin, ap_reqs, db, Group
-from ..etc import mail
+from .. import verifiers
+from ..db import (AF, AP, Email, Group, OAuth2Token, User, UserLogin, ap_reqs,
+                  db)
+from ..etc import login_ul, mail
 from ..session import API_V1_APID, API_V1_SOLVED, API_V1_UID
 from ..ul import (current_ul, current_user, login_required, login_user,
                   logout_user)
 from ..util2 import all_perms, gen_token, has_perms
 from ..util2 import req_perms as _req_perms
-from ..verifiers import VerificationError
+from ..verifiers import GenerationError, VerificationError
+from .util import conv_to_webp
 
 # TODO: decide if adding per-UL sessions
 
@@ -38,7 +41,7 @@ def init_app(app):
         CORS(
             bp,
             resources={
-                "/*": dict(
+                "/api/v2/*": dict(
                     origins=[app.config["KYII_YUUI_ORIGIN"]],
                     supports_credentials=True,
                 )
@@ -125,12 +128,18 @@ def api_csrf_token():
 @login_required
 def api_login_sync():
     if request.method == "GET":
-        return make_resp(data=dict(user=current_user2.for_api_v2 if current_user2.is_authenticated else None))
+        return make_resp(
+            data=dict(
+                user=current_user2.for_api_v2
+                if current_user2.is_authenticated
+                else None
+            )
+        )
     elif request.method == "POST":
-        print('user2', session)
+        print("user2", session)
         login_ul(current_ul, remember=True)
         session.modified = True
-        print('user2', session)
+        print("user2", session)
         return make_resp()
 
 
@@ -178,6 +187,7 @@ def login_start():
     session[API_V1_UID] = u.id
     session[API_V1_APID] = None
     session[API_V1_SOLVED] = set()
+    print(f"start with {u.id}")
     aps = AP.query.filter_by(user=u)
     return make_resp(
         data=dict(
@@ -196,7 +206,11 @@ def login_choose():
         return make_resp(error=dict(code="ap_not_found", message="ap not found"))
     if ap.user_id != uid:
         return make_resp(error=dict(code="ap_not_owned", message="ap not owned"))
-    afs = AF.query.filter_by(user_id=uid).join(ap_reqs).filter_by(ap_id=apid)
+    afs = (
+        AF.query.filter_by(user_id=uid, gen_done=True)
+        .join(ap_reqs)
+        .filter_by(ap_id=apid)
+    )
     return make_resp(
         data=dict(
             afs=[af.for_api_v1 for af in afs],
@@ -211,30 +225,36 @@ def login_attempt():
     try:
         af = AF.query.filter_by(id=afid).one()
     except NoResultFound:
-        return make_resp(error=dict(code="af_not_found", message="af not found"))
+        return make_resp(error=dict(code="af_not_found", message="AF not found"))
     u = User.query.get(session[API_V1_UID])
     if af.user != u:
-        return make_resp(error=dict(code="af_not_owned", message="af not owned"))
+        return make_resp(error=dict(code="af_not_owned", message="AF not owned"))
 
     try:
-        af.verify2(attempt)
+        feedback, cur_done = af.verify(attempt)
     except VerificationError as e:
-        return make_resp(error=dict(code="verification_failed", message=str(e)))
-    try:
-        ap = AP.query.filter_by(id=session[API_V1_APID]).one()
-    except NoResultFound:
-        return make_resp(error=dict(code="ap_not_found", message="ap not found"))
-    session[API_V1_SOLVED].add(afid)
-    done = len(session[API_V1_SOLVED] ^ set(af.id for af in ap.reqs)) == 0
-    data = dict(done=done)
-    if done:
+        return make_resp(
+            error=dict(code="verification_failed", message=str(e), data=str(e))
+        )
+
+    if cur_done:
+        try:
+            ap = AP.query.filter_by(id=session[API_V1_APID]).one()
+        except NoResultFound:
+            return make_resp(error=dict(code="ap_not_found", message="AP not found"))
+        session[API_V1_SOLVED].add(afid)
+        all_done = len(session[API_V1_SOLVED] ^ set(af.id for af in ap.reqs)) == 0
+    else:
+        all_done = False
+    data = dict(
+        feedback=feedback,
+        all_done=all_done,
+        cur_done=cur_done,
+    )
+    if all_done:
         ul, token = login_user(u, session[API_V1_APID])
-        login_clear()
-        data["uid"] = u.id
-        data["ulid"] = ul.id
-        data["slug"] = u.slug
-        data["name"] = u.name
-        data["token"] = token
+        # login_clear()  # TODO: clear and disable further submissions by Yuui
+        data.update(dict(uid=u.id, ulid=ul.id, slug=u.slug, name=u.name, token=token))
     return make_resp(data=data)
 
 
@@ -279,6 +299,7 @@ def dbify_taf(tafid: UUID, user=current_user) -> None:
     af.name = data["name"]
     af.verifier = data["verifier"]
     af.params = data["params"]
+    # NOTE: don't save state
     db.session.add(af)
 
 
@@ -300,6 +321,23 @@ def dbify_ax(data: dict, user=current_user) -> List[UUID]:
         AP.query.filter_by(id=del_ap, user=user).delete()
     for del_af in data["del_afs"]:
         AF.query.filter_by(id=del_af, user=user).delete()
+    all_used = set()
+    for ap in data["aps"]:
+        reqs = ap["reqs"]
+        all_used |= set(reqs)
+    all_afs = set(map(str, session.get("tafs", set()))) | set(
+        str(af.id) for af in AF.query.filter_by(user=user).all()
+    )
+    unused = all_afs - all_used
+    print("unused", unused, all_afs, all_used)
+    if len(unused) > 0:
+        return make_resp(
+            error=dict(
+                code="unused_afs",
+                message=f"unused AFs: {unused}",
+                data=list(unused),
+            )
+        )
     for tafid in session.get("tafs", []):
         if tafid in data["del_afs"]:
             return make_resp(
@@ -366,15 +404,22 @@ def api_config_ax():
         if "tafs" in session:
             for tafid in session["tafs"]:
                 taf = session[f"taf-{tafid}"]
+                if taf == {}:
+                    warnings += f"taf {tafid} is only allocated"
+                    continue
+                if not taf["gen_done"]:
+                    warnings += f"taf {tafid} is not done generating"
+                    continue
                 if not taf["solved"]:
                     warnings += dict(
                         code="unsolved_taf",
                         message=f"taf {tafid} not solved",
                         data=dict(tafid=tafid),
                     )
+        print("warnings", warnings)
 
-        resp = dbify_ax(request.json)
-        if len(resp.errors) > 0:
+        resp = dbify_ax(request.json).json
+        if resp["errors"] and len(resp["errors"]) > 0:
             return resp
         if "tafs" in session:
             for tafid in session["tafs"]:
@@ -385,8 +430,46 @@ def api_config_ax():
 
 
 ############################################
+# User: Public
+############################################
+
+
+@bp.route("/user/<uid>/img", methods=("GET",))
+def api_user_img(uid):
+    try:
+        u = User.query.filter_by(id=uid).one()  # ensure existence
+    except NoResultFound:
+        return "user not found", 404
+    p = Path(os.path.join(current_app.config["UPLOAD_PATH"], f"img/{u.id}.webp"))
+    if not p.exists():
+        return "image not found", 404
+    return send_file(p, mimetype="image/webp")
+
+
+@bp.route("/user/<uid>", methods=("GET",))
+def api_user(uid):
+    try:
+        u = User.query.filter_by(id=uid).one()  # ensure existence
+    except NoResultFound:
+        return "user not found", 404
+    return make_resp(data=dict(name=u.name, slug=u.slug))
+
+
+############################################
 # TAF
 ############################################
+
+
+@bp.route("/config/ax/taf/clear", methods=("POST",))
+@login_required
+def api_config_ax_taf_clear():
+    if "tafs" in session:
+        for tafid in session["tafs"]:
+            key = f"taf-{tafid}"
+            if key in session:
+                del session[key]
+        del session["tafs"]
+    return make_resp()
 
 
 @bp.route("/config/ax/taf/list", methods=("GET",))
@@ -439,56 +522,75 @@ CONFIG_AX_TAF_SET = {  # TODO: move this to separate file?
 
 
 @bp.route(
-    "/config/ax/taf/set",
+    "/config/ax/taf/gen",
     methods=("POST",),
 )
 @login_required
-def api_config_ax_taf_set():
+def api_config_ax_taf_gen():
     data = request.json
     jsonschema.validate(data, CONFIG_AX_TAF_SET)
     name, verifier, gen_params = data["name"], data["verifier"], data["gen_params"]
-    params, feedback = AF.gen_params(verifier, gen_params)
+    cont = data["cont"]
     tafid = data["tafid"]
-    session["tafs"] = session.get("tafs", set())
-    session["tafs"].add(tafid)
+    if cont:
+        gen_state = session[f"taf-{tafid}"]["gen_state"]
+    else:
+        session["tafs"] = session.get("tafs", set())
+        session["tafs"].add(tafid)
+        gen_state = None
+
+    try:
+        params, gen_state, feedback, done = verifiers.gen(
+            verifier, gen_params, gen_state
+        )
+    except GenerationError as e:
+        return make_resp(error=dict(code="generation_error", msg=str(e), data=str(e)))
+
     session[f"taf-{tafid}"] = dict(
         name=name,
         verifier=verifier,
         params=params,
-        state=None,
+        **(dict(gen_state=gen_state) if not done else dict()),
+        gen_done=done,
         solved=False,
     )
-    return make_resp(data=dict(taf=dict(tafid=tafid, feedback=feedback)))
+    return make_resp(data=dict(taf=dict(tafid=tafid, feedback=feedback, done=done)))
 
 
 @bp.route(
-    "/config/ax/taf/attempt",
+    "/config/ax/taf/verify",
     methods=("POST",),
 )
 @login_required
-def api_config_ax_taf_attempt():
+def api_config_ax_taf_verify():
     tafid = str(UUID(request.form["tafid"]))
     attempt = request.form["attempt"]
     key = f"taf-{tafid}"
     if key not in session:
         return jsonify(dict(type="taf_nonexistent"))
     taf = session[key]
+    if not taf["gen_done"]:
+        return make_resp(
+            error=dict(code="taf_gen_not_done", msg="TAF generation not done"),
+        )
     verifier = taf["verifier"]
     params = taf["params"]
     state = taf.get("state")
     try:
-        new_params, new_state = AF.verify(verifier, attempt, params, state)
+        new_params, new_state, feedback, done = verifiers.verify(
+            verifier, attempt, params, state
+        )
     except VerificationError as e:
         taf["solved"] = False
         return make_resp(
             error=dict(code="verification_failed", message=f"failed: {e}", data=str(e))
         )
     else:
-        taf["solved"] = True
+        taf["solved"] = done
         taf["params"] = new_params
         taf["state"] = new_state
         session[key] = taf
-        return make_resp()
+        return make_resp(data=dict(done=done, feedback=feedback))
 
 
 ########################################################################################
@@ -627,19 +729,22 @@ CONFIG_ID_SCHEMA = {  # TODO: move this to separate file?
 @login_required
 def api_config_id():
     if request.method == "GET":
-        return make_resp(data=dict(
-            user=dict(
-                slug=current_user.slug,
-                name=current_user.name,
-                emails=[e.for_api_v2 for e in current_user.primary_group.emails],
-                perms=list(current_user.perms),
-                default_perms=list(current_app.config["AIRY_DEFAULT_PERMS"]),
-                primary_group=current_user.primary_group.for_api_v1_trusted,
-                groups=[g.for_api_v1_trusted for g in current_user.groups],
+        return make_resp(
+            data=dict(
+                user=dict(
+                    uid=current_user.id,
+                    slug=current_user.slug,
+                    name=current_user.name,
+                    emails=[e.for_api_v2 for e in current_user.primary_group.emails],
+                    perms=list(current_user.perms),
+                    default_perms=list(current_app.config["AIRY_DEFAULT_PERMS"]),
+                    primary_group=current_user.primary_group.for_api_v1_trusted,
+                    groups=[g.for_api_v1_trusted for g in current_user.groups],
+                )
             )
-        ))
+        )
     elif request.method == "POST":
-        data = request.form
+        data = request.json
         errors = []
         jsonschema.validate(data, CONFIG_ID_SCHEMA)
         current_user.slug = data["slug"]
@@ -650,30 +755,57 @@ def api_config_id():
         pg = current_user.primary_group
         pg.slug = data["slug"]
         pg.name = data["name"]
-        for email_data in data["emails"]["add"]:
-            e = Email(email=email_data, is_verified=False, group=pg)
-            db.session.add(e)
-        for email_data in data["emails"]["edit"]:
-            try:
-                e = Email.query.filter_by(group=pg, id=email_data["id"]).delete()
-            except NoResultFound:
-                errors += dict(
-                    code="email_not_found",
-                    message=f"Email {email_data['id']} not found",
-                    data=dict(email_id=email_data["id"]),
-                )
-            e.email = email_data["email"]
-            e.unverify()
-        for email_data in data["emails"]["delete"]:
-            try:
-                Email.query.filter_by(group=pg, id=email_data).delete()
-            except NoResultFound:
-                errors += dict(
-                    code="email_not_found",
-                    message=f"Email {email_data} not found",
-                    data=dict(email_id=email_data),
-                )
+        if 'emai;s' in data:
+            for email_data in data["emails"]["add"]:
+                e = Email(email=email_data, is_verified=False, group=pg)
+                db.session.add(e)
+            for email_data in data["emails"]["edit"]:
+                try:
+                    e = Email.query.filter_by(group=pg, id=email_data["id"]).delete()
+                except NoResultFound:
+                    errors += dict(
+                        code="email_not_found",
+                        message=f"Email {email_data['id']} not found",
+                        data=dict(email_id=email_data["id"]),
+                    )
+                e.email = email_data["email"]
+                e.unverify()
+            for email_data in data["emails"]["delete"]:
+                try:
+                    Email.query.filter_by(group=pg, id=email_data).delete()
+                except NoResultFound:
+                    errors += dict(
+                        code="email_not_found",
+                        message=f"Email {email_data} not found",
+                        data=dict(email_id=email_data),
+                    )
         db.session.commit()
+        return make_resp()
+
+
+@bp.route(
+    "/config/id/img",
+    methods=(
+        "GET",
+        "POST",
+    ),
+)
+@req_perms(("api_v2.config.id",))
+@login_required
+def api_config_id_img():
+    if "file" not in request.files:
+        return make_resp(error=dict(code="no_file_part", message="no file"))
+    file = request.files["file"]
+    if file.filename == "":
+        return make_resp(error=dict(code="no_file", message="no file"))
+    if file:
+        ext = os.path.splitext(file.filename)[1]
+        upload_path = current_app.config["UPLOAD_PATH"]
+        p = os.path.join(upload_path, f"img-tmp/{current_user.id}{ext}")
+        dst = os.path.join(upload_path, f"img/{current_user.id}.webp")
+        file.save(p)
+        conv_to_webp(p, dst)
+        os.remove(p)
         return make_resp()
 
 
@@ -694,8 +826,7 @@ def oauth_clients():
 @req_perms(("api_v2.oauth.grants",))
 def oauth_grants():
     tokens = list(
-        token.for_api_v2
-        for token in OAuth2Token.query.filter_by(user=current_user)
+        token.for_api_v2 for token in OAuth2Token.query.filter_by(user=current_user)
     )
     return make_resp(data=dict(grants=tokens))
 
@@ -705,10 +836,9 @@ def oauth_grants():
 def oauth_grants_revoke():
     grant_id = request.form["grant_id"]
     try:
-        grant = OAuthGrant.query.filter_by(id=grant_id).one()
+        grant = OAuth2Token.query.filter_by(id=grant_id, user=current_user).delete()
     except NoResultFound:
-        return make_resp(error=dict(code='grant_not_found', message="grant not found"))
-    grant.revoke()
+        return make_resp(error=dict(code="grant_not_found", message="grant not found"))
     db.session.commit()
     return make_resp()
 
