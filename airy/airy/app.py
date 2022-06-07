@@ -1,4 +1,6 @@
 from flask import Flask
+import os
+from pathlib import Path
 from flask_migrate import Migrate
 
 from . import admin, config, db, etc, routes, seed
@@ -23,6 +25,9 @@ def __setup_app(app):
     etc.init_app(app)
     seed.init_app(app)
     admin.init_app(app)
+    upload_path = app.config["UPLOAD_PATH"]
+    Path(os.path.join(upload_path, "img-tmp")).mkdir(parents=True, exist_ok=True)
+    Path(os.path.join(upload_path, "img")).mkdir(parents=True, exist_ok=True)
 
 
 if __name__ == "__main__":
