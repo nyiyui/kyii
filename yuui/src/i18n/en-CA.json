@@ -53,6 +53,9 @@
         "light": "Light",
         "dark": "Dark",
         "help": "To change this, change your User Agent's colour scheme settings."
+      },
+      "commit": {
+        "title": "Build Commit"
       }
     }
   },

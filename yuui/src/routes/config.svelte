@@ -13,6 +13,7 @@
 	let loggedIn: boolean | null = null;
 	let axUC = false;
 	let idUC = false;
+	let commit = import.meta.env.VITE_BUILD_COMMIT as string;
 
 	(async () => {
 		if (browser) {
@@ -81,6 +82,12 @@
 			<Box level="info">
 				{$_('config.client.cs.help')}
 			</Box>
+			{#if commit}
+				<label>
+					{$_('config.client.commit.title')}
+					<input type="text" value={commit} disabled />
+				</label>
+			{/if}
 		</TabPanel>
 	</Tabs>
 </main>
