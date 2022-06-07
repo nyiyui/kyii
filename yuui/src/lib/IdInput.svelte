@@ -1,4 +1,6 @@
 <script lang="ts" type="module">
+	import { _ } from 'svelte-i18n'
+  import Dropzone from "svelte-file-dropzone";
 	import { client } from "$lib/api2";
 	import type { Id } from "$lib/api2";
 	import Icon from '@iconify/svelte';
@@ -7,6 +9,28 @@
 	import { onMount } from 'svelte';
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
 	//import EmailVerified from '$lib/EmailVerified.svelte';
+
+  let files = {
+    accepted: [],
+    rejected: []
+  };
+	let candFile: File | null = null;
+	let candFileObjectUrl: string | null = null;
+
+  function handleFilesSelect(e) {
+    const { acceptedFiles, fileRejections } = e.detail;
+    files.accepted = [...files.accepted, ...acceptedFiles];
+    files.rejected = [...files.rejected, ...fileRejections];
+		if (files.accepted.length) {
+			candFile = files.accepted[0];
+			if (candFileObjectUrl) {
+				URL.revokeObjectURL(candFileObjectUrl);
+			}
+			candFileObjectUrl = URL.createObjectURL(candFile);
+		}
+		console.log(files.accepted);
+		idUnsavedChanges = true;
+  }
 
 	let initSlug: string;
 	let slug: string;
@@ -42,7 +66,14 @@
 	async function submitId() {
 		submitIdLoading = true;
 		try {
-			await client.submitId({ slug, name });
+			await Promise.all([
+				client.submitId({ slug, name }),
+				(async () => {
+					if (candFile) {
+						await client.submitImg(candFile);
+					}
+				})(),
+			]);
 			submitIdError = '';
 			idUnsavedChanges = false;
 			console.log('submitId done');
@@ -75,6 +106,28 @@
 			{/if}
 		</h2>
 		<form class="identity">
+			<div class="img">
+				{$_('config.id.img.title')}
+				<div class="dropzone">
+					<Dropzone
+		 				on:drop={handleFilesSelect}
+		 				multiple={false}
+		 				accept="image/*"
+		 			>
+					{$_('config.id.img.dropzone')}
+					</Dropzone>
+				</div>
+				{#if candFileObjectUrl}
+					<div class="preview">
+						{$_('config.id.img.preview.title')}<br/>
+						<img
+							alt={$_('iori.user.profile')}
+			 				class="user-img"
+							src={candFileObjectUrl}
+						/>
+					</div>
+				{/if}
+			</div>
 			<label>
 				<span class="label">User ID</span>
 				<input type="text" value={id ? id.uid : ""} disabled />
@@ -117,7 +170,7 @@
 				</span>
 			</label>
 			<br/>
-			<input class="update" type="button" on:click={submitId} value="Update" disabled={submitIdLoading} />
+			<input class="update" type="button" on:click={submitId} value={$_('config.update')} disabled={submitIdLoading} />
 			<BoxError msg={submitIdError} />
 		</form>
 	</div>
@@ -218,5 +271,14 @@
 
 	.identity .status {
 		flex-grow: 1;
+	}
+
+	.img {
+		display: flex;
+		flex-wrap: wrap;
+	}
+
+	.img > * {
+		margin: 8px;
 	}
 </style>

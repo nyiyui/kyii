@@ -39,8 +39,10 @@
 	header {
 		display: flex;
 		flex-direction: column;
+		background-color: var(--color-bg);
+		border-bottom: 1px solid var(--color-neutral);
 
-		position: fixed;
+		position: sticky;
 		top: 0;
 		width: 100%;
 	}
@@ -53,8 +55,6 @@
 		width: 100%;
 		margin: 0 auto;
 		box-sizing: border-box;
-
-		margin-top: 71px;
 	}
 
 	footer {

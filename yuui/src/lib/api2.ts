@@ -55,7 +55,7 @@ class ResponseError {
 		if (this.code === 'missing_perms') {
 			return new MissingPermsError(this.data.missing_perms, this.data.reason);
 		}
-		return new TypeError(this.message);
+		return new TypeError(`${this.code}: ${this.message} (${JSON.stringify(this.data)})`);
 	}
 }
 
@@ -203,7 +203,7 @@ class Status {
 type IdInput = {
 	slug: string,
 	name: string,
-	emails: {
+	emails?: {
 		add: Array<string>,
 		edit: Array<{id: UUID, email: string}>,
 		delete: Array<UUID>,
@@ -356,7 +356,16 @@ class BaseClient {
 		if (c === "anonymous") {
 			this.uloReset();
 		} else if (c) {
-			this.uloUse(c);
+			try {
+				this.uloUse(c);
+			} catch (e) {
+				if (e.message.includes('No such ULO')) {
+					console.log(`no such ULO (${e}), so reset`);
+					this.uloReset();
+				} else {
+					throw e;
+				}
+			}
 		}
 	}
 
@@ -590,12 +599,16 @@ class Client extends BaseClient {
 	// User: Public
 	// ================================
 
-	async user(uid: string): Promise<User> {
+	async user(uid: string): Promise<User | null> {
 		const r = await this.fetch<User>(`user/${uid}`, {
 			method: 'GET',
 		})
-		this.assertNoErrors(r);
-		return r.data;
+		if (r.errors.length === 1 && r.errors[0].code === 'user_not_found') {
+			return null;
+		} else {
+			this.assertNoErrors(r);
+			return r.data;
+		}
 	}
 
 	// ================
@@ -673,13 +686,12 @@ class Client extends BaseClient {
 		this.assertNoErrors(r);
 	}
 
-	async submitImg(req: IdInput): Promise<void> {
-		const r = await this.fetch<null>(`config/id`, {
+	async submitImg(img): Promise<void> {
+		const formData = new FormData();
+		formData.append('img', img);
+		const r = await this.fetch<null>(`config/id/img`, {
 			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(req),
+			body: formData,
 		})
 		this.assertNoErrors(r);
 	}

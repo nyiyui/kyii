@@ -1,4 +1,5 @@
 {
+  "loading": "Loading…",
   "global_bar": {
     "self": "Kyii Yuui",
     "kiki": "Kiki"
@@ -16,8 +17,18 @@
     "iori": "Switch"
   },
   "config": {
+    "update": "Update",
+    "new": "New",
+    "delete": "Delete",
     "id": {
-      "title": "Identity"
+      "title": "Identity",
+      "img": {
+        "title": "Profile Picture",
+        "dropzone": "Drag here or click to select files.",
+        "preview": {
+          "title": "Preview"
+        }
+      }
     },
     "ax": {
       "title": "Authentication",
@@ -55,7 +66,7 @@
     "pending": "Pending"
   },
   "iori": {
-    "anonymous": "Anonymous",
+    "anonymous": "No session",
     "switcher": {
       "switch": "Switch",
       "or": "Or, <a href=\"/login?selfnext=/iori\">log in</a>."
@@ -79,5 +90,9 @@
       "label": "TOTP",
       "challenge": "Challenge"
     }
+  },
+  "user": {
+    "no_uid": "Invalid page: no UID supplied",
+    "error": "Error: {error}"
   }
 }

@@ -1,31 +1,39 @@
 <script lang="ts" type="module">
 	import { _ } from 'svelte-i18n'
 	import { client } from '$lib/api2';
-	import { browser } from "$app/env";
 	
 	export let uid: string;
 	export let name: string;
 	export let slug: string;
-
-	if (!name && browser) {
-		client.user(uid).then(user => {
-			name = user.name;
-			slug = user.slug;
-		});
-	}
 </script>
 
-{#if uid}
-<img
-	alt={$_('iori.user.profile')}
-	src={new URL(`api/v2/user/${uid}/img`, client.baseUrl).toString()}
-/>
-<a href="/user/{uid}">
-	{name}
-	(<code>{slug}</code>)
-</a>
+{#if uid == "anonymous"}
+	<div class="user">
+		<em>{$_('iori.anonymous')}</em>
+	</div>
 {:else}
-<a href="/user/anonymous">
-	<em>{$_('iori.anonymous')}</em>
-</a>
+	<a href="/user?uid={uid}">
+		<div class="user">
+			<img
+				alt={$_('iori.user.profile')}
+				class="user-img"
+				src={new URL(`api/v2/user/${uid}/img`, client.baseUrl).toString()}
+			/>
+			<div class="non-img">
+				<div class="name">{name}</div>
+				<div class="slug"><code>{slug}</code></div>
+			</div>
+		</div>
+	</a>
 {/if}
+
+<style>
+	.user {
+		display: flex;
+	}
+
+	.non-img {
+		display: flex;
+		flex-direction: column;
+	}
+</style>

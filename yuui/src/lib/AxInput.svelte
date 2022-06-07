@@ -1,4 +1,5 @@
 <script lang="ts" type="module">
+	import { _ } from 'svelte-i18n'
 	import { client } from "$lib/api2";
 	import type { ApInput, AfInput } from "$lib/api2";
 	import AFInput from '../lib/AFInput.svelte';
@@ -105,9 +106,9 @@
 <div class="ax-input">
 	<div class="flex">
 		<div class="flex-in">
-			<h2>APs</h2>
+			<h2>{$_('login.aps')}</h2>
 			{#if aps}
-				<input class="new" type="button" on:click={newAp} value="New" />
+				<input class="new" type="button" on:click={newAp} value={$_('config.new')} />
 				{#each Array.from(aps.entries()) as [i, ap]}
 					<APInput bind:ap={ap} {afs} afids={tafids} on:delete={() => delAp(i)} />
 				{/each}
@@ -116,10 +117,10 @@
 			{/if}
 		</div>
 		<div class="flex-in">
-			<h2>AFs</h2>
+			<h2>{$_('login.afs')}</h2>
 			<Box level="debug">{JSON.stringify(afs)}</Box>
 			{#if afs}
-				<input class="new" type="button" on:click={newAf} value="New" />
+				<input class="new" type="button" on:click={newAf} value={$_('config.new')} />
 				{#each [...afs.entries()] as [n, af]}
 					<div class="ax-input">
 						<AFInput {n} bind:af={af} bind:tafid={tafids[n]} bind:regen={regens[n]} on:reload={reload} on:delete={() => delAf(n, af.uuid)} />
@@ -130,7 +131,7 @@
 			{/if}
 		</div>
 	</div>
-	<input class="update" type="button" on:click={submitAx} value="Update" />
+	<input class="update" type="button" on:click={submitAx} value={$_('config.update')} />
 	<BoxError msg={submitAxError} />
 	{#if warnings && warnings.length > 0}
 		{#each warnings as warning}
