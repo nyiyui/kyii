@@ -40,8 +40,7 @@
       "etc": "Other Settings (that you can't set)",
       "api_base_url": "Airy API base URL",
       "debug_mode": "Debug mode",
-      "debug_mode_on": "On",
-      "debug_mode_off": "Off",
+      "debug_mode_enabled": "Enabled",
       "debug_mode_help": "This only shows data already available to Yuui (hidden if Debug Mode is off).",
       "lang": {
         "title": "Language",

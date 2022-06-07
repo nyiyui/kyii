@@ -40,9 +40,8 @@
       "etc": "その他の設定",
       "api_base_url": "エアリーAPIの元URL",
       "debug_mode": "デバッグモード",
-      "debug_mode_on": "オン",
-      "debug_mode_off": "オフ",
-      "debug_mode_help": "これは、ゆういが既に有るなデータのみを表示します（デバッグモードがオフの場合は非表示になります）。",
+      "debug_mode_enabled": "有効",
+      "debug_mode_help": "既に有るなデータのみを表示します（デバッグモードがオフの場合は非表示になります）。",
       "lang": {
         "title": "言語",
         "current": "日本語",

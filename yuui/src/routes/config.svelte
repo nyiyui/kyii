@@ -51,12 +51,8 @@
 			<Box level="info">{$_('config.client.help')}</Box>
 			<h2 id="debug">{$_('config.client.debug_mode')}</h2>
 			<label>
-				<input type="radio" bind:group={$debugMode} value={true} />
-				{$_('config.client.debug_mode_on')}
-			</label>
-			<label>
-				<input type="radio" bind:group={$debugMode} value={false} />
-				{$_('config.client.debug_mode_off')}
+				<input type="checkbox" bind:checked={$debugMode} />
+				{$_('config.client.debug_mode_enabled')}
 			</label>
 			<Box level="info">
 				{$_('config.client.debug_mode_help')}
