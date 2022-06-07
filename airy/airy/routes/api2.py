@@ -451,7 +451,7 @@ def api_user(uid):
     try:
         u = User.query.filter_by(id=uid).one()  # ensure existence
     except NoResultFound:
-        return "user not found", 404
+        return make_resp(error=dict(code="user_not_found", message="user not found"))
     return make_resp(data=dict(name=u.name, slug=u.slug))
 
 
@@ -793,9 +793,9 @@ def api_config_id():
 @req_perms(("api_v2.config.id",))
 @login_required
 def api_config_id_img():
-    if "file" not in request.files:
+    if "img" not in request.files:
         return make_resp(error=dict(code="no_file_part", message="no file"))
-    file = request.files["file"]
+    file = request.files["img"]
     if file.filename == "":
         return make_resp(error=dict(code="no_file", message="no file"))
     if file:
@@ -804,7 +804,10 @@ def api_config_id_img():
         p = os.path.join(upload_path, f"img-tmp/{current_user.id}{ext}")
         dst = os.path.join(upload_path, f"img/{current_user.id}.webp")
         file.save(p)
-        conv_to_webp(p, dst)
+        try:
+            conv_to_webp(p, dst)
+        except Exception as e:
+            return make_resp(error=dict(code="conversion_failed", message="conversion failed"))
         os.remove(p)
         return make_resp()
 
