@@ -1,4 +1,5 @@
 <script lang="ts" type="module">
+	import { time } from 'svelte-i18n'
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
 	import { client } from '$lib/api2';
 	import type { UserLogin } from '$lib/api2';
@@ -22,48 +23,44 @@
 		console.log(`edit UL ${ul.uuid}`);
 		unsavedChanges = false;
 	}
+
+	const timeOpts: IntlFormatterOptions<DateTimeFormatOptions> = {
+		weekday: 'long',
+		month: 'long',
+		day: 'numeric',
+		year: 'numeric',
+		hour: 'numeric',
+		minute: 'numeric',
+		second: 'numeric',
+		timeZoneName: 'short',
+	};
 </script>
 
 <section class="ul panel flex flex-column">
 	<div class="meta flex flex-row">
 		<h2>
-			{#if ul.name === null}
-				<em>(name unset)</em>
-			{:else}
-				{ul.name}
-			{/if}
+			<span contenteditable="true" bind:textContent={ul.name}></span>
 			{#if unsavedChanges}
 				<UnsavedChanges />
 			{/if}
 		</h2>
 		<div class="tags">
 			{#if ul.current}
-				<div class="tag">Current</div>
+				<div class="tag current">Current</div>
 			{/if}
 			{#if ul.end === null}
-				<div class="tag">Ongoing</div>
+				<div class="tag ongoing">Ongoing</div>
 			{:else}
-				<div class="tag">Ended</div>
-			{/if}
-			{#if ul.last === null}
-				<div class="tag">hmdge</div>
+				<div class="tag ended">Ended</div>
 			{/if}
 		</div>
 		<div class="ctrl">
-			<input type="button" value="Revoke" on:click={revoke} disabled={ul.current} />
+			<input class="warn" type="button" value="Revoke" on:click={revoke} disabled={ul.current} />
 			<input class="delete" type="button" value="Delete" on:click={delete_} />
+			<input class="update" type="button" value="Update" on:click={updateName} />
 		</div>
 	</div>
-	<div class="content flex flex-column">
-		<div class="edit">
-			<form>
-				<label>
-					Name
-					<input type="text" bind:value={ul.name} on:input={() => unsavedChanges = true} />
-				</label>
-				<input class="update" type="button" value="Update" on:click={updateName} />
-			</form><br/>
-		</div>
+	<div class="content">
 		<div class="etc">
 			<h3>Etc</h3>
 			UUID: <code>{ul.uuid}</code><br/>
@@ -75,13 +72,17 @@
 				<em>Nothing (initial session)</em>
 			{/if}
 			<br/>
-			Start: {ul.start}<br/>
-			Last Seen: {ul.last}<br/>
-			End: {ul.end}<br/>
+			Start: {$time(ul.start, timeOpts)}<br/>
+			{#if ul.last !== null}
+			Last Seen: {$time(ul.last, timeOpts)}<br/>
+			{/if}
+			{#if ul.end !== null}
+			End: {$time(ul.end, timeOpts)}<br/>
+			{/if}
 		</div>
 		<div class="headers">
 			<h3>Headers</h3>
-			<ul>
+			<ul class="headers-ul">
 				{#each Array.from(Object.entries(ul.extra.headers)) as [key, value]}
 					<li>
 						<code>{key}</code>: <code>{value}</code>
@@ -93,11 +94,37 @@
 </section>
 
 <style>
-	.flex {
+	.content {
 		display: flex;
+	}
+
+	.content > * {
+		flex-direction: column;
+		padding: 8px;
+	}
+
+	.headers {
+		flex-shrink: 2;
+	}
+
+	.headers-ul {
+		list-style-type: none;
+		padding-left: 0;
 	}
 
 	.meta > h2 {
 		flex-grow: 1;
+	}
+
+	.tag.ongoing {
+		border-color: var(--color-warn);
+	}
+
+	.tag.current {
+		border-color: var(--color-info);
+	}
+
+	.tag.ended {
+		border-color: var(--color-ok);
 	}
 </style>

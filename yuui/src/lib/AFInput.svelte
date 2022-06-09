@@ -110,7 +110,7 @@
 
 	async function newRegen() {
 		regen = true;
-		af.params = {};
+		updateVerifier();
 	}
 
 	async function delRegen() {

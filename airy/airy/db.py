@@ -198,9 +198,9 @@ class UserLogin(db.Model):
             )
             if self.against is not None
             else None,
-            start=self.start,
-            last=self.last,
-            end=self.end,
+            start=self.start.timestamp(),
+            last=self.last.timestamp() if self.last else None,
+            end=self.end.timestamp() if self.end else None,
         )
 
 

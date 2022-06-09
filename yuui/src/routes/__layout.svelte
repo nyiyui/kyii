@@ -7,7 +7,9 @@
 
 	import { isLoading } from 'svelte-i18n'
 
-	import '../i18n';
+	import { start } from '../i18n';
+
+	start();
 </script>
 
 <script lang="ts" context="module">

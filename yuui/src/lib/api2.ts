@@ -134,8 +134,8 @@ type UserLogin = {
 	extra,
 	against: { uuid: string, name: string },
 	start: Date,
-	last: Date,
-	end: Date,
+	last?: Date,
+	end?: Date,
 	current: boolean,
 }
 
@@ -705,7 +705,14 @@ class Client extends BaseClient {
 			method: 'GET',
 		})
 		this.assertNoErrors(r);
-		return r.data.uls;
+		return r.data.uls.map(ul => {
+			return {
+				...ul,
+				start: new Date(ul.start),
+				last: ul.last ? new Date(ul.last) : null,
+				end: ul.end ? new Date(ul.end) : null,
+			}
+		});
 	}
 
 	private async actionUl(action: string, ulid: string, name?: string): Promise<void> {
