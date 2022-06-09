@@ -68,7 +68,7 @@
     "pending": "認証して下さい。"
   },
   "iori": {
-    "anonymous": "アカウント無し",
+    "anonymous": "アカウント無し（ログイン無しと同様）",
     "switcher": {
       "switch": "アカウントを切り替え：",
       "or": "または、<a href=\"/login?selfnext=/iori\">ログイン</a>して下さい。"

@@ -38,7 +38,7 @@
 	let chosen = (ulo === "anonymous" && currentUlid === null) || (ulo !== "anonymous" && currentUlid === ulo.ulid);
 </script>
 
-<div class="ulo" class:chosen={(ulo === "anonymous" && currentUlid === null) || (ulo !== "anonymous" && currentUlid === ulo.ulid)}>
+<div class="ulo" class:outline={chosen}>
 	<div class="user">
 		{#if ulo === "anonymous"}
 			<User uid="anonymous" name="" slug="" />
@@ -48,14 +48,14 @@
 	</div>
 	{#if ulo !== "anonymous"}
 		{#if $debugMode}
-			<input class="action delete" type="button" value={$_('iori.ulo.delete')} on:click={forget} disabled={currentUlid === ulo.ulid} />
+			<input class="action delete" type="button" value={$_('iori.ulo.delete')} on:click={forget} disabled={chosen} />
 		{/if}
-		<input class="action warn" type="button" value={$_('iori.ulo.logout')} on:click={logout} disabled={currentUlid === ulo.ulid} />
+		<input class="action warn" type="button" value={$_('iori.ulo.logout')} on:click={logout} disabled={chosen} />
 		<Box level="debug">
 			<code>{JSON.stringify(ulo)}</code>
 		</Box>
 	{/if}
-	<input class="action ok" type="button" value={$_('iori.ulo.choose')} on:click={() => dispatch('choose')} disabled={currentUlid === ulo.ulid} />
+	<input class="action ok" type="button" value={$_('iori.ulo.choose')} on:click={() => dispatch('choose')} disabled={chosen} />
 	<BoxError msg={err ? err.toString() : null} passive />
 </div>
 
@@ -67,6 +67,7 @@
 	.ulo {
 		display: flex;
 		align-items: center;
+		padding: 8px;
 	}
 
 	.user {

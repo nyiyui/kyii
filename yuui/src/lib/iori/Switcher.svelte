@@ -36,6 +36,7 @@
 		}
 		await reload();
 		dispatch( 'choose', { ulid } );
+		// TODO: reload everything ulo related → use store?
 	}
 
 	let ulos: Array<[UUID, ULO]>;

@@ -32,6 +32,10 @@
 		display: flex;
 	}
 
+	.user .non-img {
+		padding-left: 8px;
+	}
+
 	.non-img {
 		display: flex;
 		flex-direction: column;

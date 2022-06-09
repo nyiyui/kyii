@@ -126,6 +126,13 @@ input[type="button"].neutral, .button.neutral {
 	flex-direction: column;
 }
 
+.outline {
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 8px;
+	border-color: var(--color-2);
+}
+
 .panel {
 	border-style: solid;
 	border-width: 1px;
