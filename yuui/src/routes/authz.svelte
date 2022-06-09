@@ -1,6 +1,6 @@
 <script lang="ts" type="module">
 	import { page } from '$app/stores';
-	import { client } from "../lib/api2";
+	import { client } from "$lib/api2";
 	import { browser } from "$app/env";
 	import Box from "$lib/Box.svelte";
 	import type { Grant } from '$lib/api2';

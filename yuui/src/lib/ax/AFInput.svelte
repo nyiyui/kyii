@@ -3,8 +3,8 @@
 	import qrCode from 'qrcode';
 	import { newUrl } from '$lib/otp';
 	import Icon from '@iconify/svelte';
-	import AF from '$lib/AF.svelte';
-	import AFChallenge from '$lib/AFChallenge.svelte';
+	import AF from '$lib/ax/AF.svelte';
+	import AFChallenge from '$lib/ax/AFChallenge.svelte';
 	import type { AfInput } from '$lib/api2';
 	import { client, Af, encodeBase64, decodeBase64 } from '$lib/api2';
 	import { AttemptResultStatus } from '$lib/util';
@@ -318,7 +318,7 @@
 				<Box level="debug">
 					TAFID: <code>{tafid}</code>
 				</Box>
-				<AFChallenge af={new Af({ ...af, uuid: tafid })} bind:attempt={attempt} callback={callback} result={result} tafid={tafid} />
+				<AFChallenge af={new Af({ ...af, uuid: tafid })} bind:attempt={attempt} callback={callback} result={result} />
 			</div>
 			{#if feedback}
 				<div class="feedback">

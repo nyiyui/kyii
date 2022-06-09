@@ -1,5 +1,5 @@
 <script lang="ts" type="module">
-	import Box from '../lib/Box.svelte';
+	import Box from '$lib/Box.svelte';
 
 	export let msg: string | null;
 	export let passive = false;

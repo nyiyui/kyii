@@ -2,12 +2,12 @@
 	import { _ } from 'svelte-i18n'
 	import { client } from "$lib/api2";
 	import type { ApInput, AfInput } from "$lib/api2";
-	import AFInput from '../lib/AFInput.svelte';
-	import APInput from '../lib/APInput.svelte';
+	import AFInput from '$lib/ax/AFInput.svelte';
+	import APInput from '$lib/ax/APInput.svelte';
 	import { onMount } from 'svelte';
-	import Loading from '../lib/Loading.svelte';
-	import Box from '../lib/Box.svelte';
-	import BoxError from '../lib/BoxError.svelte';
+	import Loading from '$lib/Loading.svelte';
+	import Box from '$lib/Box.svelte';
+	import BoxError from '$lib/BoxError.svelte';
 
 	let aps = new Array<ApInput>();
 	let delAps = new Array<string>();

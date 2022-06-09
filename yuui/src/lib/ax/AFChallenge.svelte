@@ -1,7 +1,7 @@
 <script lang="ts" type="module">
 	import { _ } from 'svelte-i18n';
 	import Icon from '@iconify/svelte';
-	import AF from '$lib/AF.svelte';
+	import AF from '$lib/ax/AF.svelte';
 	import Box from '$lib/Box.svelte';
 	import BoxError from '$lib/BoxError.svelte';
 	import type { Af } from '$lib/api2';
@@ -9,7 +9,6 @@
 	import { client } from '$lib/api2';
 
 	export let af: Af;
-	export let tafid;
 	export let attempt: string;
 	export let callback: (afid: string, attempt: string) => Promise<any>;
 	export let result: { status: AttemptResultStatus, msg?: string, feedback?: string };

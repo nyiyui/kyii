@@ -3,9 +3,9 @@
 	import { _ } from 'svelte-i18n';
 	import { page } from '$app/stores';
 	import { getNext } from '$lib/util';
-	import { Ap, Af, client } from "../lib/api2";
+	import { Ap, Af, client } from "$lib/api2";
 	import Icon from '@iconify/svelte';
-	import AFChallenge from '../lib/AFChallenge.svelte';
+	import AFChallenge from '$lib/ax/AFChallenge.svelte';
 	import { AttemptResultStatus } from '$lib/util';
 	import { browser } from "$app/env";
 

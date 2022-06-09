@@ -4,7 +4,7 @@
 	import { client } from "$lib/api2";
 	import type { Id } from "$lib/api2";
 	import Icon from '@iconify/svelte';
-	import BoxError from '../lib/BoxError.svelte';
+	import BoxError from '$lib/BoxError.svelte';
 	import { debugMode } from '$lib/store';
 	import { onMount } from 'svelte';
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte';

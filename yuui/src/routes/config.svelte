@@ -3,10 +3,10 @@
 	import Autosaved from '$lib/Autosaved.svelte';
 	import { client } from "$lib/api2";
 	import { debugMode } from "$lib/store";
-	import Box from '../lib/Box.svelte';
+	import Box from '$lib/Box.svelte';
   import { Tabs, Tab, TabList, TabPanel } from 'svelte-tabs';
-	import IdInput from '$lib/IdInput.svelte';
-	import AxInput from '$lib/AxInput.svelte';
+	import IdInput from '$lib/id/IdInput.svelte';
+	import AxInput from '$lib/ax/AxInput.svelte';
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
 	import { browser } from "$app/env";
 
