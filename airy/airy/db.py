@@ -181,10 +181,14 @@ class UserLogin(db.Model):
     def revoke(self, reason: str) -> None:
         self.token_hash = None
         self.end = datetime.utcnow()
-        self.end_reason = reason
+        self.reason_end = reason
 
     def see(self):
         self.last = datetime.utcnow()
+
+    @property
+    def revoked(self):
+        return self.end is not None
 
     @property
     def for_api_v1_trusted(self):
@@ -201,6 +205,24 @@ class UserLogin(db.Model):
             start=self.start.timestamp(),
             last=self.last.timestamp() if self.last else None,
             end=self.end.timestamp() if self.end else None,
+        )
+
+    @property
+    def for_api_v2_trusted(self):
+        return dict(
+            uuid=self.id,
+            name=self.name,
+            extra=self.extra,
+            against=dict(
+                name=self.against.name,
+                uuid=self.against_id,
+            )
+            if self.against is not None
+            else None,
+            start=self.start.timestamp(),
+            last=self.last.timestamp() if self.last else None,
+            end=self.end.timestamp() if self.end else None,
+            reason=self.reason_end,
         )
 
 
@@ -224,6 +246,13 @@ class AP(db.Model):
         backref=db.backref("req_by", lazy=True),
         # foreign_keys=[ap_reqs.c.ap_id],
     )
+
+    def afs(self, user_id):
+        return (
+            AF.query.filter_by(user_id=user_id, gen_done=True)
+            .join(ap_reqs)
+            .filter_by(ap_id=self.id)
+        )
 
     @property
     def for_api_v1_trusted(self):
@@ -273,7 +302,6 @@ class AF(db.Model):
         return feedback
 
     def verify(self, attempt: str) -> Tuple[Optional[dict], bool]:
-        print(self, self.params, self.state)
         from . import verifiers
         self.params, self.state, feedback, done = verifiers.verify(
             self.verifier, attempt, self.params, self.state

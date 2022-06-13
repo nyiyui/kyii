@@ -1,14 +1,14 @@
 <script lang="ts" type="module">
-	import Box from '$lib/Box.svelte';
-	import Switcher from '$lib/iori/Switcher.svelte';
-	import { browser } from "$app/env";
-	import { page } from '$app/stores';
-	import { getNext } from '$lib/util';
+	import Box from '$lib/Box.svelte'
+	import Switcher from '$lib/iori/Switcher.svelte'
+	import { browser } from '$app/env'
+	import { page } from '$app/stores'
+	import { getNext } from '$lib/util'
 
-	let next;
+	let next
 
 	if (browser) {
-		next = getNext($page.url.searchParams);
+		next = getNext($page.url.searchParams)
 	}
 </script>
 

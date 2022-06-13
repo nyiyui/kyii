@@ -1,30 +1,32 @@
 <script lang="ts" type="module">
+	import { _ } from 'svelte-i18n'
 	import { time } from 'svelte-i18n'
-	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
-	import { client } from '$lib/api2';
-	import type { UserLogin } from '$lib/api2';
-	export let ul: UserLogin;
-	export let deleteCallback: () => void;
-	let unsavedChanges = false;
+	import UnsavedChanges from '$lib/UnsavedChanges.svelte'
+	import { client } from '$lib/api2'
+	import type { UserLogin } from '$lib/api2'
+	export let ul: UserLogin
+	export let deleteCallback: () => void
+	let unsavedChanges = false
+	let newName: string | null = ul.name || null
 
 	async function revoke() {
-		await client.revokeUl(ul.uuid);
-		console.log(`revoke UL ${ul.uuid}`);
+		await client.revokeUl(ul.uuid)
+		console.log(`revoke UL ${ul.uuid}`)
 	}
 
 	async function delete_() {
-		await client.deleteUl(ul.uuid);
-		console.log(`delete UL ${ul.uuid}; callback`);
-		deleteCallback();
+		await client.deleteUl(ul.uuid)
+		console.log(`delete UL ${ul.uuid}; callback`)
+		deleteCallback()
 	}
 
 	async function updateName() {
-		await client.editUl(ul.uuid, ul.name);
-		console.log(`edit UL ${ul.uuid}`);
-		unsavedChanges = false;
+		await client.editUl(ul.uuid, newName)
+		console.log(`edit UL ${ul.uuid}`)
+		unsavedChanges = false
 	}
 
-	const timeOpts: IntlFormatterOptions<DateTimeFormatOptions> = {
+	const timeOpts = {
 		weekday: 'long',
 		month: 'long',
 		day: 'numeric',
@@ -32,14 +34,23 @@
 		hour: 'numeric',
 		minute: 'numeric',
 		second: 'numeric',
-		timeZoneName: 'short',
-	};
+		timeZoneName: 'short'
+	}
+
+	let nameSpan: HTMLSpanElement
+
+	$: unsavedChanges = (ul.name || '') !== newName
 </script>
 
 <section class="ul panel flex flex-column">
 	<div class="meta flex flex-row">
 		<h2>
-			<span contenteditable="true" bind:textContent={ul.name}></span>
+			<span contenteditable="true" bind:textContent={newName} bind:this={nameSpan} />
+			{#if !newName}
+				<em on:click={nameSpan.focus()}>
+					{$_('untitled')}
+				</em>
+			{/if}
 			{#if unsavedChanges}
 				<UnsavedChanges />
 			{/if}
@@ -63,21 +74,24 @@
 	<div class="content">
 		<div class="etc">
 			<h3>Etc</h3>
-			UUID: <code>{ul.uuid}</code><br/>
-			Remote: {ul.extra.remote}<br/>
+			UUID:<code>{ul.uuid}</code><br />
+			Remote: {ul.extra.remote}<br />
 			Against:
 			{#if ul.against}
 				<a href={`/config#${ul.against.uuid}`}>{ul.against.name}</a>
 			{:else}
 				<em>Nothing (initial session)</em>
 			{/if}
-			<br/>
-			Start: {$time(ul.start, timeOpts)}<br/>
+			<br />
+			Start: {$time(ul.start * 1000, timeOpts)}<br />
 			{#if ul.last !== null}
-			Last Seen: {$time(ul.last, timeOpts)}<br/>
+				Last Seen: {$time(ul.last * 1000, timeOpts)}<br />
 			{/if}
 			{#if ul.end !== null}
-			End: {$time(ul.end, timeOpts)}<br/>
+				End: {$time(ul.end * 1000, timeOpts)}<br />
+			{/if}
+			{#if ul.reason}
+				Reason of revocation: {$_(`ul.reason.${ul.reason}`, { default: ul.reason })}
 			{/if}
 		</div>
 		<div class="headers">

@@ -1,23 +1,23 @@
 <script lang="ts" type="module">
 	import { _ } from 'svelte-i18n'
-	import Autosaved from '$lib/Autosaved.svelte';
-	import { client } from "$lib/api2";
-	import { debugMode } from "$lib/store";
-	import Box from '$lib/Box.svelte';
-  import { Tabs, Tab, TabList, TabPanel } from 'svelte-tabs';
-	import IdInput from '$lib/id/IdInput.svelte';
-	import AxInput from '$lib/ax/AxInput.svelte';
-	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
-	import { browser } from "$app/env";
+	import Autosaved from '$lib/Autosaved.svelte'
+	import { client } from '$lib/api2'
+	import { debugMode } from '$lib/store'
+	import Box from '$lib/Box.svelte'
+	import { Tabs, Tab, TabList, TabPanel } from 'svelte-tabs'
+	import IdInput from '$lib/id/IdInput.svelte'
+	import AxInput from '$lib/ax/AxInput.svelte'
+	import UnsavedChanges from '$lib/UnsavedChanges.svelte'
+	import { browser } from '$app/env'
 
-	let loggedIn: boolean | null = null;
-	let axUC = false;
-	let idUC = false;
-	let commit = import.meta.env.VITE_BUILD_COMMIT as string;
+	let loggedIn: boolean | null = null
+	let axUC = false
+	let idUC = false
+	let commit = import.meta.env.VITE_BUILD_COMMIT as string
 
-	(async () => {
+	;(async () => {
 		if (browser) {
-			loggedIn = await client.loggedIn();
+			loggedIn = await client.loggedIn()
 		}
 	})()
 </script>
@@ -29,8 +29,12 @@
 <main>
 	<Tabs>
 		<TabList>
-			<Tab>{$_('config.id.title')}{#if idUC}<UnsavedChanges />{/if}</Tab>
-			<Tab>{$_('config.ax.title')}{#if axUC}<UnsavedChanges />{/if}</Tab>
+			<Tab
+				>{$_('config.id.title')}{#if idUC}<UnsavedChanges />{/if}</Tab
+			>
+			<Tab
+				>{$_('config.ax.title')}{#if axUC}<UnsavedChanges />{/if}</Tab
+			>
 			<Tab>{$_('config.client.title')} <Autosaved /></Tab>
 		</TabList>
 		<TabPanel>
@@ -62,7 +66,7 @@
 				{$_('config.client.api_base_url')}
 				<input type="url" value={client.baseUrl.toString()} disabled />
 			</label>
-			<br/>
+			<br />
 			<label>
 				{$_('config.client.lang.title')}
 				<input type="text" value={$_('config.client.lang.current')} disabled />
@@ -90,11 +94,19 @@
 
 <style>
 	@media (prefers-color-scheme: dark) {
-		.light { display: none; }
-		.dark { display: initial; }
+		.light {
+			display: none;
+		}
+		.dark {
+			display: initial;
+		}
 	}
 	@media (prefers-color-scheme: light) {
-		.light { display: initial; }
-		.dark { display: none; }
+		.light {
+			display: initial;
+		}
+		.dark {
+			display: none;
+		}
 	}
 </style>

@@ -2,9 +2,8 @@
 </script>
 
 <div>
-	<div class="tabs">
-	</div>
+	<div class="tabs" />
 	<div class="content">
-		<svelte:component this={current}/>
+		<svelte:component this={current} />
 	</div>
 </div>

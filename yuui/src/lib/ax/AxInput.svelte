@@ -1,129 +1,139 @@
 <script lang="ts" type="module">
 	import { _ } from 'svelte-i18n'
-	import { client } from "$lib/api2";
-	import type { ApInput, AfInput } from "$lib/api2";
-	import AFInput from '$lib/ax/AFInput.svelte';
-	import APInput from '$lib/ax/APInput.svelte';
-	import { onMount } from 'svelte';
-	import Loading from '$lib/Loading.svelte';
-	import Box from '$lib/Box.svelte';
-	import BoxError from '$lib/BoxError.svelte';
+	import { client } from '$lib/api2'
+	import type { ApInput, AfInput } from '$lib/api2'
+	import AFInput from '$lib/ax/AFInput.svelte'
+	import APInput from '$lib/ax/APInput.svelte'
+	import { onMount } from 'svelte'
+	import Loading from '$lib/Loading.svelte'
+	import Box from '$lib/Box.svelte'
+	import BoxError from '$lib/BoxError.svelte'
 
-	let aps = new Array<ApInput>();
-	let delAps = new Array<string>();
-	let preparedAx;
-	let warnings: Array<any>;
+	let aps = new Array<ApInput>()
+	let delAps = new Array<string>()
+	let preparedAx
+	let warnings: Array<any>
 
 	function newAp() {
-		aps.push({uuid: '', name: '', reqs: []});
-		aps = aps;
+		aps.push({ uuid: '', name: 'New AP', reqs: [] })
+		aps = aps
 	}
 
 	function delAp(i: number) {
-		const ap = aps[i];
+		const ap = aps[i]
 		if (ap.uuid !== '') {
-			delAps.push(ap.uuid);
+			delAps.push(ap.uuid)
 		}
-		aps.splice(i, 1);
-		aps = aps;
+		aps.splice(i, 1)
+		aps = aps
 	}
 
-	let tafids = {};
-	let afs = new Array<AfInput>();
-	let regens = new Map<number, boolean>();
-	let delAfs = new Array<string>();
-	export let unsavedChanges = false;
-	let submitAxError: string;
+	let tafids = {}
+	let afs = new Array<AfInput>()
+	let regens = new Map<number, boolean>()
+	let delAfs = new Array<string>()
+	export let unsavedChanges = false
+	let submitAxError: string
 
 	$: {
-		aps;
-		afs;
-		unsavedChanges = true;
+		aps
+		afs
+		unsavedChanges = true
 	}
 
 	function newAf() {
-		afs.push({uuid: '', name: "New AF", verifier: null, params: {}});
-		afs = afs;
+		afs.push({ uuid: '', name: 'New AF', verifier: null, params: {} })
+		afs = afs
 	}
 
 	function delAf(n: number, uuid: string) {
-		console.log('delAf', n, uuid);
+		console.log('delAf', n, uuid)
 		if (uuid !== '') {
-			delAfs.push(uuid);
-			delAfs = delAfs;
+			delAfs.push(uuid)
+			delAfs = delAfs
 		}
-		console.log('delAf2', afs);
-		afs.splice(n, 1);
-		afs = afs;
+		console.log('delAf2', afs)
+		afs.splice(n, 1)
+		afs = afs
 	}
 
 	$: {
-		afs;
-		console.log('afs reload');
+		afs
+		console.log('afs reload')
 	}
 
 	function reload() {
-		console.log('afs explicit reload');
-		afs = afs;
+		console.log('afs explicit reload')
+		afs = afs
 	}
 
 	$: {
-		console.log('prepare', aps);
+		console.log('prepare', aps)
 		preparedAx = {
 			aps,
+			afs: afs.map((af) => ({ uuid: af.uuid, name: af.name })),
 			del_aps: delAps,
 			del_afs: delAfs.concat(
-				Array.from(regens.entries()).filter(([_, regen]) => regen).map(([n, _]) => tafids[n])
-			),
-		};
+				Array.from(regens.entries())
+					.filter(([_, regen]) => regen)
+					.map(([n, _]) => tafids[n])
+			)
+		}
 	}
 
 	async function submitAx() {
 		try {
-			const data = await client.submitAx(preparedAx);
-			warnings = data.warnings || [];
-			submitAxError = '';
-			unsavedChanges = false;
-		} catch(e) {
-			submitAxError = e.toString();
+			const data = await client.submitAx(preparedAx)
+			warnings = data.warnings || []
+			submitAxError = ''
+			unsavedChanges = false
+		} catch (e) {
+			submitAxError = e.toString()
 		}
 	}
 
 	onMount(async () => {
-		await client.clearTafs();
-		const ax = await client.getAx();
-		console.log('getAx2', ax.aps);
-		({ aps, afs } = ax);
-		tafids = {};
-		regens = new Map();
+		await client.clearTafs()
+		const ax = await client.getAx()
+		console.log('getAx2', ax.aps)
+		;({ aps, afs } = ax)
+		tafids = {}
+		regens = new Map()
 		Array.from(afs.entries()).forEach(([n, af]) => {
-			tafids[n] = af.uuid;
-			regens[n] = false;
-		});
-	});
+			tafids[n] = af.uuid
+			regens[n] = false
+		})
+	})
 </script>
 
 <div class="ax-input">
 	<div class="flex">
-		<div class="flex-in">
+		<div class="padded flex-in">
 			<h2>{$_('login.aps')}</h2>
 			{#if aps}
 				<input class="new" type="button" on:click={newAp} value={$_('config.new')} />
 				{#each Array.from(aps.entries()) as [i, ap]}
-					<APInput bind:ap={ap} {afs} afids={tafids} on:delete={() => delAp(i)} />
+					<APInput bind:ap {afs} afids={tafids} on:delete={() => delAp(i)} />
 				{/each}
 			{:else}
 				<Loading />
 			{/if}
 		</div>
-		<div class="flex-in">
+		<div class="padded flex-in">
 			<h2>{$_('login.afs')}</h2>
 			<Box level="debug">{JSON.stringify(afs)}</Box>
 			{#if afs}
 				<input class="new" type="button" on:click={newAf} value={$_('config.new')} />
 				{#each [...afs.entries()] as [n, af]}
 					<div class="ax-input">
-						<AFInput {n} bind:af={af} bind:tafid={tafids[n]} bind:regen={regens[n]} on:reload={reload} on:delete={() => delAf(n, af.uuid)} />
+						<AFInput
+							{n}
+							bind:af
+							bind:tafid={tafids[n]}
+							bind:regen={regens[n]}
+							on:reload={reload}
+							on:delete={() => delAf(n, af.uuid)}
+						/>
 					</div>
 				{/each}
 			{:else}

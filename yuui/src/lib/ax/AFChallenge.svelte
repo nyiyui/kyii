@@ -1,23 +1,23 @@
 <script lang="ts" type="module">
-	import { _ } from 'svelte-i18n';
-	import Icon from '@iconify/svelte';
-	import AF from '$lib/ax/AF.svelte';
-	import Box from '$lib/Box.svelte';
-	import BoxError from '$lib/BoxError.svelte';
-	import type { Af } from '$lib/api2';
-	import { AttemptResultStatus } from '$lib/util';
-	import { client } from '$lib/api2';
+	import { _ } from 'svelte-i18n'
+	import Icon from '@iconify/svelte'
+	import AF from '$lib/ax/AF.svelte'
+	import Box from '$lib/Box.svelte'
+	import BoxError from '$lib/BoxError.svelte'
+	import type { Af } from '$lib/api2'
+	import { AttemptResultStatus } from '$lib/util'
+	import { client } from '$lib/api2'
 
-	export let af: Af;
-	export let attempt: string;
-	export let callback: (afid: string, attempt: string) => Promise<any>;
-	export let result: { status: AttemptResultStatus, msg?: string, feedback?: string };
+	export let af: Af
+	export let attempt: string
+	export let callback: (afid: string, attempt: string) => Promise<any>
+	export let result: { status: AttemptResultStatus; msg?: string; feedback?: string }
 
 	async function webauthnSubmit() {
-		const feedback = await callback(af.uuid, JSON.stringify({ state: '1_generate' }));
-		const assertion = await navigator.credentials.get(feedback);
-		console.log('webauthn assertion', assertion);
-		await callback(af.uuid, JSON.stringify({ state: '2_verify', assertion }));
+		const feedback = await callback(af.uuid, JSON.stringify({ state: '1_generate' }))
+		const assertion = await navigator.credentials.get(feedback)
+		console.log('webauthn assertion', assertion)
+		await callback(af.uuid, JSON.stringify({ state: '2_verify', assertion }))
 	}
 </script>
 
@@ -32,22 +32,27 @@
 	</div>
 	<div class="right">
 		<div class="challenge">
-			{#if af.verifier === "pw"}
+			{#if af.verifier === 'pw'}
 				<label id={af.uuid} class="af">
 					{$_('af.pw.pw')}
 					<input type="password" bind:value={attempt} autocomplete="current-password" />
 				</label>
-				<input type="button" value="{$_('af.submit')}" disabled={!attempt} on:click={() => callback(af.uuid, attempt)} />
-			{:else if af.verifier === "otp_totp"}
+				<input
+					type="button"
+					value={$_('af.submit')}
+					disabled={!attempt}
+					on:click={() => callback(af.uuid, attempt)}
+				/>
+			{:else if af.verifier === 'otp_totp'}
 				<label id={af.uuid} class="af">
 					{$_('af.otp_totp.label')}
 					<input type="password" bind:value={attempt} autocomplete="one-time-code" />
 				</label>
 				<input type="button" value={$_('af.submit')} on:click={() => callback(af.uuid, attempt)} />
-			{:else if af.verifier === "limited"}
+			{:else if af.verifier === 'limited'}
 				<input type="button" value={$_('af.submit')} on:click={() => callback(af.uuid, attempt)} />
-			{:else if af.verifier === "webauthn"}
-				<input type="button" value="{$_('af.submit')}" on:click={() => callback(af.uuid, attempt)} />
+			{:else if af.verifier === 'webauthn'}
+				<input type="button" value={$_('af.submit')} on:click={() => callback(af.uuid, attempt)} />
 			{/if}
 		</div>
 		<div class="result">
@@ -73,7 +78,7 @@
 					Feedback: {JSON.stringify(result.feedback)}
 				</Box>
 				{#if result.feedback}
-					{#if af.verifier === "limited"}
+					{#if af.verifier === 'limited'}
 						Remaining: {result.feedback.remaining}
 					{/if}
 				{/if}
@@ -86,10 +91,10 @@
 	.af-challenge {
 		display: flex;
 	}
-	@media screen and ( max-width: 600px ) {    
-	  .af-challenge {    
-	    flex-direction: column;    
-	  }    
+	@media screen and (max-width: 600px) {
+		.af-challenge {
+			flex-direction: column;
+		}
 	}
 	.af-challenge > div {
 		flex: 50%;

@@ -41,7 +41,8 @@ a {
 	color: var(--color-1);
 }
 
-input, fieldset {
+input,
+fieldset {
 	background-color: var(--color-bg);
 	color: var(--color-fg);
 	border-style: solid;
@@ -52,8 +53,8 @@ input, fieldset {
 	margin: 2px;
 }
 
-input[type="button"]:not([disabled]):hover,
-input[type="submit"]:not([disabled]):hover {
+input[type='button']:not([disabled]):hover,
+input[type='submit']:not([disabled]):hover {
 	border-width: 2px;
 	margin: 1px;
 }
@@ -89,7 +90,8 @@ input:disabled {
 	color: var(--color-debug);
 }
 
-input[type="button"].warn , .button.warn {
+input[type='button'].warn,
+.button.warn {
 	border-color: var(--color-warn);
 }
 
@@ -101,7 +103,9 @@ input[type="button"].warn , .button.warn {
 	border-color: var(--color-info);
 }
 
-input[type="button"].ok, .button.ok, .update {
+input[type='button'].ok,
+.button.ok,
+.update {
 	border-color: var(--color-ok);
 }
 
@@ -109,7 +113,8 @@ input[type="button"].ok, .button.ok, .update {
 	border-color: var(--color-neutral);
 }
 
-input[type="button"].neutral, .button.neutral {
+input[type='button'].neutral,
+.button.neutral {
 	border-color: var(--color-neutral);
 }
 
@@ -164,7 +169,7 @@ nav a:hover {
 	text-decoration: underline;
 }
 
-.svelte-tabs{
+.svelte-tabs {
 	border-bottom-color: var(--color-neutral) !important;
 }
 
@@ -178,7 +183,12 @@ nav a:hover {
 	color: var(--color-1) !important;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
 	margin-top: 8px;
 	margin-bottom: 8px;
 }
@@ -197,4 +207,8 @@ h1, h2, h3, h4, h5, h6 {
 	padding: 4px;
 	margin: 4px;
 	font-size: 14px;
+}
+
+.padded {
+	padding: 8px;
 }

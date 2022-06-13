@@ -1,7 +1,8 @@
 <script lang="ts" type="module">
-	import type { Client } from '$lib/api2';
+	import type { Client } from '$lib/api2'
 
-	export let client: Client;
+	export let client: Client
 </script>
 
-<a href={client.uri}>{client.name}</a> by <a href="/user?uid={client.user_id}"><code>{client.user_id}</code></a>
+<a href={client.uri}>{client.name}</a> by
+<a href="/user?uid={client.user_id}"><code>{client.user_id}</code></a>

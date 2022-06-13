@@ -1,10 +1,10 @@
 <script lang="ts" type="module">
-	import Box from "$lib/Box.svelte";
-	import BoxError from "$lib/BoxError.svelte";
-	import UnsavedChanges from "$lib/UnsavedChanges.svelte";
-	import Autosaved from "$lib/Autosaved.svelte";
-	import VerifiedChanges from "$lib/VerifiedChanges.svelte";
-	import EmailVerified from "$lib/EmailVerified.svelte";
+	import Box from '$lib/Box.svelte'
+	import BoxError from '$lib/BoxError.svelte'
+	import UnsavedChanges from '$lib/UnsavedChanges.svelte'
+	import Autosaved from '$lib/Autosaved.svelte'
+	import VerifiedChanges from '$lib/VerifiedChanges.svelte'
+	import EmailVerified from '$lib/EmailVerified.svelte'
 </script>
 
 <svelte:head>

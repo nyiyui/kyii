@@ -1,74 +1,66 @@
 <script lang="ts" type="module">
-	import { _ } from 'svelte-i18n';
-	import Box from '$lib/Box.svelte';
-	import Loading from '$lib/Loading.svelte';
-	import ULOView from '$lib/iori/ULO.svelte';
-	import { client, ulos as ulosStore } from '$lib/api2';
-	import type { UUID } from 'uuid';
-	import type { ULO } from '$lib/api2';
-	import { User } from '$lib/api2';
-	import { UnauthenticatedError } from '$lib/api2';
-	import { get } from 'svelte/store';
-	import { createEventDispatcher } from 'svelte';
+	import { _ } from 'svelte-i18n'
+	import Box from '$lib/Box.svelte'
+	import Loading from '$lib/Loading.svelte'
+	import ULOView from '$lib/iori/ULO.svelte'
+	import { client, ulos as ulosStore, currentUlid } from '$lib/api2'
+	import type { UUID } from 'uuid'
+	import type { ULO } from '$lib/api2'
+	import { User } from '$lib/api2'
+	import { UnauthenticatedError } from '$lib/api2'
+	import { get } from 'svelte/store'
+	import { createEventDispatcher } from 'svelte'
 
-	export let anonymous = true;
+	export let anonymous = true
 
-	const dispatch = createEventDispatcher();
-
-	let currentUlid = client.currentUlid;
+	const dispatch = createEventDispatcher()
 
 	async function choose(ulid) {
 		if (ulid === null) {
-			client.uloReset();
-			currentUlid = null;
+			client.uloReset()
 		} else {
-			client.uloUse(ulid);
-			currentUlid = client.currentUlid;
+			client.uloUse(ulid)
 		}
 		try {
-			await client.loginSync();
+			await client.loginSync()
 		} catch (err) {
 			if (err instanceof UnauthenticatedError) {
-				synched = err;
+				synched = err
 			} else {
-				throw err;
+				throw err
 			}
 		}
-		await reload();
-		dispatch( 'choose', { ulid } );
-		// TODO: reload everything ulo related → use store?
+		await reload()
+		dispatch('choose', { ulid })
 	}
 
-	let ulos: Array<[UUID, ULO]>;
-	reload();
+	let ulos: Array<[UUID, ULO]>
+	reload()
 
 	async function reload() {
-		ulos = [...get(ulosStore).entries()];
+		ulos = [...get(ulosStore).entries()]
 		try {
-			synched = await client.synchedLogin();
+			synched = await client.synchedLogin()
 		} catch (err) {
 			if (err instanceof UnauthenticatedError) {
-				synched = err;
+				synched = err
 			} else {
-				throw err;
+				throw err
 			}
 		}
 	}
 
-	let synched: User | UnauthenticatedError;
+	let synched: User | UnauthenticatedError
 </script>
 
 <div class="switcher">
-	<Box level="debug">
-		{#if synched instanceof User}
-			Synched:
-			{synched.name}
-			(<code>{synched.slug}</code>)
-			(<code>{synched.uid}</code>)
-		{:else if synched === null}
+	<Box level="info">
+		{#if synched === null}
 			Not synched
 		{:else if synched === undefined}
 			<Loading />
+		{:else if 'uid' in synched}
+			{$_('iori.synched', { values: { synched } })}
 		{:else if synched instanceof Error}
 			<Box level="error">Error: {synched.message}</Box>
 		{/if}
@@ -76,12 +68,17 @@
 	{$_('iori.switcher.switch')}
 	{#each ulos as [_, ulo]}
 		<div class="ulo-view">
-			<ULOView {ulo} on:choose={() => choose(ulo.ulid)} on:reload={reload} currentUlid={currentUlid} />
+			<ULOView
+				{ulo}
+				on:choose={() => choose(ulo.ulid)}
+				on:reload={reload}
+				currentUlid={$currentUlid}
+			/>
 		</div>
 	{/each}
 	{#if anonymous}
 		<div class="ulo-view">
-			<ULOView ulo="anonymous" on:choose={() => choose(null)} currentUlid={currentUlid} />
+			<ULOView ulo="anonymous" on:choose={() => choose(null)} currentUlid={$currentUlid} />
 		</div>
 	{/if}
 	<div class="ulo-view">

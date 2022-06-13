@@ -1,5 +1,5 @@
 <script lang="ts" type="modue">
-	import { page } from '$app/stores';
+	import { page } from '$app/stores'
 	import { _ } from 'svelte-i18n'
 </script>
 

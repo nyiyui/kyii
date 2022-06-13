@@ -117,7 +117,6 @@ class TOTP(Verifier):
             digits=int(params["digits"]),
             interval=int(params["period"]),
         )
-        print(f"expected {totp.now()} got {attempt}")
         ok = totp.verify(attempt)
         if not ok:
             raise VerificationError("verify failed")

@@ -6,12 +6,8 @@
 </svelte:head>
 
 <main>
-	<p>
-		Do you want to verify the email below?    
-		(If you do not, just close this page.)    
-	</p>
-	<form>
-	</form>
+	<p>Do you want to verify the email below? (If you do not, just close this page.)</p>
+	<form />
 </main>
 <!--
         <form action="{{ url_for('api_v1.email_verify') }}" method="POST">    

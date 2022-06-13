@@ -1,100 +1,117 @@
 {
-  "loading": "Loading…",
-  "global_bar": {
-    "self": "Kyii Yuui",
-    "kiki": "Kiki"
-  },
-  "header": {
-    "home": "Kyii Yuui",
-    "about": "About",
-    "ui": "UI Test",
-    "loading": "Loading…",
-    "config": "Config",
-    "uls": "Sessions",
-    "grants": "Grants",
-    "login": "Login",
-    "signup": "Signup",
-    "iori": "Switch"
-  },
-  "config": {
-    "update": "Update",
-    "new": "New",
-    "delete": "Delete",
-    "id": {
-      "title": "Identity",
-      "img": {
-        "title": "Profile Picture",
-        "dropzone": "Drag here or click to select files.",
-        "preview": {
-          "title": "Preview"
-        }
-      }
-    },
-    "ax": {
-      "title": "Authentication",
-      "login_required": "<a href=\"/login\">Logging in</a> is required to configure authentication."
-    },
-    "client": {
-      "title": "Client-specific",
-      "help": "These settings are specific to this client and is not connected to any sessions.",
-      "etc": "Other Settings (that you can't set)",
-      "api_base_url": "Airy API base URL",
-      "debug_mode": "Debug mode",
-      "debug_mode_enabled": "Enabled",
-      "debug_mode_help": "This only shows data already available to Yuui (hidden if Debug Mode is off).",
-      "lang": {
-        "title": "Language",
-        "current": "English",
-        "help": "To change this, change your User Agent's language settings."
-      },
-      "cs": {
-        "title": "Colour Scheme",
-        "light": "Light",
-        "dark": "Dark",
-        "help": "To change this, change your User Agent's colour scheme settings."
-      },
-      "commit": {
-        "title": "Build Commit"
-      }
-    }
-  },
-  "login": {
-    "username": "Username",
-    "user_not_found": "User not found",
-    "aps": "Authentication Paths",
-    "afs": "Authentication Factors",
-    "logged_in": "Logged in",
-    "next": "Next",
-    "pending": "Pending"
-  },
-  "iori": {
-    "anonymous": "No session (same as logged out)",
-    "switcher": {
-      "switch": "Switch",
-      "or": "Or, <a href=\"/login?selfnext=/iori\">log in</a>."
-    },
-    "ulo": {
-      "choose": "Choose",
-      "logout": "Logout",
-      "delete": "Delete/Forget"
-    },
-    "user": {
-      "profile": "profile"
-    }
-  },
-  "af": {
-    "submit": "Submit",
-    "pw": {
-      "label": "Password",
-      "pw": "Password"
-    },
-    "otp_totp": {
-      "label": "TOTP",
-      "challenge": "Challenge"
-    }
-  },
-  "user": {
-    "no_uid": "Invalid page: no UID supplied",
-    "error": "Error: {error}"
-  }
+	"untitled": "Untitled",
+	"loading": "Loading…",
+	"global_bar": {
+		"self": "Kyii Yuui",
+		"kiki": "Kiki"
+	},
+	"header": {
+		"home": "Kyii Yuui",
+		"about": "About",
+		"ui": "UI Test",
+		"loading": "Loading…",
+		"config": "Config",
+		"uls": "Sessions",
+		"grants": "Grants",
+		"login": "Login",
+		"signup": "Signup",
+		"iori": "Switch"
+	},
+	"config": {
+		"update": "Update",
+		"new": "New",
+		"delete": "Delete",
+		"id": {
+			"title": "Identity",
+			"img": {
+				"title": "Profile Picture",
+				"dropzone": "Drag here or click to select files.",
+				"preview": {
+					"title": "Preview"
+				}
+			}
+		},
+		"ax": {
+			"title": "Authentication",
+			"login_required": "<a href=\"/login\">Logging in</a> is required to configure authentication."
+		},
+		"client": {
+			"title": "Client-specific",
+			"help": "These settings are specific to this client and is not connected to any sessions.",
+			"etc": "Other Settings (that you can't set)",
+			"api_base_url": "Airy API base URL",
+			"debug_mode": "Debug mode",
+			"debug_mode_enabled": "Enabled",
+			"debug_mode_help": "This only shows data already available to Yuui (hidden if Debug Mode is off).",
+			"lang": {
+				"title": "Language",
+				"current": "English",
+				"help": "To change this, change your User Agent's language settings."
+			},
+			"cs": {
+				"title": "Colour Scheme",
+				"light": "Light",
+				"dark": "Dark",
+				"help": "To change this, change your User Agent's colour scheme settings."
+			},
+			"commit": {
+				"title": "Build Commit"
+			}
+		}
+	},
+	"login": {
+		"username": "Username",
+		"user_not_found": "User not found",
+		"aps": "Authentication Paths",
+		"afs": "Authentication Factors",
+		"logged_in": "Logged in",
+		"next": "Next",
+		"pending": "Pending"
+	},
+	"iori": {
+		"anonymous": "No session (same as logged out)",
+		"switcher": {
+			"switch": "Switch",
+			"or": "Or, <a href=\"/login?selfnext=/iori\">log in</a>."
+		},
+		"ulo": {
+			"choose": "Choose",
+			"logout": "Logout",
+			"delete": "Delete/Forget"
+		},
+		"user": {
+			"profile": "profile"
+		},
+		"synched": "Synched to chosen session."
+	},
+	"af": {
+		"submit": "Submit",
+		"pw": {
+			"label": "Password",
+			"pw": "Password"
+		},
+		"otp_totp": {
+			"label": "TOTP",
+			"challenge": "Challenge"
+		},
+		"otp_totp": {
+			"label": "Counted Limit"
+		},
+		"webauthn": {
+			"label": "WebAuthn"
+		}
+	},
+	"user": {
+		"no_uid": "Invalid page: no UID supplied",
+		"error": "Error: {error}"
+	},
+	"ul": {
+		"reason": {
+			"revoke": "Manual revocation",
+			"logout": "Controller-side logout"
+		}
+	},
+	"grants": {
+		"count": "{count, plural, =0 {No grants} one {# grant} other {# grants}}."
+	}
 }

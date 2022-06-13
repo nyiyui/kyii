@@ -43,7 +43,6 @@ def req_perms(perms: Set[str], handler, cond=lambda: True):
             if cond():
                 ok, reason, missing = has_perms(perms)
                 if not ok:
-                    print(f"{reason} missing {missing}")
                     return handler(list(missing), reason)
             return f(*args, **kwargs)
 

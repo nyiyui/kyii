@@ -5,5 +5,4 @@
 	<title>Yuui</title>
 </svelte:head>
 
-<main>
-</main>
+<main />

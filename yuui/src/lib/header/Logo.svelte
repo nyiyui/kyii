@@ -1,6 +1,6 @@
 <script lang="ts" type="module">
 	import { _ } from 'svelte-i18n'
-	import logo from '../../../static/favicon.svg';
+	import logo from '../../../static/favicon.svg'
 </script>
 
 <a sveltekit:prefetch href="/">

@@ -1,87 +1,95 @@
 <script lang="ts" type="module">
 	import { _ } from 'svelte-i18n'
-  import Dropzone from "svelte-file-dropzone";
-	import { client } from "$lib/api2";
-	import type { Id } from "$lib/api2";
-	import Icon from '@iconify/svelte';
-	import BoxError from '$lib/BoxError.svelte';
-	import { debugMode } from '$lib/store';
-	import { onMount } from 'svelte';
-	import UnsavedChanges from '$lib/UnsavedChanges.svelte';
+	import Dropzone from 'svelte-file-dropzone'
+	import { client, ulos } from '$lib/api2'
+	import type { Id } from '$lib/api2'
+	import Icon from '@iconify/svelte'
+	import BoxError from '$lib/BoxError.svelte'
+	import { debugMode } from '$lib/store'
+	import { onMount } from 'svelte'
+	import UnsavedChanges from '$lib/UnsavedChanges.svelte'
 	//import EmailVerified from '$lib/EmailVerified.svelte';
 
-  let files = {
-    accepted: [],
-    rejected: []
-  };
-	let candFile: File | null = null;
-	let candFileObjectUrl: string | null = null;
+	let files = {
+		accepted: [],
+		rejected: []
+	}
+	let candFile: File | null = null
+	let candFileObjectUrl: string | null = null
 
-  function handleFilesSelect(e) {
-    const { acceptedFiles, fileRejections } = e.detail;
-    files.accepted = [...files.accepted, ...acceptedFiles];
-    files.rejected = [...files.rejected, ...fileRejections];
+	function handleFilesSelect(e) {
+		// TODO; remove old candFile (override candFile weith new selection)
+		const { acceptedFiles, fileRejections } = e.detail
+		files.accepted = [...files.accepted, ...acceptedFiles]
+		files.rejected = [...files.rejected, ...fileRejections]
 		if (files.accepted.length) {
-			candFile = files.accepted[0];
+			candFile = files.accepted[0]
 			if (candFileObjectUrl) {
-				URL.revokeObjectURL(candFileObjectUrl);
+				URL.revokeObjectURL(candFileObjectUrl)
 			}
-			candFileObjectUrl = URL.createObjectURL(candFile);
+			candFileObjectUrl = URL.createObjectURL(candFile)
 		}
-		console.log(files.accepted);
-		idUnsavedChanges = true;
-  }
+		console.log(files.accepted)
+		idUnsavedChanges = true
+	}
 
-	let initSlug: string;
-	let slug: string;
-	let slugTaken: boolean|null;
-	let name: string;
-	export let idUnsavedChanges = false;
+	let initSlug: string
+	let slug: string
+	let slugTaken: boolean | null
+	let name: string
+	export let idUnsavedChanges = false
 	//let gUnsavedChanges = false;
-	let submitIdError: string;
-	let submitIdLoading = false;
+	let submitIdError: string
+	let submitIdLoading = false
 	//let gErrors = new Map<string, string>();
 
-	let id: Id;
+	let id: Id
 
 	onMount(async () => {
 		try {
-			id = await client.getId();
-			({ slug, name } = id);
-			initSlug = slug;
-			slugFind();
+			id = await client.getId()
+			;({ slug, name } = id)
+			initSlug = slug
+			slugFind()
 		} catch (err) {
-			submitIdError = `アイデンティティの取得: ${err.toString()}`;
+			submitIdError = `アイデンティティの取得: ${err.toString()}`
 		}
-	});
+	})
 	async function slugFind() {
-		idUnsavedChanges = true;
+		idUnsavedChanges = true
 		if (slug == initSlug) {
-			slugTaken = null;
-			return;
+			slugTaken = null
+			return
 		}
-		slugTaken = (await client.userExists(slug)); // TODO: fix naming inconsistency
+		slugTaken = await client.userExists(slug) // TODO: fix naming inconsistency
 	}
 
 	async function submitId() {
-		submitIdLoading = true;
+		submitIdLoading = true
 		try {
 			await Promise.all([
 				client.submitId({ slug, name }),
 				(async () => {
 					if (candFile) {
-						await client.submitImg(candFile);
+						await client.submitImg(candFile)
 					}
-				})(),
-			]);
-			submitIdError = '';
-			idUnsavedChanges = false;
-			console.log('submitId done');
+				})()
+			])
+			submitIdError = ''
+			idUnsavedChanges = false
+			console.log('submitId done')
+			// NOTE: update ulos with data
+			$ulos.set(client.currentUlid, {
+				...$ulos.get(client.currentUlid),
+				slug,
+				name
+			})
+			$ulos = $ulos
 		} catch (e) {
-			console.error(`submitId: ${e}`);
-			submitIdError = e.toString();
+			console.error(`submitId: ${e}`)
+			submitIdError = e.toString()
 		}
-		submitIdLoading = false;
+		submitIdLoading = false
 	}
 
 	//async function submitGEmail(gid: string, email: string) {
@@ -109,80 +117,90 @@
 			<div class="img">
 				{$_('config.id.img.title')}
 				<div class="dropzone">
-					<Dropzone
-		 				on:drop={handleFilesSelect}
-		 				multiple={false}
-		 				accept="image/*"
-		 			>
-					{$_('config.id.img.dropzone')}
+					<Dropzone on:drop={handleFilesSelect} multiple={false} accept="image/*">
+						{$_('config.id.img.dropzone')}
 					</Dropzone>
 				</div>
 				{#if candFileObjectUrl}
 					<div class="preview">
-						{$_('config.id.img.preview.title')}<br/>
-						<img
-							alt={$_('iori.user.profile')}
-			 				class="user-img"
-							src={candFileObjectUrl}
-						/>
+						{$_('config.id.img.preview.title')}<br />
+						<img alt={$_('iori.user.profile')} class="user-img" src={candFileObjectUrl} />
 					</div>
 				{/if}
 			</div>
 			<label>
 				<span class="label">User ID</span>
-				<input type="text" value={id ? id.uid : ""} disabled />
+				<input type="text" value={id ? id.uid : ''} disabled />
 			</label>
 			<br />
 			<label>
 				<span class="label">Slug</span>
-				<input id="slug" type="text" autocomplete="username" bind:value={slug} on:input={slugFind} />
+				<input
+					id="slug"
+					type="text"
+					autocomplete="username"
+					bind:value={slug}
+					on:input={slugFind}
+				/>
 				<span class="status">
-				{#if slugTaken === true}
-					<Icon icon="mdi:alert" style="color: var(--color-error);" />
-					Taken
-				{:else if slug === ""}
-					<Icon icon="mdi:cancel" style="color: var(--color-error);" />
-					Cannot be blank
-				{:else if slugTaken === null}
-					<Icon icon="mdi:check" style="color: var(--color-info);" />
-					Current
-				{:else if slugTaken === false}
-					<Icon icon="mdi:check" style="color: var(--color-ok);" />
-					Available
-				{:else}
-					Loading
-				{/if}
+					{#if slugTaken === true}
+						<Icon icon="mdi:alert" style="color: var(--color-error);" />
+						Taken
+					{:else if slug === ''}
+						<Icon icon="mdi:cancel" style="color: var(--color-error);" />
+						Cannot be blank
+					{:else if slugTaken === null}
+						<Icon icon="mdi:check" style="color: var(--color-info);" />
+						Current
+					{:else if slugTaken === false}
+						<Icon icon="mdi:check" style="color: var(--color-ok);" />
+						Available
+					{:else}
+						Loading
+					{/if}
 				</span>
 			</label>
-			<br/>
+			<br />
 			<label>
 				<span class="label">Name</span>
-				<input id="name" type="name" autocomplete="name" bind:value={name} on:input={() => idUnsavedChanges = true} />
+				<input
+					id="name"
+					type="name"
+					autocomplete="name"
+					bind:value={name}
+					on:input={() => (idUnsavedChanges = true)}
+				/>
 				<span class="status">
-				{#if name === ""}
-					<Icon icon="mdi:cancel" style="color: var(--color-error);" />
-					Cannot be blank
-				{:else if name !== ""}
-					<Icon icon="mdi:check" style="color: var(--color-ok);" />
-				{:else}
-					Loading
-				{/if}
+					{#if name === ''}
+						<Icon icon="mdi:cancel" style="color: var(--color-error);" />
+						Cannot be blank
+					{:else if name !== ''}
+						<Icon icon="mdi:check" style="color: var(--color-ok);" />
+					{:else}
+						Loading
+					{/if}
 				</span>
 			</label>
-			<br/>
-			<input class="update" type="button" on:click={submitId} value={$_('config.update')} disabled={submitIdLoading} />
+			<br />
+			<input
+				class="update"
+				type="button"
+				on:click={submitId}
+				value={$_('config.update')}
+				disabled={submitIdLoading}
+			/>
 			<BoxError msg={submitIdError} />
 		</form>
 	</div>
 	{#if $debugMode}
-	<div class="flex-in">
-		<h2>Groups</h2>
-		{#if id}
-			{#each id.groups as group}
-				<div class="group">
-					{group.name}
-					(<code>{group.slug}</code>)
-					<!--
+		<div class="flex-in">
+			<h2>Groups</h2>
+			{#if id}
+				{#each id.groups as group}
+					<div class="group">
+						{group.name}
+						(<code>{group.slug}</code>)
+						<!--
 					{#if group.email}
 						<a href="mailto:{group.email}">
 							{group.email}
@@ -208,46 +226,47 @@
 						<BoxError msg={gErrors[group.id]} />
 					{/if}
 					-->
-					<details>
-						<summary>{group.perms.length} perm(s)</summary>
+						<details>
+							<summary>{group.perms.length} perm(s)</summary>
+							<ul>
+								{#each group.perms as perm}
+									<li>
+										<code>{perm}</code>
+									</li>
+								{/each}
+							</ul>
+						</details>
+					</div>
+				{/each}
+			{/if}
+		</div>
+		<div class="flex-in">
+			<h2>Perms</h2>
+			{#if id}
+				<div class="flex">
+					<div class="flex-in">
+						<h4>Your</h4>
 						<ul>
-							{#each group.perms as perm}
+							{#each id.perms as perm}
 								<li>
 									<code>{perm}</code>
 								</li>
 							{/each}
-					</details>
+						</ul>
+					</div>
+					<div class="flex-in">
+						<h4>Default</h4>
+						<ul>
+							{#each id.default_perms as perm}
+								<li>
+									<code>{perm}</code>
+								</li>
+							{/each}
+						</ul>
+					</div>
 				</div>
-			{/each}
-		{/if}
-	</div>
-	<div class="flex-in">
-		<h2>Perms</h2>
-		{#if id}
-			<div class="flex">
-				<div class="flex-in">
-					<h4>Your</h4>
-					<ul>
-						{#each id.perms as perm}
-							<li>
-								<code>{perm}</code>
-							</li>
-						{/each}
-					</ul>
-				</div>
-				<div class="flex-in">
-					<h4>Default</h4>
-					<ul>
-						{#each id.default_perms as perm}
-							<li>
-								<code>{perm}</code>
-							</li>
-						{/each}
-					</ul>
-				</div>
-			</div>
-		{/if}
-	</div>
+			{/if}
+		</div>
 	{/if}
 </div>
 

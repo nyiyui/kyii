@@ -60,7 +60,6 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if current_ul.is_authenticated:
-            print("authenticated")
             return f(*args, **kwargs)
         else:
             return current_app.ul_manager.unauthenticated()
@@ -122,7 +121,6 @@ class ULManager:
         return UserLogin.query.filter_by(token=token).first()
 
     def _load_ul(self):
-        ul = None
         token = request.headers.get(TOKEN_HEADER)
         if token is not None:
             ulid, token_secret = token.split(":", 1)
@@ -130,9 +128,13 @@ class ULManager:
             try:
                 ul = UserLogin.query.filter_by(id=ulid).one()
             except NoResultFound:
-                abort(self.unauthenticateunauthenticateunauthenticated())
+                abort(self.unauthenticated())
+                return
             if ul.verify_token(token_secret):
+                if ul.revoked:
+                    abort(self.unauthenticated())
+                    return
                 _request_ctx_stack.top.airy_ul = ul
-        else:
-            ul = AnonymousUserLogin()
+                return
+        ul = AnonymousUserLogin()
         _request_ctx_stack.top.airy_ul = ul

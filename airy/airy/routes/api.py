@@ -288,7 +288,6 @@ V1_CONFIG_ID_SCHEMA = {  # TODO: move this to separate file?
 
 def dbify_taf(tafid: UUID, user=current_user) -> None:
     data = session[f"taf-{tafid}"]
-    print(data, tafid)
     af = AF()
     af.user = user
     af.name = data["name"]
@@ -302,7 +301,6 @@ def dbify_ap(data: dict, user=current_user) -> UUID:
         ap = AP.query.filter_by(id=data["uuid"], user=user).one()
     else:
         ap = AP(user=user)
-    print(data)
     ap.name = data["name"]
     ap.reqs = list(
         map(lambda afid: AF.query.filter_by(id=afid, user=user).one(), data["taf_reqs"])
@@ -425,7 +423,6 @@ def api_config_ax_taf_set():
     jsonschema.validate(data, V1_CONFIG_AX_TAF_SET)
     name, verifier, gen_params = data["name"], data["verifier"], data["gen_params"]
     params, feedback = AF.gen_params(verifier, gen_params)
-    print("taf/set", data)
     tafid = data["tafid"]
     session["tafs"] = session.get("tafs", set())
     session["tafs"].add(tafid)
@@ -445,7 +442,6 @@ def api_config_ax_taf_set():
 def api_config_ax_taf_attempt():
     tafid = str(UUID(request.form["tafid"]))
     attempt = request.form["attempt"]
-    print("taf/attempt", request.form)
     key = f"taf-{tafid}"
     if key not in session:
         return jsonify(dict(type="taf_nonexistent"))

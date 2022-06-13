@@ -49,10 +49,12 @@ class Config:
     SQLALCHEMY_DATABASE_URI = "sqlite:///test.db"
 
     AIRY_ANONYMOUS_PERMS = {
+        "api_v2.signup",
         "api_v1.signup",
         "api_v2.user.img",
     }
     AIRY_DEFAULT_PERMS = AIRY_ANONYMOUS_PERMS | {
+        "api_v2.user.lookup",
         "api_v2.config.id",
         "api_v2.oauth.grants",
         "api_v2.config.ax",

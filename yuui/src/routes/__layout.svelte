@@ -1,40 +1,36 @@
-<script lang="ts">
-  import { waitLocale } from 'svelte-i18n'
+<script lang="ts" context="module">
+	import GlobalBar from '$lib/header/GlobalBar.svelte'
+	import Header from '$lib/header/Header.svelte'
+	import '../app.css'
+</script>
 
-  export async function preload() {
-    return waitLocale()
-  }
+<script lang="ts">
+	import { waitLocale } from 'svelte-i18n'
+
+	export async function preload() {
+		return waitLocale()
+	}
 
 	import { isLoading } from 'svelte-i18n'
 
-	import { start } from '../i18n';
+	import { start } from '../i18n'
 
-	start();
-</script>
-
-<script lang="ts" context="module">
-	import GlobalBar from '$lib/header/GlobalBar.svelte';
-	import Header from '$lib/header/Header.svelte';
-	import '../app.css';
+	start()
 </script>
 
 {#if $isLoading}
-	<p>
-		Loading…
-		読込中…
-	</p>
+	<p>Loading… 読込中…</p>
 {:else}
 	<header>
 		<GlobalBar />
 		<Header />
 	</header>
-	
+
 	<main>
 		<slot />
 	</main>
-	
-	<footer>
-	</footer>
+
+	<footer />
 {/if}
 
 <style>

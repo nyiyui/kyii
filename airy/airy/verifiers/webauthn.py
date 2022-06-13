@@ -58,7 +58,6 @@ def gen(gen_params: dict, state: dict):
 def verify(attempt: str, params: dict, state: dict) -> Tuple[dict, Optional[dict]]:
     args = json.loads(attempt)
     vr = json.loads(params['vr'])
-    print('vr', vr)
     if args["state"] == "1_generate":
         ao = generate_authentication_options(
             rp_id=current_app.config["VERIFIER_WEBAUTHN"]["rp_id"],

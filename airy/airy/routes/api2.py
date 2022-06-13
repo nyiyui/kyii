@@ -136,10 +136,8 @@ def api_login_sync():
             )
         )
     elif request.method == "POST":
-        print("user2", session)
         login_ul(current_ul, remember=True)
         session.modified = True
-        print("user2", session)
         return make_resp()
 
 
@@ -187,7 +185,6 @@ def login_start():
     session[API_V1_UID] = u.id
     session[API_V1_APID] = None
     session[API_V1_SOLVED] = set()
-    print(f"start with {u.id}")
     aps = AP.query.filter_by(user=u)
     return make_resp(
         data=dict(
@@ -206,11 +203,7 @@ def login_choose():
         return make_resp(error=dict(code="ap_not_found", message="ap not found"))
     if ap.user_id != uid:
         return make_resp(error=dict(code="ap_not_owned", message="ap not owned"))
-    afs = (
-        AF.query.filter_by(user_id=uid, gen_done=True)
-        .join(ap_reqs)
-        .filter_by(ap_id=apid)
-    )
+    afs = ap.afs(user_id=uid)
     return make_resp(
         data=dict(
             afs=[af.for_api_v1 for af in afs],
@@ -261,7 +254,6 @@ def login_attempt():
 @bp.route("/logout", methods=("POST",))
 @login_required
 def logout():
-    print(current_ul)
     # TODO: merge with uls_revoke?
     logout_user()
     return make_resp()
@@ -279,7 +271,7 @@ def api_signup():
     db.session.add(u)
     db.session.commit()
     ul, token = login_user(u, None)
-    return make_resp(data=dict(token=token))
+    return make_resp(data=dict(token=token, uid=ul.user.id, ulid=ul.id))
 
 
 ########################################################################################
@@ -294,13 +286,19 @@ def api_signup():
 
 def dbify_taf(tafid: UUID, user=current_user) -> None:
     data = session[f"taf-{tafid}"]
-    af = AF()
+    if not dåta["gen_done"]:
+        raise False
+    try:
+        af = AF.query.filter_by(id=str(tafid), user=user).one()
+    except NoResultFound:
+        af = AF(id=str(tafid))
     af.user = user
-    af.name = data["name"]
     af.verifier = data["verifier"]
     af.params = data["params"]
+    af.gen_done = True
     # NOTE: don't save state
     db.session.add(af)
+    return True
 
 
 def dbify_ap(data: dict, user=current_user) -> UUID:
@@ -329,32 +327,30 @@ def dbify_ax(data: dict, user=current_user) -> List[UUID]:
         str(af.id) for af in AF.query.filter_by(user=user).all()
     )
     unused = all_afs - all_used
-    print("unused", unused, all_afs, all_used)
+    warnings = []
     if len(unused) > 0:
-        return make_resp(
-            error=dict(
-                code="unused_afs",
-                message=f"unused AFs: {unused}",
-                data=list(unused),
-            )
-        )
+        warnings.append(dict(
+            code="unused_afs",
+            message=f"unused AFs: {unused}",
+            data=list(unused),
+        ))
     for tafid in session.get("tafs", []):
         if tafid in data["del_afs"]:
             return make_resp(
                 error=dict(code="dep_on_del", message=f"taf {tafid} in del_afs"),
             )
-        dbify_taf(tafid)
+        taf = session[f'taf-{tafid}']
+        if not taf['solved']:
+            return make_resp(error=dict(code='taf_not_solved', message=f'taf {tafid} not solved', data=dict(tafid=tafid)))
+        ok = dbify_taf(tafid)
+        if not ok:
+            return make_resp(error=dict(code='taf_gen_not_done', message=f'generation of taf {tafid} not done', data=dict(tafid=tafid)))
     apids = []
     for ap in data["aps"]:
-        try:
-            apid = dbify_ap(ap, user=user)
-        except NoResultFound:
-            return make_resp(
-                error=dict(code="dep_on_del", message=f"ap {apid} in del_aps"),
-            )
+        apid = dbify_ap(ap, user=user)
         apids.append(apid)
     db.session.commit()
-    return make_resp(data=dict(apids=apids))
+    return make_resp(data=dict(apids=apids, warnings=warnings))
 
 
 CONFIG_AX_SCHEMA = {  # TODO: move this to separate file?
@@ -372,6 +368,16 @@ CONFIG_AX_SCHEMA = {  # TODO: move this to separate file?
                         "type": "array",
                         "items": {"type": "string", "format": "uuid"},
                     },
+                },
+            },
+        },
+        "aps": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "uuid": {"type": "string", "format": "uuid"},
+                    "name": {"type": "string"},
                 },
             },
         },
@@ -416,11 +422,14 @@ def api_config_ax():
                         message=f"taf {tafid} not solved",
                         data=dict(tafid=tafid),
                     )
-        print("warnings", warnings)
 
         resp = dbify_ax(request.json).json
         if resp["errors"] and len(resp["errors"]) > 0:
             return resp
+        if 'afs' in request.json:
+            for af in request.json["afs"]:
+                af2 = AF.query.filter_by(id=af["uuid"], user=current_user).one()
+                af2.name = af["name"]
         if "tafs" in session:
             for tafid in session["tafs"]:
                 del session[f"taf-{tafid}"]
@@ -735,11 +744,13 @@ def api_config_id():
                     uid=current_user.id,
                     slug=current_user.slug,
                     name=current_user.name,
-                    emails=[e.for_api_v2 for e in current_user.primary_group.emails],
                     perms=list(current_user.perms),
-                    default_perms=list(current_app.config["AIRY_DEFAULT_PERMS"]),
-                    primary_group=current_user.primary_group.for_api_v1_trusted,
                     groups=[g.for_api_v1_trusted for g in current_user.groups],
+                    **(dict(
+                        emails=[e.for_api_v2 for e in current_user.primary_group.emails],
+                        default_perms=list(current_app.config["AIRY_DEFAULT_PERMS"]),
+                        primary_group=current_user.primary_group.for_api_v1_trusted,
+                    ) if current_user.primary_group else {}),
                 )
             )
         )
@@ -885,7 +896,7 @@ def uls_list():
         data=dict(
             uls=[
                 dict(
-                    **ul.for_api_v1_trusted,
+                    **ul.for_api_v2_trusted,
                     **(dict(current=True) if ul.id == current_ul.id else {}),
                 )
                 for ul in uls
