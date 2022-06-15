@@ -26,7 +26,7 @@ def exists_nonce(nonce, req):
 
 
 def generate_user_info(user, scope):
-    return UserInfo(sub=str(user.id), name=user.name)
+    return UserInfo(sub=str(user.id), name=user.name) # TODO: per-client sub
 
 
 def create_authorization_code(client, grant_user, request):
