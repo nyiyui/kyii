@@ -5,7 +5,7 @@
 	import Box from '$lib/Box.svelte'
 	import { createEventDispatcher } from 'svelte'
 	import type { LooseULO } from '$lib/api2'
-	import { client } from '$lib/api2'
+	import { client, ulos } from '$lib/api2'
 	import { debugMode } from '$lib/store'
 
 	const dispatch = createEventDispatcher()
@@ -17,13 +17,19 @@
 
 	async function logout() {
 		if (ulo === 'anonymous') throw new TypeError('cannot logout from anonymous user')
-		const c = client.uloWith(ulo.ulid)
-		try {
-			await c.logout()
+		if ($ulos.has(ulo.ulid)) {
+			const c = client.uloWith(ulo.ulid)
+			try {
+				await c.logout()
+				client.uloDel(ulo.ulid)
+				dispatch('reload')
+			} catch (e) {
+				err = e
+			}
+		} else {
+			console.warn(`unknown ulo ${ulo.ulid}; ignoring`);
 			client.uloDel(ulo.ulid)
 			dispatch('reload')
-		} catch (e) {
-			err = e
 		}
 	}
 

@@ -8,7 +8,6 @@
 	import type { ULO } from '$lib/api2'
 	import { User } from '$lib/api2'
 	import { UnauthenticatedError } from '$lib/api2'
-	import { get } from 'svelte/store'
 	import { createEventDispatcher } from 'svelte'
 
 	export let anonymous = true
@@ -25,8 +24,10 @@
 			await client.loginSync()
 		} catch (err) {
 			if (err instanceof UnauthenticatedError) {
+				console.error('syncing unauth', err);
 				synched = err
 			} else {
+				console.error('syncing failed', err);
 				throw err
 			}
 		}
@@ -37,8 +38,14 @@
 	let ulos: Array<[UUID, ULO]>
 	reload()
 
+	$: {
+		$ulosStore
+		reload()
+	}
+
 	async function reload() {
-		ulos = [...get(ulosStore).entries()]
+		console.log('reload', $ulosStore);
+		ulos = [...$ulosStore.entries()]
 		try {
 			synched = await client.synchedLogin()
 		} catch (err) {
@@ -70,7 +77,10 @@
 		<div class="ulo-view">
 			<ULOView
 				{ulo}
-				on:choose={() => choose(ulo.ulid)}
+		 		on:choose={() => {
+		 			choose(ulo.ulid)
+		 			reload()
+				}}
 				on:reload={reload}
 				currentUlid={$currentUlid}
 			/>
