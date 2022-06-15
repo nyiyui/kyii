@@ -20,9 +20,10 @@ def init_app(app):
     app.config.update(
         dict(
             OAUTH2_JWT_ENABLED=True,
-            OAUTH2_JWT_ISS=JWT_CONFIG["iss"],
-            OAUTH2_JWT_KEY=JWT_CONFIG["key"],
             OAUTH2_JWT_ALG=JWT_CONFIG["alg"],
+            OAUTH2_JWT_KEY_PATH="./jwt.pem",
+            OAUTH2_JWT_ISS=JWT_CONFIG["iss"],
+            OAUTH2_JWT_EXP=JWT_CONFIG["exp"],
             UPLOAD_PATH=Path("/tmp/kyii-airy"),
             VERIFIER_WEBAUTHN=dict(
                 # https://github.com/w3c/webauthn/issues/963#issuecomment-399898625

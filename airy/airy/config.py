@@ -17,7 +17,7 @@ def setup_jwt():
     JWT_CONFIG = {
         "key": SECRET_KEY,
         "alg": "RS256",
-        "iss": "https://airy.kyii.nyiyui.ca",
+        "iss": "http://localhost:5000",
         "exp": 3600,
     }
     private_key_path = Path("./jwt.pem")

@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 import logging
 import time
 import uuid
@@ -8,6 +9,7 @@ from urllib.parse import urlencode, urljoin
 
 from authlib.integrations.flask_oauth2 import current_token
 from authlib.oauth2 import OAuth2Error
+from authlib.jose import JsonWebKey, KeySet
 from flask import (Blueprint, Response, abort, current_app, g, jsonify,
                    redirect, render_template, request, session, url_for)
 from flask_login import current_user, login_required, login_user, logout_user
@@ -170,9 +172,9 @@ def openid_configuration():
         "authorization_endpoint": external_url(".oauth_authorize"),
         "token_endpoint": external_url(".oauth_token"),
         "userinfo_endpoint": external_url(".oauth_userinfo"),
-        # "jwks_uri": external_url(".jwks_endpoint"), TODO
+        "jwks_uri": external_url(".jwks_endpoint"),
         "id_token_signing_alg_values_supported": ["RS256"],
-        "issuer": "https://airy.kyii.nyiyui.ca",
+        "issuer": current_app.config["OAUTH2_JWT_ISS"],
         "response_types_supported": [
             "code",
         ],
@@ -182,3 +184,17 @@ def openid_configuration():
             "client_secret_basic",
         ],
     }
+
+
+def load_public_keys():
+    if "OAUTH2_JWT_KEY_PATH" in current_app.config:
+        public_key_path = current_app.config["OAUTH2_JWT_KEY_PATH"]
+        public_key = JsonWebKey.import_key(Path(public_key_path).read_bytes())
+    else:
+        public_key = JsonWebKey.import_key(current_app.config["OAUTH2_JWT_KEY"])
+    return KeySet([public_key])
+
+@bp.route("/.well-known/jwks.json")
+def jwks_endpoint():
+    pks = load_public_keys()
+    return pks.as_dict()
