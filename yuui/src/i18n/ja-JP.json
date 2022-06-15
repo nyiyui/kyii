@@ -113,5 +113,15 @@
 	},
 	"grants": {
 		"count": "{count, plural, =0 {認可無し} one {#認可} other {#認可}}:"
+	},
+	"oauth2": {
+		"scopes": {
+			"openid": "OpenID Connect",
+			"profile": "プロフィール",
+			"email": "メールアドレス",
+			"address": "住所",
+			"phone": "電話番号",
+			"offline_access": "オフラインアクセス"
+		}
 	}
 }

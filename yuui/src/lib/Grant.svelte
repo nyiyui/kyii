@@ -1,6 +1,7 @@
 <script lang="ts" type="module">
 	import BoxError from '$lib/BoxError.svelte'
 	import Box from '$lib/Box.svelte'
+	import Scope from '$lib/Scope.svelte'
 	import Client from '$lib/Client.svelte'
 	import { debugMode } from '$lib/store'
 	import { client } from '$lib/api2'
@@ -49,7 +50,12 @@
 	</div>
 	<div class="content">
 		To: <Client client={grant.client} /><br />
-		Scope: <code>{grant.request.scope}</code><br />
+		Scopes:
+		<ul>
+			{#each grant.request.scope.split(' ') as name}
+				<li><Scope {name} /></li>
+			{/each}
+		</ul>
 		Issued at: {new Date(grant.request.issued_at * 1000)}<br />
 		<Box level="debug">
 			Expires at: {new Date(grant.request.expires_at * 1000)}<br />

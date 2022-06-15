@@ -366,11 +366,12 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
     user = db.relationship("User")
 
     def as_dict(self):
-        return {
-            "user_id": self.user_id,
-            "name": self.client_name,
-            "uri": self.client_uri,
-        }
+        return dict(
+            user_id=self.user_id,
+            user_name=self.user.name,
+            name=self.client_name,
+            uri=self.client_uri,
+        )
 
     @property
     def for_api_v1_trusted(self) -> dict:

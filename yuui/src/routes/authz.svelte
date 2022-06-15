@@ -2,6 +2,7 @@
 	import { page } from '$app/stores'
 	import { client } from '$lib/api2'
 	import { browser } from '$app/env'
+	import Scope from '$lib/Scope.svelte'
 	import Box from '$lib/Box.svelte'
 	import type { Grant } from '$lib/api2'
 
@@ -44,7 +45,7 @@
 		<a href={grant.client.uri}>{grant.client.name}</a> is requesting:
 		<ul>
 			{#each grant.request.scope.split(' ') as scope}
-				<li><code>{scope}</code></li>
+				<li><Scope name={scope} /></li>
 			{/each}
 		</ul>
 		<Box level="debug">
