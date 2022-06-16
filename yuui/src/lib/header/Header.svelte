@@ -63,8 +63,6 @@
 		<li class="iori" class:active={$page.url.pathname === '/iori'}>
 			<a sveltekit:prefetch href="/iori">
 				<User />
-				{$_('header.iori')}
-				{browser ? `(${get(ulosStore).size})` : ''}
 			</a>
 		</li>
 	</ul>

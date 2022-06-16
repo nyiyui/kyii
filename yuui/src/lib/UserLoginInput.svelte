@@ -4,26 +4,32 @@
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte'
 	import { client } from '$lib/api2'
 	import type { UserLogin } from '$lib/api2'
+	import { createEventDispatcher } from 'svelte'
+
+	const dispatch = createEventDispatcher()
+
+	// TODO: rename current to you
+
 	export let ul: UserLogin
-	export let deleteCallback: () => void
 	let unsavedChanges = false
 	let newName: string | null = ul.name || null
 
 	async function revoke() {
 		await client.revokeUl(ul.uuid)
 		console.log(`revoke UL ${ul.uuid}`)
+		dispatch('revoke')
 	}
 
 	async function delete_() {
 		await client.deleteUl(ul.uuid)
 		console.log(`delete UL ${ul.uuid}; callback`)
-		deleteCallback()
+		dispatch('delete')
 	}
 
 	async function updateName() {
 		await client.editUl(ul.uuid, newName)
 		console.log(`edit UL ${ul.uuid}`)
-		unsavedChanges = false
+		ul.name = newName;
 	}
 
 	const timeOpts = {
@@ -39,7 +45,7 @@
 
 	let nameSpan: HTMLSpanElement
 
-	$: unsavedChanges = (ul.name || '') !== newName
+	$: unsavedChanges = (ul.name || '') !== (newName || '')
 </script>
 
 <section class="ul panel flex flex-column">
@@ -57,16 +63,24 @@
 		</h2>
 		<div class="tags">
 			{#if ul.current}
-				<div class="tag current">Current</div>
+				<span class="tag you">You</span>
 			{/if}
 			{#if ul.end === null}
-				<div class="tag ongoing">Ongoing</div>
+				<span class="tag ongoing">Ongoing</span>
 			{:else}
-				<div class="tag ended">Ended</div>
+				{#if ul.reason === "revoke"}
+					<span class="tag revoked">Revoked</span>
+				{:else if ul.reason === "logout"}
+					<span class="tag logged_out">Logged out</span>
+				{:else}
+					<span class="tag ended">Ended</span>
+				{/if}
 			{/if}
 		</div>
-		<div class="ctrl">
-			<input class="warn" type="button" value="Revoke" on:click={revoke} disabled={ul.current} />
+		<div>
+			{#if ul.end === null}
+				<input class="warn" type="button" value="Revoke" on:click={revoke} disabled={ul.current} />
+			{/if}
 			<input class="delete" type="button" value="Delete" on:click={delete_} />
 			<input class="update" type="button" value="Update" on:click={updateName} />
 		</div>
@@ -134,8 +148,16 @@
 		border-color: var(--color-warn);
 	}
 
-	.tag.current {
+	.tag.you {
 		border-color: var(--color-info);
+	}
+
+	.tag.revoked {
+		border-color: var(--color-warn);
+	}
+
+	.tag.logged_out {
+		border-color: var(--color-ok);
 	}
 
 	.tag.ended {

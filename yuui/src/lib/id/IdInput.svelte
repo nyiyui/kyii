@@ -1,7 +1,7 @@
 <script lang="ts" type="module">
 	import { _ } from 'svelte-i18n'
 	import Dropzone from 'svelte-file-dropzone'
-	import { client, ulos } from '$lib/api2'
+	import { client, ulos, currentUlid } from '$lib/api2'
 	import type { Id } from '$lib/api2'
 	import Icon from '@iconify/svelte'
 	import BoxError from '$lib/BoxError.svelte'
@@ -79,8 +79,10 @@
 			idUnsavedChanges = false
 			console.log('submitId done')
 			// NOTE: update ulos with data
-			$ulos.set(client.currentUlid, {
-				...$ulos.get(client.currentUlid),
+			console.log('currentUlid', $currentUlid);
+			const ulid = $currentUlid
+			$ulos.set(ulid, {
+				...$ulos.get(ulid),
 				slug,
 				name
 			})

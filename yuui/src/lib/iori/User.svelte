@@ -9,11 +9,11 @@
 </script>
 
 {#if uid == 'anonymous' || uid === null}
-	<div class="user">
+	<span class="user">
 		<em>{$_('iori.anonymous')}</em>
-	</div>
+	</span>
 {:else}
-	<div class="user">
+	<span class="user">
 		<img
 			alt={$_('iori.user.profile')}
 			class="user-img"
@@ -25,7 +25,7 @@
 				<div class="slug"><code>{slug}</code></div>
 			</div>
 		{/if}
-	</div>
+	</span>
 {/if}
 
 <style>

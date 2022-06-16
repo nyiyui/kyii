@@ -8,6 +8,7 @@
 	import type { ULO } from '$lib/api2'
 	import { User } from '$lib/api2'
 	import { UnauthenticatedError } from '$lib/api2'
+	import { debugMode } from '$lib/store'
 	import { createEventDispatcher } from 'svelte'
 
 	export let anonymous = true
@@ -15,25 +16,34 @@
 	const dispatch = createEventDispatcher()
 
 	async function choose(ulid) {
-		if (ulid === null) {
+		if (ulid === null || ulid === "anonymous") {
 			client.uloReset()
+			synched = null
 		} else {
 			client.uloUse(ulid)
-		}
-		try {
-			await client.loginSync()
-		} catch (err) {
-			if (err instanceof UnauthenticatedError) {
-				console.error('syncing unauth', err);
-				synched = err
-			} else {
-				console.error('syncing failed', err);
-				throw err
+			try {
+				await client.loginSync()
+			} catch (err) {
+				if (err instanceof UnauthenticatedError) {
+					console.error('ul id invalid', ulid)
+					if (ulid !== "anonymous") {
+						$ulosStore.set(ulid, {
+							...$ulosStore.get(ulid),
+							invalid: true,
+						})
+						$ulosStore = $ulosStore
+					}
+				} else {
+					console.error('syncing failed', err)
+					synched = err
+				}
 			}
 		}
 		await reload()
 		dispatch('choose', { ulid })
 	}
+
+	let dontReload = false
 
 	let ulos: Array<[UUID, ULO]>
 	reload()
@@ -44,20 +54,42 @@
 	}
 
 	async function reload() {
+		if (dontReload) {
+		dontReload = false
+		return
+		}
 		console.log('reload', $ulosStore);
 		ulos = [...$ulosStore.entries()]
 		try {
 			synched = await client.synchedLogin()
-		} catch (err) {
-			if (err instanceof UnauthenticatedError) {
-				synched = err
-			} else {
-				throw err
+			if (synched === null) {
+				// NOTE: avoid loop!
+				await client.loginSync();
+				synched = await client.synchedLogin()
 			}
+		} catch (err) {
+			const ulid = $currentUlid
+				if (err instanceof UnauthenticatedError) {
+					console.error('ul id invalid', ulid)
+					if (ulid !== "anonymous") {
+						$ulosStore.set(ulid, {
+							...$ulosStore.get(ulid),
+							invalid: true,
+						})
+						$ulosStore = $ulosStore
+						dontReload = true
+						synched = null
+					} else {
+						synched = "anonymous"
+					}
+				} else {
+					console.error('syncing failed', err)
+					synched = err
+				}
 		}
 	}
 
-	let synched: User | UnauthenticatedError
+	let synched: User | UnauthenticatedError | null | "anonymous"
 </script>
 
 <div class="switcher">
@@ -66,6 +98,8 @@
 			Not synched
 		{:else if synched === undefined}
 			<Loading />
+		{:else if synched === "anonymous"}
+			{$_('iori.anonymous')}
 		{:else if 'uid' in synched}
 			{$_('iori.synched', { values: { synched } })}
 		{:else if synched instanceof Error}
@@ -74,17 +108,20 @@
 	</Box>
 	{$_('iori.switcher.switch')}
 	{#each ulos as [_, ulo]}
-		<div class="ulo-view">
-			<ULOView
-				{ulo}
-		 		on:choose={() => {
-		 			choose(ulo.ulid)
-		 			reload()
-				}}
-				on:reload={reload}
-				currentUlid={$currentUlid}
-			/>
-		</div>
+		{#if !ulo.invalid || $debugMode}
+			<div class="ulo-view">
+				<!-- TODO: decide: delete invalid ULOs when found + !debugMode? -->
+				<ULOView
+					{ulo}
+			 		on:choose={() => {
+			 			choose(ulo.ulid)
+			 			reload()
+					}}
+					on:reload={reload}
+					currentUlid={$currentUlid}
+				/>
+			</div>
+		{/if}
 	{/each}
 	{#if anonymous}
 		<div class="ulo-view">

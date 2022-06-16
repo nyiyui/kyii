@@ -1,25 +1,25 @@
 <script lang="ts" type="module">
+	import Loading from '$lib/Loading.svelte'
 	import BoxError from '$lib/BoxError.svelte'
 	import { client } from '$lib/api2'
 	import type { UserLogin } from '$lib/api2'
 	import { browser } from '$app/env'
 	import UserLoginInput from '$lib/UserLoginInput.svelte'
 
-	let uls = new Array<UserLogin>()
-	let error = ''
+	let uls: Promise<Array<UserLogin>>
 
-	;(async () => {
+	function reload() {
+		uls = client.ulsList()
+	}
+
+	(async () => {
 		if (browser) {
 			if (!(await client.loggedIn())) {
 				console.log('not logged in')
 				window.location.replace('/login')
 			}
 
-			try {
-				uls = await client.ulsList()
-			} catch (e) {
-				error = e.message
-			}
+			reload();
 		}
 	})()
 </script>
@@ -29,17 +29,23 @@
 </svelte:head>
 
 <main class="logout">
-	<BoxError msg={error} passive />
-	{#each Array.from(uls.entries()) as [i, ul]}
-		<div class="user-login">
-			<UserLoginInput
-				bind:ul
-				{client}
-				deleteCallback={() => {
-					uls.splice(i, 1)
-					uls = uls
-				}}
-			/>
-		</div>
-	{/each}
+	<input type="button" value="Reload" on:click={reload} />
+	{#if uls}
+		{#await uls}
+			<Loading />
+		{:then uls}
+			{#each Array.from(uls.entries()) as [i, ul]}
+				<UserLoginInput
+					bind:ul
+					{client}
+					on:delete={() => {
+						uls.splice(i, 1)
+						uls = uls
+					}}
+				/>
+			{/each}
+		{:catch e}
+			<BoxError msg={e} passive />
+		{/await}
+	{/if}
 </main>

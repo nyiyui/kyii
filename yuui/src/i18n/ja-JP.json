@@ -77,7 +77,8 @@
 		"ulo": {
 			"choose": "選択",
 			"logout": "ログアウト",
-			"delete": "削除・忘却"
+			"delete": "削除・忘却",
+			"invalid": "無効"
 		},
 		"user": {
 			"profile": "プロフィール"

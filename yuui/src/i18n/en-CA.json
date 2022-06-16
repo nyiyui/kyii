@@ -77,7 +77,8 @@
 		"ulo": {
 			"choose": "Choose",
 			"logout": "Logout",
-			"delete": "Delete/Forget"
+			"delete": "Delete/Forget",
+			"invalid": "Invalid"
 		},
 		"user": {
 			"profile": "profile"

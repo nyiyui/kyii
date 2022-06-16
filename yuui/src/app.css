@@ -199,6 +199,10 @@ h6 {
 	border-radius: 50%;
 }
 
+.tags {
+	padding: 8px;
+}
+
 .tag {
 	border-style: solid;
 	border-width: 2px;

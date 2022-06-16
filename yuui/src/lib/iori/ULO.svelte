@@ -40,7 +40,7 @@
 	}
 
 	let chosen =
-		(ulo === 'anonymous' && currentUlid === null) ||
+		(ulo === 'anonymous' && [null, "anonymous"].includes(currentUlid)) ||
 		(ulo !== 'anonymous' && currentUlid === ulo.ulid)
 </script>
 
@@ -52,6 +52,14 @@
 			<User uid={ulo.uid} name={ulo.name} slug={ulo.slug} />
 		{/if}
 	</div>
+	<Box level="debug">
+		<code>{JSON.stringify(ulo)}</code>
+	</Box>
+	{#if ulo.invalid}
+		<span class="tag invalid">
+			{$_('iori.ulo.invalid')}
+		</span>
+	{/if}
 	{#if ulo !== 'anonymous'}
 		{#if $debugMode}
 			<input
@@ -67,18 +75,15 @@
 			type="button"
 			value={$_('iori.ulo.logout')}
 			on:click={logout}
-			disabled={chosen}
+			disabled={chosen || ulo.invalid}
 		/>
-		<Box level="debug">
-			<code>{JSON.stringify(ulo)}</code>
-		</Box>
 	{/if}
 	<input
 		class="action ok"
 		type="button"
 		value={$_('iori.ulo.choose')}
 		on:click={() => dispatch('choose')}
-		disabled={chosen}
+		disabled={chosen || ulo.invalid}
 	/>
 	<BoxError msg={err ? err.toString() : null} passive />
 </div>
@@ -96,5 +101,9 @@
 
 	.user {
 		flex-grow: 1;
+	}
+
+	.tag.invalid {
+		border-color: var(--color-error);
 	}
 </style>

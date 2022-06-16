@@ -138,6 +138,7 @@ type UserLogin = {
 	end?: Date
 	reason?: string
 	current: boolean
+	invalid?: boolean
 }
 
 class Ax {
@@ -470,12 +471,14 @@ class Client extends BaseClient {
 
 	async loggedIn(): Promise<boolean> {
 		return !!this.currentToken
-		// lazy
-		//const r = await this.fetch<{logged_in: boolean}>(`logged_in`, {
-		//	method: 'GET',
-		//})
-		//this.assertNoErrors(r);
-		//return r.data.logged_in;
+	}
+
+	async checkLoggedIn(): Promise<boolean> {
+		const r = await this.fetch<{logged_in: boolean}>(`logged_in`, {
+			method: 'GET',
+		})
+		this.assertNoErrors(r);
+		return r.data.logged_in;
 	}
 
 	async status(): Promise<Status> {
