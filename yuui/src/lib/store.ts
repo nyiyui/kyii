@@ -35,6 +35,10 @@ const storage = <T>(
 	return store
 }
 
-export const debugMode = storage('debugMode', true)
+const defaultDebugMode = import.meta.env.NODE_ENV === 'development'
+
+export const debugMode = storage('debugMode', defaultDebugMode)
+
+export const allowAnonymous = storage('allowAnonymous', defaultDebugMode)
 
 export { storage }

@@ -40,9 +40,11 @@
 			"help": "These settings are specific to this client and is not connected to any sessions.",
 			"etc": "Other Settings (that you can't set)",
 			"api_base_url": "Airy API base URL",
+			"debug": "Debug",
 			"debug_mode": "Debug mode",
-			"debug_mode_enabled": "Enabled",
 			"debug_mode_help": "This only shows data already available to Yuui (hidden if Debug Mode is off).",
+			"allow_anonymous": "Allow anonymous sessions",
+			"allow_anonymous_help": "Allow anonymous sessions, allowing you to choose an anonymous session voluntarily",
 			"lang": {
 				"title": "Language",
 				"current": "English",

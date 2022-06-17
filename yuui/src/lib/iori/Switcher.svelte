@@ -8,10 +8,8 @@
 	import type { ULO } from '$lib/api2'
 	import { User } from '$lib/api2'
 	import { UnauthenticatedError } from '$lib/api2'
-	import { debugMode } from '$lib/store'
+	import { debugMode, allowAnonymous } from '$lib/store'
 	import { createEventDispatcher } from 'svelte'
-
-	export let anonymous = true
 
 	const dispatch = createEventDispatcher()
 
@@ -118,14 +116,18 @@
 			 			reload()
 					}}
 					on:reload={reload}
-					currentUlid={$currentUlid}
+					chosen={$currentUlid === ulo.ulid}
 				/>
 			</div>
 		{/if}
 	{/each}
-	{#if anonymous}
+	{#if $allowAnonymous || $currentUlid == "anonymous"}
 		<div class="ulo-view">
-			<ULOView ulo="anonymous" on:choose={() => choose(null)} currentUlid={$currentUlid} />
+			<ULOView
+			 	ulo="anonymous"
+	 			on:choose={() => choose("anonymous")}
+		 		chosen={[null, "anonymous"].includes($currentUlid)}
+	 		/>
 		</div>
 	{/if}
 	<div class="ulo-view">

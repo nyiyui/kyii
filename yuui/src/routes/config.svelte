@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n'
 	import Autosaved from '$lib/Autosaved.svelte'
 	import { client } from '$lib/api2'
-	import { debugMode } from '$lib/store'
+	import { debugMode, allowAnonymous } from '$lib/store'
 	import Box from '$lib/Box.svelte'
 	import { Tabs, Tab, TabList, TabPanel } from 'svelte-tabs'
 	import IdInput from '$lib/id/IdInput.svelte'
@@ -53,13 +53,20 @@
 		</TabPanel>
 		<TabPanel>
 			<Box level="info">{$_('config.client.help')}</Box>
-			<h2 id="debug">{$_('config.client.debug_mode')}</h2>
+			<h2 id="debug">{$_('config.client.debug')}</h2>
 			<label>
 				<input type="checkbox" bind:checked={$debugMode} />
-				{$_('config.client.debug_mode_enabled')}
+				{$_('config.client.debug_mode')}
 			</label>
 			<Box level="info">
 				{$_('config.client.debug_mode_help')}
+			</Box>
+			<label>
+				<input type="checkbox" bind:checked={$allowAnonymous} />
+				{$_('config.client.allow_anonymous')}
+			</label>
+			<Box level="info">
+				{$_('config.client.allow_anonymous_help')}
 			</Box>
 			<h2>{$_('config.client.etc')}</h2>
 			<label>

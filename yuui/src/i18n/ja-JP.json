@@ -40,9 +40,11 @@
 			"help": "この設定はこのアプリ固有であり、セッションとは関連してません。",
 			"etc": "その他の設定",
 			"api_base_url": "エアリーAPIの元URL",
+			"debug": "デバッグ",
 			"debug_mode": "デバッグモード",
-			"debug_mode_enabled": "有効",
 			"debug_mode_help": "既に有るなデータのみを表示します（デバッグモードがオフの場合は非表示になります）。",
+			"allow_anonymous": "匿名セッション",
+			"allow_anonymous_help": "匿名セッションを表示する",
 			"lang": {
 				"title": "言語",
 				"current": "日本語",

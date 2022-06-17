@@ -289,6 +289,7 @@ type ULO = {
 	slug: string
 	name: string
 	token: string
+	invalid?: boolean
 }
 
 type LooseULO = ULO | 'anonymous'

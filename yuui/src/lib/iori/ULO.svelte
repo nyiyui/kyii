@@ -6,12 +6,12 @@
 	import { createEventDispatcher } from 'svelte'
 	import type { LooseULO } from '$lib/api2'
 	import { client, ulos } from '$lib/api2'
-	import { debugMode } from '$lib/store'
+	import { debugMode, allowAnonymous } from '$lib/store'
 
 	const dispatch = createEventDispatcher()
 
 	export let ulo: LooseULO
-	export let currentUlid: string
+	export let chosen: boolean
 
 	let err: Error | null = null
 
@@ -22,6 +22,10 @@
 			try {
 				await c.logout()
 				client.uloDel(ulo.ulid)
+				if (chosen) {
+					// switch to anonymous to avoid undefined behaviour (lol)
+					client.uloReset();
+				}
 				dispatch('reload')
 			} catch (e) {
 				err = e
@@ -38,10 +42,6 @@
 		client.uloDel(ulo.ulid)
 		dispatch('reload')
 	}
-
-	let chosen =
-		(ulo === 'anonymous' && [null, "anonymous"].includes(currentUlid)) ||
-		(ulo !== 'anonymous' && currentUlid === ulo.ulid)
 </script>
 
 <div class="ulo" class:outline={chosen}>
@@ -55,19 +55,19 @@
 	<Box level="debug">
 		<code>{JSON.stringify(ulo)}</code>
 	</Box>
-	{#if ulo.invalid}
-		<span class="tag invalid">
-			{$_('iori.ulo.invalid')}
-		</span>
-	{/if}
 	{#if ulo !== 'anonymous'}
+		{#if ulo.invalid}
+			<span class="tag invalid">
+				{$_('iori.ulo.invalid')}
+			</span>
+		{/if}
 		{#if $debugMode}
 			<input
 				class="action delete"
 				type="button"
 				value={$_('iori.ulo.delete')}
 				on:click={forget}
-				disabled={chosen}
+				disabled={chosen || !$allowAnonymous}
 			/>
 		{/if}
 		<input
@@ -75,7 +75,7 @@
 			type="button"
 			value={$_('iori.ulo.logout')}
 			on:click={logout}
-			disabled={chosen || ulo.invalid}
+			disabled={chosen && ulo.invalid && !$allowAnonymous}
 		/>
 	{/if}
 	<input
