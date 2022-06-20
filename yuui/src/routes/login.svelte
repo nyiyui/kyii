@@ -14,6 +14,7 @@
 
 	let slug: string
 	let slugFound: boolean | undefined = undefined
+	let autosel: boolean
 	let apUuid: string
 	let attempts: Map<string, string> = new Map()
 
@@ -43,6 +44,13 @@
 		}
 		slugFound = true
 		;({ aps } = resp)
+		autosel = aps.length == 1
+		if (autosel) {
+			const ap = aps[0]
+			console.log(`${ap.uuid}を自動選択`)
+			apUuid = ap.uuid
+			choose()
+		}
 		console.log(slug, aps)
 	}
 
@@ -118,36 +126,40 @@
 		</div>
 		{#if slugFound}
 			<div class="flex">
-				<div class="panel flex-in">
-					<h2>{$_('login.aps')}</h2>
-					<Box level="debug"><pre>{JSON.stringify(aps, null, 2)}</pre></Box>
-					<Box level="debug">APID: <code>{apUuid}</code></Box>
-					{#each aps as ap}
-						<label>
-							<input
-								type="radio"
-								id={ap.uuid}
-								bind:group={apUuid}
-								name="ap"
-								value={ap.uuid}
-								on:select={choose}
-							/>
-							{ap.name}
-						</label>
-						<br />
-					{/each}
-				</div>
+				{#if !autosel}
+					<div class="panel flex-in">
+						<h2>{$_('login.aps')}</h2>
+						<Box level="debug"><pre>{JSON.stringify(aps, null, 2)}</pre></Box>
+						<Box level="debug">APID: <code>{apUuid}</code></Box>
+						{#each aps as ap}
+							<label>
+								<input
+									type="radio"
+									id={ap.uuid}
+									bind:group={apUuid}
+									name="ap"
+									value={ap.uuid}
+									on:select={choose}
+								/>
+								{ap.name}
+							</label>
+							<br />
+						{/each}
+					</div>
+				{/if}
 				<div class="panel flex-in afs">
 					<h2>{$_('login.afs')}</h2>
 					<Box level="debug"><pre>{JSON.stringify(afs, null, 2)}</pre></Box>
-					{#each afs as af}
-						<AFChallenge
-							bind:af
-							bind:attempt={attempts[af.uuid]}
-							callback={attempt}
-							result={attemptResults.get(af.uuid)}
-						/>
-					{/each}
+					{#if afs}
+						{#each afs as af}
+							<AFChallenge
+								bind:af
+								bind:attempt={attempts[af.uuid]}
+								callback={attempt}
+								result={attemptResults.get(af.uuid)}
+							/>
+						{/each}
+					{/if}
 				</div>
 			</div>
 		{/if}
