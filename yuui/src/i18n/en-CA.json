@@ -87,6 +87,9 @@
 		},
 		"synched": "Synched to chosen session."
 	},
+	"ap_select": {
+		"placeholder": "Choose an AP…"
+	},
 	"af": {
 		"submit": "Submit",
 		"pw": {

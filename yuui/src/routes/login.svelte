@@ -8,6 +8,7 @@
 	import Icon from '@iconify/svelte'
 	import Box from '$lib/Box.svelte'
 	import AFChallenge from '$lib/ax/AFChallenge.svelte'
+	import APSelect from '$lib/ax/APSelect.svelte'
 	import { AttemptResultStatus } from '$lib/util'
 	import { browser } from '$app/env'
 	import { onMount } from 'svelte'
@@ -133,20 +134,7 @@
 						<h2>{$_('login.aps')}</h2>
 						<Box level="debug"><pre>{JSON.stringify(aps, null, 2)}</pre></Box>
 						<Box level="debug">APID: <code>{apUuid}</code></Box>
-						{#each aps as ap}
-							<label>
-								<input
-									type="radio"
-									id={ap.uuid}
-									bind:group={apUuid}
-									name="ap"
-									value={ap.uuid}
-									on:select={choose}
-								/>
-								{ap.name}
-							</label>
-							<br />
-						{/each}
+						<APSelect {aps} bind:chosen={apUuid} on:select={choose} />
 					</div>
 				{/if}
 				{#if chosen}
