@@ -50,9 +50,6 @@
 				<a sveltekit:prefetch href="/grants">{$_('header.grants')}</a>
 			</li>
 		{:else}
-			<li class:active={$page.url.pathname === '/login'}>
-				<a sveltekit:prefetch href="/login">{$_('header.login')}</a>
-			</li>
 			<li class:active={$page.url.pathname === '/signup'}>
 				<a sveltekit:prefetch href="/signup">{$_('header.signup')}</a>
 			</li>
