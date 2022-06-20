@@ -72,7 +72,7 @@
 			idUnsavedChanges = false
 			console.log('submitId done')
 			// NOTE: update ulos with data
-			console.log('currentUlid', $currentUlid);
+			console.log('currentUlid', $currentUlid)
 			const ulid = $currentUlid
 			$ulos.set(ulid, {
 				...$ulos.get(ulid),

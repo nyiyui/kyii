@@ -1,8 +1,14 @@
 from functools import wraps
 from typing import Optional, Tuple
 
-from flask import (_request_ctx_stack, abort, current_app, has_request_context,
-                   jsonify, request)
+from flask import (
+    _request_ctx_stack,
+    abort,
+    current_app,
+    has_request_context,
+    jsonify,
+    request,
+)
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.local import LocalProxy
 

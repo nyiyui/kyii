@@ -5,20 +5,29 @@ from urllib.parse import urlencode, urljoin
 from uuid import UUID, uuid4
 
 import jsonschema
-from flask import (Blueprint, Response, abort, current_app, jsonify, redirect,
-                   render_template, request, send_file, session, url_for)
+from flask import (
+    Blueprint,
+    Response,
+    abort,
+    current_app,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    session,
+    url_for,
+)
 from flask_cors import CORS
 from flask_login import current_user as current_user2
 from flask_mail import Message
 from sqlalchemy.exc import NoResultFound
 
 from .. import verifiers
-from ..db import (AF, AP, Email, Group, OAuth2Token, User, UserLogin, ap_reqs,
-                  db)
+from ..db import AF, AP, Email, Group, OAuth2Token, User, UserLogin, ap_reqs, db
 from ..etc import login_ul, mail
 from ..session import API_V1_APID, API_V1_SOLVED, API_V1_UID
-from ..ul import (current_ul, current_user, login_required, login_user,
-                  logout_user)
+from ..ul import current_ul, current_user, login_required, login_user, logout_user
 from ..util2 import all_perms, gen_token, has_perms
 from ..util2 import req_perms as _req_perms
 from ..verifiers import GenerationError, VerificationError
@@ -329,22 +338,36 @@ def dbify_ax(data: dict, user=current_user) -> List[UUID]:
     unused = all_afs - all_used
     warnings = []
     if len(unused) > 0:
-        warnings.append(dict(
-            code="unused_afs",
-            message=f"unused AFs: {unused}",
-            data=list(unused),
-        ))
+        warnings.append(
+            dict(
+                code="unused_afs",
+                message=f"unused AFs: {unused}",
+                data=list(unused),
+            )
+        )
     for tafid in session.get("tafs", []):
         if tafid in data["del_afs"]:
             return make_resp(
                 error=dict(code="dep_on_del", message=f"taf {tafid} in del_afs"),
             )
-        taf = session[f'taf-{tafid}']
-        if not taf['solved']:
-            return make_resp(error=dict(code='taf_not_solved', message=f'taf {tafid} not solved', data=dict(tafid=tafid)))
+        taf = session[f"taf-{tafid}"]
+        if not taf["solved"]:
+            return make_resp(
+                error=dict(
+                    code="taf_not_solved",
+                    message=f"taf {tafid} not solved",
+                    data=dict(tafid=tafid),
+                )
+            )
         ok = dbify_taf(tafid)
         if not ok:
-            return make_resp(error=dict(code='taf_gen_not_done', message=f'generation of taf {tafid} not done', data=dict(tafid=tafid)))
+            return make_resp(
+                error=dict(
+                    code="taf_gen_not_done",
+                    message=f"generation of taf {tafid} not done",
+                    data=dict(tafid=tafid),
+                )
+            )
     apids = []
     for ap in data["aps"]:
         apid = dbify_ap(ap, user=user)
@@ -426,7 +449,7 @@ def api_config_ax():
         resp = dbify_ax(request.json).json
         if resp["errors"] and len(resp["errors"]) > 0:
             return resp
-        if 'afs' in request.json:
+        if "afs" in request.json:
             for af in request.json["afs"]:
                 af2 = AF.query.filter_by(id=af["uuid"], user=current_user).one()
                 af2.name = af["name"]
@@ -746,11 +769,19 @@ def api_config_id():
                     name=current_user.name,
                     perms=list(current_user.perms),
                     groups=[g.for_api_v1_trusted for g in current_user.groups],
-                    **(dict(
-                        emails=[e.for_api_v2 for e in current_user.primary_group.emails],
-                        default_perms=list(current_app.config["AIRY_DEFAULT_PERMS"]),
-                        primary_group=current_user.primary_group.for_api_v1_trusted,
-                    ) if current_user.primary_group else {}),
+                    **(
+                        dict(
+                            emails=[
+                                e.for_api_v2 for e in current_user.primary_group.emails
+                            ],
+                            default_perms=list(
+                                current_app.config["AIRY_DEFAULT_PERMS"]
+                            ),
+                            primary_group=current_user.primary_group.for_api_v1_trusted,
+                        )
+                        if current_user.primary_group
+                        else {}
+                    ),
                 )
             )
         )
@@ -766,7 +797,7 @@ def api_config_id():
         pg = current_user.primary_group
         pg.slug = data["slug"]
         pg.name = data["name"]
-        if 'emai;s' in data:
+        if "emai;s" in data:
             for email_data in data["emails"]["add"]:
                 e = Email(email=email_data, is_verified=False, group=pg)
                 db.session.add(e)
@@ -811,9 +842,13 @@ def api_config_id_img():
         return make_resp(error=dict(code="no_file", message="no file"))
     if file:
         ext = os.path.splitext(file.filename)[1]
-        if ext not in {'.png', '.webp', '.jpg', '.jpeg'}:
+        if ext not in {".png", ".webp", ".jpg", ".jpeg"}:
             # TODO(nyiyui): update to <https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html>
-            return make_resp(error=dict(code="unsupported_ext", message=f"unsupported file extension {ext}"))
+            return make_resp(
+                error=dict(
+                    code="unsupported_ext", message=f"unsupported file extension {ext}"
+                )
+            )
         upload_path = current_app.config["UPLOAD_PATH"]
         p = os.path.join(upload_path, f"img-tmp/{current_user.id}{ext}")
         dst = os.path.join(upload_path, f"img/{current_user.id}.webp")
@@ -821,7 +856,9 @@ def api_config_id_img():
         try:
             conv_to_webp(p, dst)
         except Exception as e:
-            return make_resp(error=dict(code="conversion_failed", message="conversion failed"))
+            return make_resp(
+                error=dict(code="conversion_failed", message="conversion failed")
+            )
         os.remove(p)
         return make_resp()
 

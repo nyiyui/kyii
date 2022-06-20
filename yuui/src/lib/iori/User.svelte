@@ -11,13 +11,13 @@
 	let iconFound = true
 	let anonymous: boolean
 
-	$: anonymous = uid === "anonymous" || uid === null
+	$: anonymous = uid === 'anonymous' || uid === null
 
-	onMount(async() => {
+	onMount(async () => {
 		const url = new URL(`api/v2/user/${uid}/img`, client.baseUrl)
 		const r = await fetch(url.toString())
 		iconFound = r.status !== 404
-		console.log(`iconFound`, iconFound);
+		console.log(`iconFound`, iconFound)
 	})
 
 	// TODO: optimize to only one fetch
@@ -31,7 +31,7 @@
 			src={new URL(`api/v2/user/${uid}/img`, client.baseUrl).toString()}
 		/>
 	{:else}
-		<Icon icon={anonymous ? "mdi-incognito-circle" : "mdi:account-circle"} class="user-img" />
+		<Icon icon={anonymous ? 'mdi-incognito-circle' : 'mdi:account-circle'} class="user-img" />
 	{/if}
 	{#if !iconOnly}
 		<div class="non-img">

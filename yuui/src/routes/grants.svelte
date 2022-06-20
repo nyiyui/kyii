@@ -15,7 +15,7 @@
 		Loaded
 	}
 	let state: State
-	(async () => {
+	;(async () => {
 		if (browser) {
 			if (!(await client.loggedIn())) {
 				console.log('not logged in')

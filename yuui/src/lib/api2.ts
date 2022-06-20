@@ -175,10 +175,10 @@ class Ap {
 }
 
 type AfPublic = {
-	uuid: UUID,
-	name: string,
-	verifeir: string,
-	public_params: unknown,
+	uuid: UUID
+	name: string
+	verifeir: string
+	public_params: unknown
 }
 
 class Af {
@@ -482,11 +482,11 @@ class Client extends BaseClient {
 	}
 
 	async checkLoggedIn(): Promise<boolean> {
-		const r = await this.fetch<{logged_in: boolean}>(`logged_in`, {
-			method: 'GET',
+		const r = await this.fetch<{ logged_in: boolean }>(`logged_in`, {
+			method: 'GET'
 		})
-		this.assertNoErrors(r);
-		return r.data.logged_in;
+		this.assertNoErrors(r)
+		return r.data.logged_in
 	}
 
 	async status(): Promise<Status> {

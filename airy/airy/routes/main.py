@@ -10,8 +10,19 @@ from urllib.parse import urlencode, urljoin
 from authlib.integrations.flask_oauth2 import current_token
 from authlib.oauth2 import OAuth2Error
 from authlib.jose import JsonWebKey, KeySet
-from flask import (Blueprint, Response, abort, current_app, g, jsonify,
-                   redirect, render_template, request, session, url_for)
+from flask import (
+    Blueprint,
+    Response,
+    abort,
+    current_app,
+    g,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import gen_salt
 
@@ -193,6 +204,7 @@ def load_public_keys():
     else:
         public_key = JsonWebKey.import_key(current_app.config["OAUTH2_JWT_KEY"])
     return KeySet([public_key])
+
 
 @bp.route("/.well-known/jwks.json")
 def jwks_endpoint():

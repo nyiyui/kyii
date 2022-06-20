@@ -24,14 +24,14 @@
 				client.uloDel(ulo.ulid)
 				if (chosen) {
 					// switch to anonymous to avoid undefined behaviour (lol)
-					client.uloReset();
+					client.uloReset()
 				}
 				dispatch('reload')
 			} catch (e) {
 				err = e
 			}
 		} else {
-			console.warn(`unknown ulo ${ulo.ulid}; ignoring`);
+			console.warn(`unknown ulo ${ulo.ulid}; ignoring`)
 			client.uloDel(ulo.ulid)
 			dispatch('reload')
 		}

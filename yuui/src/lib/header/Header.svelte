@@ -33,9 +33,7 @@
 				<a sveltekit:prefetch href="/ui">{$_('header.ui')}</a>
 			</li>
 			<li>
-				<a sveltekit:prefetch href={import.meta.env.VITE_API_BASE_URL.toString()}>
-					Airy
-				</a>
+				<a sveltekit:prefetch href={import.meta.env.VITE_API_BASE_URL.toString()}> Airy </a>
 			</li>
 		{/if}
 		{#if loggedIn === undefined}

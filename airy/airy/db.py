@@ -4,9 +4,11 @@ from datetime import datetime
 from typing import List, Optional, Set, Tuple
 from uuid import UUID
 
-from authlib.integrations.sqla_oauth2 import (OAuth2AuthorizationCodeMixin,
-                                              OAuth2ClientMixin,
-                                              OAuth2TokenMixin)
+from authlib.integrations.sqla_oauth2 import (
+    OAuth2AuthorizationCodeMixin,
+    OAuth2ClientMixin,
+    OAuth2TokenMixin,
+)
 from blake3 import blake3
 from flask_login import current_user
 from flask_sqlalchemy import SQLAlchemy
@@ -296,6 +298,7 @@ class AF(db.Model):
 
     def regen(self, gen_params: dict) -> Optional[dict]:
         from . import verifiers
+
         self.params, self.state, feedback, self.gen_done = verifiers.gen(
             self.verifier, gen_params, self.state
         )
@@ -303,6 +306,7 @@ class AF(db.Model):
 
     def verify(self, attempt: str) -> Tuple[Optional[dict], bool]:
         from . import verifiers
+
         self.params, self.state, feedback, done = verifiers.verify(
             self.verifier, attempt, self.params, self.state
         )
@@ -311,6 +315,7 @@ class AF(db.Model):
     @property
     def public_params(self):
         from . import verifiers
+
         return verifiers.public_params(self.verifier, self.params)
 
     @property

@@ -4,15 +4,24 @@ from uuid import UUID, uuid4
 
 import flask_login
 import jsonschema
-from flask import (Blueprint, Response, abort, current_app, jsonify, redirect,
-                   render_template, request, session, url_for)
+from flask import (
+    Blueprint,
+    Response,
+    abort,
+    current_app,
+    jsonify,
+    redirect,
+    render_template,
+    request,
+    session,
+    url_for,
+)
 from flask_cors import CORS
 from flask_login import current_user, login_required, logout_user
 from flask_mail import Message
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
-from ..db import (AF, AP, Email, OAuth2Token, User, UserLogin, ap_reqs, db,
-                  gen_uuid)
+from ..db import AF, AP, Email, OAuth2Token, User, UserLogin, ap_reqs, db, gen_uuid
 from ..etc import current_user_login, mail
 from ..session import API_V1_APID, API_V1_SOLVED, API_V1_UID
 from ..util import all_perms, gen_token, has_perms, req_perms

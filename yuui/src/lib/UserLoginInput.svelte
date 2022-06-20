@@ -18,7 +18,7 @@
 		await client.revokeUl(ul.uuid)
 		console.log(`revoke UL ${ul.uuid}`)
 		ul.end = new Date()
-		ul.reason = "revoke"
+		ul.reason = 'revoke'
 		console.log(ul)
 		dispatch('revoke')
 	}
@@ -32,7 +32,7 @@
 	async function updateName() {
 		await client.editUl(ul.uuid, newName)
 		console.log(`edit UL ${ul.uuid}`)
-		ul.name = newName;
+		ul.name = newName
 	}
 
 	const timeOpts = {
@@ -70,14 +70,12 @@
 			{/if}
 			{#if ul.end === null}
 				<span class="tag ongoing">{$_('ul.tag.ongoing')}</span>
+			{:else if ul.reason === 'revoke'}
+				<span class="tag revoked">{$_('ul.tag.revoked')}</span>
+			{:else if ul.reason === 'logout'}
+				<span class="tag logged_out">{$_('ul.tag.logged_out')}</span>
 			{:else}
-				{#if ul.reason === "revoke"}
-					<span class="tag revoked">{$_('ul.tag.revoked')}</span>
-				{:else if ul.reason === "logout"}
-					<span class="tag logged_out">{$_('ul.tag.logged_out')}</span>
-				{:else}
-					<span class="tag ended">{$_('ul.tag.ended')}</span>
-				{/if}
+				<span class="tag ended">{$_('ul.tag.ended')}</span>
 			{/if}
 		</div>
 		<div>

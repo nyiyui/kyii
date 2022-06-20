@@ -5,8 +5,16 @@ from flask_admin import Admin
 from flask_admin.contrib import sqla
 from flask_login import current_user
 
-from .db import (AF, AP, OAuth2AuthorizationCode, OAuth2Client, OAuth2Token,
-                 User, UserLogin, db)
+from .db import (
+    AF,
+    AP,
+    OAuth2AuthorizationCode,
+    OAuth2Client,
+    OAuth2Token,
+    User,
+    UserLogin,
+    db,
+)
 
 
 class AiryModelView(sqla.ModelView):

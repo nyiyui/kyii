@@ -41,9 +41,7 @@ class Verifier:
         raise NotImplementedError()
 
     @classmethod
-    def public_params(
-        cls, params: dict
-    ) -> dict:
+    def public_params(cls, params: dict) -> dict:
         """
         Get public params.
 
@@ -139,12 +137,8 @@ class TOTP(Verifier):
         return params, dict(last_otp=attempt), None, True
 
     @classmethod
-    def public_params(
-        cls, params: dict
-    ) -> dict:
-        return dict(
-            digits=params['digits']
-        )
+    def public_params(cls, params: dict) -> dict:
+        return dict(digits=params["digits"])
 
 
 class Limited(Verifier):
@@ -188,7 +182,5 @@ def verify(
     return VERIFIERS[verifier].verify(attempt, params, state)
 
 
-def public_params(
-    verifier: str, params: dict
-) -> dict:
+def public_params(verifier: str, params: dict) -> dict:
     return VERIFIERS[verifier].public_params(params)

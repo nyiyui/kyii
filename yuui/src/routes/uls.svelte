@@ -12,14 +12,14 @@
 		uls = client.ulsList()
 	}
 
-	(async () => {
+	;(async () => {
 		if (browser) {
 			if (!(await client.loggedIn())) {
 				console.log('not logged in')
 				window.location.replace('/login')
 			}
 
-			reload();
+			reload()
 		}
 	})()
 </script>

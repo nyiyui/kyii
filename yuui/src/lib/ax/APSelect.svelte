@@ -8,10 +8,10 @@
 	export let aps
 	export let chosen
 
-	let items: Array<{value: string, label: string}>
-	let value: {value: string, label: string}
+	let items: Array<{ value: string; label: string }>
+	let value: { value: string; label: string }
 
-	$: items = aps.map(ap => ({value: ap.uuid, label: ap.name}))
+	$: items = aps.map((ap) => ({ value: ap.uuid, label: ap.name }))
 
 	function choose() {
 		console.log('choose', chosen)
@@ -21,12 +21,7 @@
 </script>
 
 <div class="ap-select">
-	<Select
-		{items}
-		bind:value={value}
-		on:select={choose}
-		placeholder={$_('ap_select.placeholder')}
-	></Select>
+	<Select {items} bind:value on:select={choose} placeholder={$_('ap_select.placeholder')} />
 </div>
 
 <style>

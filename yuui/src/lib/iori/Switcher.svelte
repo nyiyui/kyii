@@ -14,7 +14,7 @@
 	const dispatch = createEventDispatcher()
 
 	async function choose(ulid) {
-		if (ulid === null || ulid === "anonymous") {
+		if (ulid === null || ulid === 'anonymous') {
 			client.uloReset()
 			synched = null
 		} else {
@@ -24,10 +24,10 @@
 			} catch (err) {
 				if (err instanceof UnauthenticatedError) {
 					console.error('ul id invalid', ulid)
-					if (ulid !== "anonymous") {
+					if (ulid !== 'anonymous') {
 						$ulosStore.set(ulid, {
 							...$ulosStore.get(ulid),
-							invalid: true,
+							invalid: true
 						})
 						$ulosStore = $ulosStore
 					}
@@ -53,41 +53,41 @@
 
 	async function reload() {
 		if (dontReload) {
-		dontReload = false
-		return
+			dontReload = false
+			return
 		}
-		console.log('reload', $ulosStore);
+		console.log('reload', $ulosStore)
 		ulos = [...$ulosStore.entries()]
 		try {
 			synched = await client.synchedLogin()
 			if (synched === null) {
 				// NOTE: avoid loop!
-				await client.loginSync();
+				await client.loginSync()
 				synched = await client.synchedLogin()
 			}
 		} catch (err) {
 			const ulid = $currentUlid
-				if (err instanceof UnauthenticatedError) {
-					console.error('ul id invalid', ulid)
-					if (ulid !== "anonymous") {
-						$ulosStore.set(ulid, {
-							...$ulosStore.get(ulid),
-							invalid: true,
-						})
-						$ulosStore = $ulosStore
-						dontReload = true
-						synched = null
-					} else {
-						synched = "anonymous"
-					}
+			if (err instanceof UnauthenticatedError) {
+				console.error('ul id invalid', ulid)
+				if (ulid !== 'anonymous') {
+					$ulosStore.set(ulid, {
+						...$ulosStore.get(ulid),
+						invalid: true
+					})
+					$ulosStore = $ulosStore
+					dontReload = true
+					synched = null
 				} else {
-					console.error('syncing failed', err)
-					synched = err
+					synched = 'anonymous'
 				}
+			} else {
+				console.error('syncing failed', err)
+				synched = err
+			}
 		}
 	}
 
-	let synched: User | UnauthenticatedError | null | "anonymous"
+	let synched: User | UnauthenticatedError | null | 'anonymous'
 </script>
 
 <div class="switcher">
@@ -96,7 +96,7 @@
 			Not synched
 		{:else if synched === undefined}
 			<Loading />
-		{:else if synched === "anonymous"}
+		{:else if synched === 'anonymous'}
 			{$_('iori.anonymous')}
 		{:else if 'uid' in synched}
 			{$_('iori.synched', { values: { synched } })}
@@ -111,9 +111,9 @@
 				<!-- TODO: decide: delete invalid ULOs when found + !debugMode? -->
 				<ULOView
 					{ulo}
-			 		on:choose={() => {
-			 			choose(ulo.ulid)
-			 			reload()
+					on:choose={() => {
+						choose(ulo.ulid)
+						reload()
 					}}
 					on:reload={reload}
 					chosen={$currentUlid === ulo.ulid}
@@ -121,13 +121,13 @@
 			</div>
 		{/if}
 	{/each}
-	{#if $allowAnonymous || $currentUlid == "anonymous"}
+	{#if $allowAnonymous || $currentUlid == 'anonymous'}
 		<div class="ulo-view">
 			<ULOView
-			 	ulo="anonymous"
-	 			on:choose={() => choose("anonymous")}
-		 		chosen={[null, "anonymous"].includes($currentUlid)}
-	 		/>
+				ulo="anonymous"
+				on:choose={() => choose('anonymous')}
+				chosen={[null, 'anonymous'].includes($currentUlid)}
+			/>
 		</div>
 	{/if}
 	<div class="ulo-view">

@@ -1,15 +1,16 @@
-from authlib.integrations.flask_oauth2 import (AuthorizationServer,
-                                               ResourceProtector)
-from authlib.integrations.sqla_oauth2 import (create_bearer_token_validator,
-                                              create_query_client_func,
-                                              create_save_token_func)
-from authlib.oauth2.rfc6749.grants import \
-    AuthorizationCodeGrant as _AuthorizationCodeGrant
+from authlib.integrations.flask_oauth2 import AuthorizationServer, ResourceProtector
+from authlib.integrations.sqla_oauth2 import (
+    create_bearer_token_validator,
+    create_query_client_func,
+    create_save_token_func,
+)
+from authlib.oauth2.rfc6749.grants import (
+    AuthorizationCodeGrant as _AuthorizationCodeGrant,
+)
 from authlib.oidc.core import UserInfo
 from authlib.oidc.core.grants import OpenIDCode as _OpenIDCode
 from authlib.oidc.core.grants import OpenIDHybridGrant as _OpenIDHybridGrant
-from authlib.oidc.core.grants import \
-    OpenIDImplicitGrant as _OpenIDImplicitGrant
+from authlib.oidc.core.grants import OpenIDImplicitGrant as _OpenIDImplicitGrant
 from flask_login import current_user
 from werkzeug.security import gen_salt
 
@@ -26,7 +27,7 @@ def exists_nonce(nonce, req):
 
 
 def generate_user_info(user, scope):
-    return UserInfo(sub=str(user.id), name=user.name) # TODO: per-client sub
+    return UserInfo(sub=str(user.id), name=user.name)  # TODO: per-client sub
 
 
 def create_authorization_code(client, grant_user, request):
