@@ -174,6 +174,13 @@ class Ap {
 	}
 }
 
+type AfPublic = {
+	uuid: UUID,
+	name: string,
+	verifeir: string,
+	public_params: unknown,
+}
+
 class Af {
 	uuid: string
 	name: string
@@ -514,8 +521,8 @@ class Client extends BaseClient {
 		}
 	}
 
-	async loginChoose(apid: UUID): Promise<{ afs: Array<Af> }> {
-		const r = await this.fetch<{ afs: Array<Af> }>(`login/choose`, {
+	async loginChoose(apid: UUID): Promise<{ afs: Array<AfPublic> }> {
+		const r = await this.fetch<{ afs: Array<AfPublic> }>(`login/choose`, {
 			method: 'POST',
 			body: new URLSearchParams({ apid })
 		})
@@ -847,7 +854,7 @@ const client = new Client(baseUrl)
 
 export { client, ulos, currentUlid }
 export { Ap, Af, Client, User, verifiers }
-export type { Status, ApInput, AfInput, Id, AxInput, UserLogin, Grant, OClient }
+export type { Status, ApInput, AfPublic, AfInput, Id, AxInput, UserLogin, Grant, OClient }
 export type { ULO, LooseULO }
 export { MissingPermsError, UnauthenticatedError, ManyErrors }
 

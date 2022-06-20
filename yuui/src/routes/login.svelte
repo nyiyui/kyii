@@ -4,7 +4,8 @@
 	import { _ } from 'svelte-i18n'
 	import { page } from '$app/stores'
 	import { getNext } from '$lib/util'
-	import { Ap, Af, client } from '$lib/api2'
+	import { Ap, client } from '$lib/api2'
+	import type { AfPublic } from '$lib/api2'
 	import Icon from '@iconify/svelte'
 	import Box from '$lib/Box.svelte'
 	import AFChallenge from '$lib/ax/AFChallenge.svelte'
@@ -28,7 +29,7 @@
 
 	let done: boolean
 	let aps: Array<Ap> = []
-	let afs: Array<Af> = []
+	let afs: Array<AfPublic> = []
 
 	let attemptResults: Map<string, { status: AttemptResultStatus; msg: string }> = new Map()
 	// string: error
@@ -180,9 +181,6 @@
 	}
 	.afs {
 		flex-grow: 1;
-	}
-	#login-as {
-		display: flex;
 	}
 	#login-status {
 		text-align: right;

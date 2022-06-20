@@ -309,6 +309,11 @@ class AF(db.Model):
         return feedback, done
 
     @property
+    def public_params(self):
+        from . import verifiers
+        return verifiers.public_params(self.verifier, self.params)
+
+    @property
     def for_api_v1_trusted(self):
         return dict(
             uuid=self.id,
@@ -322,6 +327,7 @@ class AF(db.Model):
             uuid=self.id,
             name=self.name,
             verifier=self.verifier,
+            public_params=self.public_params,
         )
 
 

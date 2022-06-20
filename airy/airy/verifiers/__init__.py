@@ -40,6 +40,19 @@ class Verifier:
         """
         raise NotImplementedError()
 
+    @classmethod
+    def public_params(
+        cls, params: dict
+    ) -> dict:
+        """
+        Get public params.
+
+        :param params: private params to verify against
+        :return: tuple of public params
+        """
+        return {}
+        raise NotImplementedError()
+
 
 class Pw(Verifier):
     @classmethod
@@ -125,6 +138,14 @@ class TOTP(Verifier):
             raise VerificationError("already used")
         return params, dict(last_otp=attempt), None, True
 
+    @classmethod
+    def public_params(
+        cls, params: dict
+    ) -> dict:
+        return dict(
+            digits=params['digits']
+        )
+
 
 class Limited(Verifier):
     @classmethod
@@ -165,3 +186,9 @@ def verify(
     verifier: str, attempt: str, params: dict, state: Optional[dict] = None
 ) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
     return VERIFIERS[verifier].verify(attempt, params, state)
+
+
+def public_params(
+    verifier: str, params: dict
+) -> dict:
+    return VERIFIERS[verifier].public_params(params)

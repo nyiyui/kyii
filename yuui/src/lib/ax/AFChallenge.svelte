@@ -1,14 +1,15 @@
 <script lang="ts" type="module">
+	// TODO: callback → event dispatch
 	import { _ } from 'svelte-i18n'
 	import Icon from '@iconify/svelte'
 	import AF from '$lib/ax/AF.svelte'
 	import Box from '$lib/Box.svelte'
 	import BoxError from '$lib/BoxError.svelte'
-	import type { Af } from '$lib/api2'
+	import type { AfPublic } from '$lib/api2'
 	import { AttemptResultStatus } from '$lib/util'
 	import { client } from '$lib/api2'
 
-	export let af: Af
+	export let af: AfPublic
 	export let attempt: string
 	export let callback: (afid: string, attempt: string) => Promise<any>
 	export let result: { status: AttemptResultStatus; msg?: string; feedback?: string }
@@ -18,6 +19,22 @@
 		const assertion = await navigator.credentials.get(feedback)
 		console.log('webauthn assertion', assertion)
 		await callback(af.uuid, JSON.stringify({ state: '2_verify', assertion }))
+	}
+
+	async function autoAttempt() {
+		if (af.verifier === 'otp_totp') {
+			if (attempt && attempt.length === af.public_params.digits) {
+				await callback(af.uuid, attempt)
+				if (result.status === AttemptResultStatus.Fail) {
+					attempt = ''
+				}
+			}
+		}
+	}
+
+	$: {
+		attempt
+		autoAttempt()
 	}
 </script>
 
@@ -46,9 +63,14 @@
 			{:else if af.verifier === 'otp_totp'}
 				<label id={af.uuid} class="af">
 					{$_('af.otp_totp.label')}
-					<input type="password" bind:value={attempt} autocomplete="one-time-code" />
+					<input
+						type="text"
+						inputmode="numeric"
+						bind:value={attempt}
+						autocomplete="one-time-code"
+						pattern="[0-9]*"
+					/>
 				</label>
-				<input type="button" value={$_('af.submit')} on:click={() => callback(af.uuid, attempt)} />
 			{:else if af.verifier === 'limited'}
 				<input type="button" value={$_('af.submit')} on:click={() => callback(af.uuid, attempt)} />
 			{:else if af.verifier === 'webauthn'}
