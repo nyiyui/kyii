@@ -811,9 +811,9 @@ def api_config_id_img():
         return make_resp(error=dict(code="no_file", message="no file"))
     if file:
         ext = os.path.splitext(file.filename)[1]
-        if ext not in {'.png', '.webp'}:
+        if ext not in {'.png', '.webp', '.jpg', '.jpeg'}:
             # TODO(nyiyui): update to <https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html>
-            return make_resp(error=dict(code="unsupported_ext", message="unsupported file extension"))
+            return make_resp(error=dict(code="unsupported_ext", message=f"unsupported file extension {ext}"))
         upload_path = current_app.config["UPLOAD_PATH"]
         p = os.path.join(upload_path, f"img-tmp/{current_user.id}{ext}")
         dst = os.path.join(upload_path, f"img/{current_user.id}.webp")

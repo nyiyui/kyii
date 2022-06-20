@@ -10,26 +10,19 @@
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte'
 	//import EmailVerified from '$lib/EmailVerified.svelte';
 
-	let files = {
-		accepted: [],
-		rejected: []
-	}
 	let candFile: File | null = null
 	let candFileObjectUrl: string | null = null
 
 	function handleFilesSelect(e) {
 		// TODO; remove old candFile (override candFile weith new selection)
-		const { acceptedFiles, fileRejections } = e.detail
-		files.accepted = [...files.accepted, ...acceptedFiles]
-		files.rejected = [...files.rejected, ...fileRejections]
-		if (files.accepted.length) {
-			candFile = files.accepted[0]
+		const { acceptedFiles } = e.detail
+		if (acceptedFiles.length) {
+			candFile = acceptedFiles[0]
 			if (candFileObjectUrl) {
 				URL.revokeObjectURL(candFileObjectUrl)
 			}
 			candFileObjectUrl = URL.createObjectURL(candFile)
 		}
-		console.log(files.accepted)
 		idUnsavedChanges = true
 	}
 
