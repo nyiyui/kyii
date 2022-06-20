@@ -20,9 +20,22 @@
 	}
 </script>
 
-<Select
-	{items}
-	bind:value={value}
-	on:select={choose}
-	placeholder={$_('ap_select.placeholder')}
-></Select>
+<div class="ap-select">
+	<Select
+		{items}
+		bind:value={value}
+		on:select={choose}
+		placeholder={$_('ap_select.placeholder')}
+	></Select>
+</div>
+
+<style>
+	.ap-select {
+		--background: var(--color-bg);
+		--color: var(--color-fg);
+		--border: 1px solid var(--color-2);
+		--borderRadius: 8px;
+		--padding: 6px;
+		--margin: 2px;
+	}
+</style>
