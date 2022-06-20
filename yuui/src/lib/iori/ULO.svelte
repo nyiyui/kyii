@@ -78,13 +78,14 @@
 			disabled={chosen && ulo.invalid && !$allowAnonymous}
 		/>
 	{/if}
-	<input
-		class="action ok"
-		type="button"
-		value={$_('iori.ulo.choose')}
-		on:click={() => dispatch('choose')}
-		disabled={chosen || ulo.invalid}
-	/>
+	{#if !chosen && !ulo.invalid}
+		<input
+			class="action ok"
+			type="button"
+			value={$_('iori.ulo.choose')}
+			on:click={() => dispatch('choose')}
+		/>
+	{/if}
 	<BoxError msg={err ? err.toString() : null} passive />
 </div>
 
