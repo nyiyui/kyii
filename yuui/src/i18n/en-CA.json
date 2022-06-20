@@ -71,7 +71,7 @@
 		"pending": "Pending"
 	},
 	"iori": {
-		"anonymous": "No session (same as logged out)",
+		"anonymous": "No session",
 		"switcher": {
 			"switch": "Switch",
 			"or": "Or, <a href=\"/login?selfnext=/iori\">log in</a>."

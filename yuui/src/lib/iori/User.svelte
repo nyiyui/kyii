@@ -9,6 +9,9 @@
 	export let slug: string
 	export let iconOnly = false
 	let iconFound = true
+	let anonymous: boolean
+
+	$: anonymous = uid === "anonymous" || uid === null
 
 	onMount(async() => {
 		const url = new URL(`api/v2/user/${uid}/img`, client.baseUrl)
@@ -20,29 +23,25 @@
 	// TODO: optimize to only one fetch
 </script>
 
-{#if uid == 'anonymous' || uid === null}
-	<span class="user">
-		<em>{$_('iori.anonymous')}</em>
-	</span>
-{:else}
-	<span class="user">
-		{#if iconFound}
-			<img
-				alt={$_('iori.user.profile')}
-				class="user-img"
-				src={new URL(`api/v2/user/${uid}/img`, client.baseUrl).toString()}
-			/>
-		{:else}
-			<Icon icon="mdi:account-circle" class="user-img" />
-		{/if}
-		{#if !iconOnly}
-			<div class="non-img">
-				<div class="name">{name}</div>
+<span class="user">
+	{#if iconFound}
+		<img
+			alt={$_('iori.user.profile')}
+			class="user-img"
+			src={new URL(`api/v2/user/${uid}/img`, client.baseUrl).toString()}
+		/>
+	{:else}
+		<Icon icon={anonymous ? "mdi-incognito-circle" : "mdi:account-circle"} class="user-img" />
+	{/if}
+	{#if !iconOnly}
+		<div class="non-img">
+			<div class="name">{anonymous ? $_('iori.anonymous') : name}</div>
+			{#if !anonymous}
 				<div class="slug"><code>{slug}</code></div>
-			</div>
-		{/if}
-	</span>
-{/if}
+			{/if}
+		</div>
+	{/if}
+</span>
 
 <style>
 	.user {
