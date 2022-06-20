@@ -115,6 +115,13 @@
 		"reason": {
 			"revoke": "Manual revocation",
 			"logout": "Controller-side logout"
+		},
+		"tag": {
+			"you": "You",
+			"ongoing": "Ongoing",
+			"revoked": "Revoked",
+			"logged_out": "Loggd out",
+			"ended": "Ended"
 		}
 	},
 	"grants": {

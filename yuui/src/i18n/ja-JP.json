@@ -115,6 +115,13 @@
 		"reason": {
 			"revoke": "手動の失効",
 			"logout": "制御側ログアウト"
+		},
+		"tag": {
+			"you": "自分",
+			"ongoing": "進行中",
+			"revoked": "取消済み",
+			"logged_out": "ログアウト済み",
+			"ended": "停止"
 		}
 	},
 	"grants": {

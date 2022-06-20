@@ -17,6 +17,9 @@
 	async function revoke() {
 		await client.revokeUl(ul.uuid)
 		console.log(`revoke UL ${ul.uuid}`)
+		ul.end = new Date()
+		ul.reason = "revoke"
+		console.log(ul)
 		dispatch('revoke')
 	}
 
@@ -63,17 +66,17 @@
 		</h2>
 		<div class="tags">
 			{#if ul.current}
-				<span class="tag you">You</span>
+				<span class="tag you">{$_('ul.tag.you')}</span>
 			{/if}
 			{#if ul.end === null}
-				<span class="tag ongoing">Ongoing</span>
+				<span class="tag ongoing">{$_('ul.tag.ongoing')}</span>
 			{:else}
 				{#if ul.reason === "revoke"}
-					<span class="tag revoked">Revoked</span>
+					<span class="tag revoked">{$_('ul.tag.revoked')}</span>
 				{:else if ul.reason === "logout"}
-					<span class="tag logged_out">Logged out</span>
+					<span class="tag logged_out">{$_('ul.tag.logged_out')}</span>
 				{:else}
-					<span class="tag ended">Ended</span>
+					<span class="tag ended">{$_('ul.tag.ended')}</span>
 				{/if}
 			{/if}
 		</div>
