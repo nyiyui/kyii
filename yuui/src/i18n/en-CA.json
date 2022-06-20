@@ -97,7 +97,7 @@
 			"label": "TOTP",
 			"challenge": "Challenge"
 		},
-		"otp_totp": {
+		"limited": {
 			"label": "Counted Limit"
 		},
 		"webauthn": {

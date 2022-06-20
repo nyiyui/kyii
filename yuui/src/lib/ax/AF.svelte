@@ -28,7 +28,7 @@
 			{$_('af.otp_totp.label')}
 		{:else if verifier === 'limited'}
 			<Icon icon="mdi:timer-outline" />
-			{$_('af.otp_totp.label')}
+			{$_('af.limited.label')}
 		{:else if verifier === 'webauthn'}
 			<Icon icon="mdi:key" />
 			{$_('af.webauthn.label')}
