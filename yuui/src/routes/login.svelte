@@ -15,6 +15,7 @@
 	let slug: string
 	let slugFound: boolean | undefined = undefined
 	let autosel: boolean
+	let chosen = false
 	let apUuid: string
 	let attempts: Map<string, string> = new Map()
 
@@ -77,6 +78,7 @@
 		}
 		;({ afs } = resp)
 		console.log(resp)
+		chosen = true
 	}
 
 	async function attempt(afUuid: string, chalResp: string) {
@@ -127,7 +129,7 @@
 		{#if slugFound}
 			<div class="flex">
 				{#if !autosel}
-					<div class="panel flex-in">
+					<div class="padded flex-in">
 						<h2>{$_('login.aps')}</h2>
 						<Box level="debug"><pre>{JSON.stringify(aps, null, 2)}</pre></Box>
 						<Box level="debug">APID: <code>{apUuid}</code></Box>
@@ -147,20 +149,22 @@
 						{/each}
 					</div>
 				{/if}
-				<div class="panel flex-in afs">
-					<h2>{$_('login.afs')}</h2>
-					<Box level="debug"><pre>{JSON.stringify(afs, null, 2)}</pre></Box>
-					{#if afs}
-						{#each afs as af}
-							<AFChallenge
-								bind:af
-								bind:attempt={attempts[af.uuid]}
-								callback={attempt}
-								result={attemptResults.get(af.uuid)}
-							/>
-						{/each}
-					{/if}
-				</div>
+				{#if chosen}
+					<div class="padded flex-in afs">
+						<h2>{$_('login.afs')}</h2>
+						<Box level="debug"><pre>{JSON.stringify(afs, null, 2)}</pre></Box>
+						{#if afs}
+							{#each afs as af}
+								<AFChallenge
+									bind:af
+									bind:attempt={attempts[af.uuid]}
+									callback={attempt}
+									result={attemptResults.get(af.uuid)}
+								/>
+							{/each}
+						{/if}
+					</div>
+				{/if}
 			</div>
 		{/if}
 		<div id="login-bottom">
