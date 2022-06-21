@@ -156,7 +156,7 @@ class Limited(Verifier):
         cls, attempt: str, params: dict, state: dict
     ) -> Tuple[dict, Optional[dict]]:
         limit = params["limit"]
-        used = state["used"]
+        used = state["used"] if state else 0
         if used >= limit:
             raise VerificationError("limit reached")
         return params, dict(used=used + 1), dict(remaining=limit - used), True

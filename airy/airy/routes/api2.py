@@ -223,6 +223,8 @@ def login_choose():
 @bp.route("/login/attempt", methods=("POST",))
 def login_attempt():
     afid = str(UUID(request.form["afid"]))
+    if afid in session[API_V1_SOLVED]:
+        return make_resp(error=dict(code="already_solved", message="AF already solved"))
     attempt = request.form["attempt"]
     try:
         af = AF.query.filter_by(id=afid).one()
@@ -257,6 +259,7 @@ def login_attempt():
         ul, token = login_user(u, session[API_V1_APID])
         # login_clear()  # TODO: clear and disable further submissions by Yuui
         data.update(dict(uid=u.id, ulid=ul.id, slug=u.slug, name=u.name, token=token))
+    db.session.commit()
     return make_resp(data=data)
 
 

@@ -1,6 +1,5 @@
 <script lang="ts" type="module">
 	// TODO: call loginStop
-	// TODO: disallow ubmitting twice (both on client and server side)
 	import { _ } from 'svelte-i18n'
 	import { page } from '$app/stores'
 	import { getNext } from '$lib/util'
@@ -124,7 +123,7 @@
 					<Icon icon="mdi:account-cancel" style="color: #fcc;" />
 					{$_('login.user_not_found')}
 				{:else}
-					<Icon icon="mdi:account-check" style="color: #cfc;" />
+					<Icon icon="mdi:account-check" style="color: var(--color-ok);" />
 				{/if}
 			</div>
 		</div>

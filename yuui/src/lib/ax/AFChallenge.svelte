@@ -14,6 +14,9 @@
 	export let callback: (afid: string, attempt: string) => Promise<any>
 	export let result: { status: AttemptResultStatus; msg?: string; feedback?: string }
 
+	let solved: boolean
+	$: solved = result && result.status === AttemptResultStatus.Success
+
 	async function webauthnSubmit() {
 		const feedback = await callback(af.uuid, JSON.stringify({ state: '1_generate' }))
 		const assertion = await navigator.credentials.get(feedback)
@@ -57,7 +60,7 @@
 				<input
 					type="button"
 					value={$_('af.submit')}
-					disabled={!attempt}
+					disabled={!attempt || solved}
 					on:click={() => callback(af.uuid, attempt)}
 				/>
 			{:else if af.verifier === 'otp_totp'}
@@ -72,9 +75,14 @@
 					/>
 				</label>
 			{:else if af.verifier === 'limited'}
-				<input type="button" value={$_('af.submit')} on:click={() => callback(af.uuid, attempt)} />
+				<input
+					type="button"
+					value={$_('af.submit')}
+					on:click={() => callback(af.uuid, attempt)}
+					disabled={solved}
+				/>
 			{:else if af.verifier === 'webauthn'}
-				<input type="button" value={$_('af.submit')} on:click={() => callback(af.uuid, attempt)} />
+				<input type="button" value={$_('af.submit')} on:click={webauthnSubmit} disabled={solved} />
 			{/if}
 		</div>
 		<div class="result">
