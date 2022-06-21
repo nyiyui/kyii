@@ -45,6 +45,8 @@
 			"debug_mode_help": "既に有るなデータのみを表示します（デバッグモードがオフの場合は非表示になります）。",
 			"allow_anonymous": "匿名セッション",
 			"allow_anonymous_help": "匿名セッションを表示する",
+			"allow_mulpu": "ユーザー毎に複数セッション",
+			"allow_mulpu_help": "一つにユーザーに対し複数のセッションを作れます。",
 			"lang": {
 				"title": "言語",
 				"current": "日本語",
@@ -64,6 +66,7 @@
 	"login": {
 		"username": "ユーザー名",
 		"user_not_found": "ユーザーが見つかりません。",
+		"user_mulpu": "同じユーザーで既にログインしています",
 		"aps": "認証パス",
 		"afs": "認証方法",
 		"logged_in": "ログインしました。",

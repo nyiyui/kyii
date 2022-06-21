@@ -2,8 +2,9 @@
 	// TODO: call loginStop
 	import { _ } from 'svelte-i18n'
 	import { page } from '$app/stores'
+	import { allowMULPU } from '$lib/store'
 	import { getNext } from '$lib/util'
-	import { Ap, client } from '$lib/api2'
+	import { Ap, client, ulos } from '$lib/api2'
 	import type { AfPublic } from '$lib/api2'
 	import Icon from '@iconify/svelte'
 	import Box from '$lib/Box.svelte'
@@ -14,7 +15,7 @@
 	import { onMount } from 'svelte'
 
 	let slug: string
-	let slugFound: boolean | undefined = undefined
+	let slugFound: boolean | "mulpu" | undefined = undefined
 	let autosel: boolean
 	let chosen = false
 	let apUuid: string
@@ -35,10 +36,27 @@
 	// not set: not attempted
 	// true: ok
 
+	function isMULPUBySlug(slug: string): boolean {
+		for (const ulo of $ulos) {
+			if (ulo[1].slug === slug) {
+				return true
+			}
+		}
+		return false
+	}
+
 	async function usernameFind() {
 		const url = new URL(window.location.toString())
 		url.searchParams.set('slug', encodeURIComponent(slug))
 		window.history.replaceState({}, '', url)
+
+		// NOTE: DNC about slugs changing (too much effort (for now))
+		console.log('allow', $allowMULPU);
+		if (!$allowMULPU && isMULPUBySlug(slug)) {
+			slugFound = "mulpu"
+			return
+		}
+
 		const resp = await client.loginStart(slug)
 		if (!resp) {
 			slugFound = false
@@ -119,11 +137,14 @@
 					bind:value={slug}
 					on:input={usernameFind}
 				/>
-				{#if slugFound === false}
-					<Icon icon="mdi:account-cancel" style="color: #fcc;" />
-					{$_('login.user_not_found')}
-				{:else}
+				{#if slugFound === true}
 					<Icon icon="mdi:account-check" style="color: var(--color-ok);" />
+				{:else if slugFound === "mulpu"}
+					<Icon icon="mdi:account-cancel" style="color: var(--color-warn);" />
+					{$_('login.user_mulpu')}
+				{:else}
+					<Icon icon="mdi:account-cancel" style="color: var(--color-error);" />
+					{$_('login.user_not_found')}
 				{/if}
 			</div>
 		</div>

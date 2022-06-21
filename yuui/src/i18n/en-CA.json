@@ -45,6 +45,8 @@
 			"debug_mode_help": "This only shows data already available to Yuui (hidden if Debug Mode is off).",
 			"allow_anonymous": "Allow anonymous sessions",
 			"allow_anonymous_help": "Allow anonymous sessions, allowing you to choose an anonymous session voluntarily",
+			"allow_mulpu": "Allow multiple sessions per user",
+			"allow_mulpu_help": "Allow multiple sessions to concurrently login on this client for a given user",
 			"lang": {
 				"title": "Language",
 				"current": "English",
@@ -64,6 +66,7 @@
 	"login": {
 		"username": "Username",
 		"user_not_found": "User not found",
+		"user_mulpu": "User already logged in",
 		"aps": "Authentication Paths",
 		"afs": "Authentication Factors",
 		"logged_in": "Logged in",

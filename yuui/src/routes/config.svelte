@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n'
 	import Autosaved from '$lib/Autosaved.svelte'
 	import { client } from '$lib/api2'
-	import { debugMode, allowAnonymous } from '$lib/store'
+	import { debugMode, allowAnonymous, allowMULPU } from '$lib/store'
 	import Box from '$lib/Box.svelte'
 	import { Tabs, Tab, TabList, TabPanel } from 'svelte-tabs'
 	import IdInput from '$lib/id/IdInput.svelte'
@@ -67,6 +67,13 @@
 			</label>
 			<Box level="info">
 				{$_('config.client.allow_anonymous_help')}
+			</Box>
+			<label>
+				<input type="checkbox" bind:checked={$allowMULPU} />
+				{$_('config.client.allow_mulpu')}
+			</label>
+			<Box level="info">
+				{$_('config.client.allow_mulpu_help')}
 			</Box>
 			<h2>{$_('config.client.etc')}</h2>
 			<label>

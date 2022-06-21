@@ -41,4 +41,6 @@ export const debugMode = storage('debugMode', defaultDebugMode)
 
 export const allowAnonymous = storage('allowAnonymous', defaultDebugMode)
 
+export const allowMULPU = storage('allowMULPU', defaultDebugMode)
+
 export { storage }
