@@ -74,12 +74,14 @@
 			// NOTE: update ulos with data
 			console.log('currentUlid', $currentUlid)
 			const ulid = $currentUlid
-			$ulos.set(ulid, {
-				...$ulos.get(ulid),
-				slug,
-				name
-			})
-			$ulos = $ulos
+			if ($ulos.get(ulid)) {
+				$ulos.set(ulid, {
+					...$ulos.get(ulid),
+					slug,
+					name
+				})
+				$ulos = $ulos
+			}
 		} catch (e) {
 			console.error(`submitId: ${e}`)
 			submitIdError = e.toString()
