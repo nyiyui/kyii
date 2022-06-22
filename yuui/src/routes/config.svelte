@@ -9,6 +9,8 @@
 	import AxInput from '$lib/ax/AxInput.svelte'
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte'
 	import { browser } from '$app/env'
+	import { reset as storeReset } from '$lib/store'
+	import { reset as api2Reset } from '$lib/api2'
 
 	let loggedIn: boolean | null = null
 	let axUC = false
@@ -20,6 +22,11 @@
 			loggedIn = await client.loggedIn()
 		}
 	})()
+
+	function reset() {
+		api2Reset()
+		storeReset()
+	}
 </script>
 
 <svelte:head>
@@ -74,6 +81,10 @@
 			</label>
 			<Box level="info">
 				{$_('config.client.allow_mulpu_help')}
+			</Box>
+			<input type="button" on:click={reset} value={$_('config.client.reset')} />
+			<Box level="info">
+				{$_('config.client.reset_help')}
 			</Box>
 			<h2>{$_('config.client.etc')}</h2>
 			<label>

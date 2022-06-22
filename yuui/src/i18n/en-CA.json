@@ -47,6 +47,8 @@
 			"allow_anonymous_help": "Allow anonymous sessions, allowing you to choose an anonymous session voluntarily",
 			"allow_mulpu": "Allow multiple sessions per user",
 			"allow_mulpu_help": "Allow multiple sessions to concurrently login on this client for a given user",
+			"reset": "Factory reset",
+			"reset_help": "Re-initalize all data stored on this client.",
 			"lang": {
 				"title": "Language",
 				"current": "English",

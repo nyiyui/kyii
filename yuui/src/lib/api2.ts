@@ -16,6 +16,11 @@ function unmarshalMap(s: string): Ulos {
 const ulos = storage<Ulos>('user-login-options', new Map(), marshalMap, unmarshalMap)
 const currentUlid = storage<Ulid>('current-user-login-id', 'anonymous')
 
+export function reset() {
+	ulos.set(new Map())
+	currentUlid.set('anonymous')
+}
+
 const prefix = '/api/v2/'
 
 class Response<T> {

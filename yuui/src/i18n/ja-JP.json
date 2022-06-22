@@ -47,6 +47,8 @@
 			"allow_anonymous_help": "匿名セッションを表示する",
 			"allow_mulpu": "ユーザー毎に複数セッション",
 			"allow_mulpu_help": "一つにユーザーに対し複数のセッションを作れます。",
+			"reset": "初期化",
+			"reset_help": "設定を全て初期化します。",
 			"lang": {
 				"title": "言語",
 				"current": "日本語",

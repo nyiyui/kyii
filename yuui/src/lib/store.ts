@@ -43,4 +43,10 @@ export const allowAnonymous = storage('allowAnonymous', defaultDebugMode)
 
 export const allowMULPU = storage('allowMULPU', defaultDebugMode)
 
+export function reset() {
+	debugMode.set(defaultDebugMode)
+	allowAnonymous.set(defaultDebugMode)
+	allowMULPU.set(defaultDebugMode)
+}
+
 export { storage }
