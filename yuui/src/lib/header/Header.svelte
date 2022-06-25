@@ -68,6 +68,7 @@
 
 <style>
 	nav {
+		/* TODO: fix bug where <Select /> shows over nav */
 		padding: 4px;
 	}
 
