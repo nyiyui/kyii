@@ -44,6 +44,9 @@
 			<li class:active={$page.url.pathname === '/uls'}>
 				<a sveltekit:prefetch href="/uls">{$_('header.uls')}</a>
 			</li>
+			<li class:active={$page.url.pathname === '/oclients'}>
+				<a sveltekit:prefetch href="/oclients">{$_('header.oclients')}</a>
+			</li>
 			<li class:active={$page.url.pathname === '/grants'}>
 				<a sveltekit:prefetch href="/grants">{$_('header.grants')}</a>
 			</li>

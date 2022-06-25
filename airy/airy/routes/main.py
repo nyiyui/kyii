@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Optional
 from urllib.parse import urlencode, urljoin
 
+from flask_cors import CORS
 from authlib.integrations.flask_oauth2 import current_token
 from authlib.oauth2 import OAuth2Error
 from authlib.jose import JsonWebKey, KeySet
@@ -47,6 +48,7 @@ def unauthorized_callback():
 
 def init_app(app):
     app.register_blueprint(bp)
+    CORS(app)
 
 
 @bp.route("/login-check", methods=("GET",))
@@ -139,11 +141,9 @@ def oauth_authorize():
             base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/authz")
             azrqid = uuid.uuid4()
             session[f"azrq-{azrqid}"] = dict(
-                grant=(
-                    {
-                        "args": dict(azrqid=azrqid, **request.args.to_dict()),
-                        **grant_as_dict(grant),
-                    }
+                grant=dict(
+                    args=dict(azrqid=azrqid, **request.args.to_dict()),
+                    **grant_as_dict(grant),
                 )
             )
             query = urlencode(dict(azrqid=azrqid))

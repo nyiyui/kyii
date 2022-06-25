@@ -376,17 +376,40 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
     user_id = db.Column(db.String(32), db.ForeignKey("user.id", ondelete="CASCADE"))
     user = db.relationship("User")
 
+    def set_client_metadata(self, client_metadata):
+        super().set_client_metadata(client_metadata)
+        del client_metadata['id']
+        del client_metadata['client_id']
+        del client_metadata['client_id_issued_at']
+        del client_metadata['client_secret']
+        del client_metadata['client_secret_expires_at']
+        if 'client_metadata' in self.__dict__:
+            del self.__dict__['client_metadata']
+
     def as_dict(self):
         return dict(
             user_id=self.user_id,
             user_name=self.user.name,
             name=self.client_name,
             uri=self.client_uri,
+            logo_uri=self.logo_uri,
+            tos_uri=self.tos_uri,
+            policy_uri=self.policy_uri,
         )
 
     @property
     def for_api_v1_trusted(self) -> dict:
         return self.as_dict()
+
+    @property
+    def for_api_v2(self) -> dict:
+        return self.client_metadata | dict(
+            id=self.id,
+            client_id=self.client_id,
+            client_secret=self.client_secret,
+            client_id_issued_at=self.client_id_issued_at,
+            client_secret_expires_at=self.client_secret_expires_at,
+        )
 
 
 class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):

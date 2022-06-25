@@ -5,6 +5,9 @@
 	import Scope from '$lib/Scope.svelte'
 	import Box from '$lib/Box.svelte'
 	import type { Grant } from '$lib/api2'
+	import { ulos, currentUlid } from '$lib/api2'
+
+	let ulo = $ulos.get($currentUlid)
 
 	let csrfToken: string
 	let grant: Grant | null
@@ -42,10 +45,21 @@
 			/> (again).
 		</Box>
 	{:else}
-		<a href={grant.client.uri}>{grant.client.name}</a> is requesting:
+		<p>
+			<a href={grant.client.uri}>{grant.client.name}</a>
+			by <a href={`/user?uid=${grant.client.user_id}`}>{grant.client.user_name}</a>
+			is requesting access to your
+			<a href={`/user?uid=${ulo.uid}`}>{ulo.name}</a>
+			account.
+		</p>
+		If you allow, it will have access to:
 		<ul>
 			{#each grant.request.scope.split(' ') as scope}
-				<li><Scope name={scope} /></li>
+				{#if scope === "openid"}
+					<li>Your user ID (i.e. {ulo.uid}) (via OpenID Connect's <code>sub</code>)</li>
+				{:else}
+					<li><Scope name={scope} /></li>
+				{/if}
 			{/each}
 		</ul>
 		<Box level="debug">

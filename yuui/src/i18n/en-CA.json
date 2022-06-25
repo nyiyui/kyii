@@ -12,6 +12,7 @@
 		"loading": "Loading…",
 		"config": "Config",
 		"uls": "Sessions",
+		"oclients": "Clients",
 		"grants": "Grants",
 		"login": "Login",
 		"signup": "Signup",
@@ -132,14 +133,55 @@
 	"grants": {
 		"count": "{count, plural, =0 {No grants} one {# grant} other {# grants}}."
 	},
+	"oclients": {
+		"reload": "Reload",
+		"new": "New",
+		"count": "{count, plural, =0 {No clients} one {# client} other {# clients}}."
+	},
+	"oclient": {
+		"meta": "Metadata",
+		"oauth": "OAuth Settings",
+		"identity": "Identity",
+		"id": "ID",
+		"client_id": "OAuth ID",
+		"client_id_issued_at": "OAuth ID issued At",
+		"client_secret": "OAuth secret",
+		"client_secret_expires_at": "OAuth secret expires at",
+		"redirect_uris": "Redirect URIs",
+		"token_endpoint_auth_method": "Token endpoint auth method",
+		"grant_types": "Grant types",
+		"response_types": "Response types",
+		"scope": "Scope",
+		"jwks_uri": "JWKS URI",
+		"jwks": "JWKS",
+		"client_name": "Name",
+		"client_uri": "URI",
+		"logo_uri": "Logo URI",
+		"contacts": "Contacts",
+		"tos_uri": "Terms of service URI",
+		"policy_uri": "Privacy policy URI",
+		"software_id": "Software ID",
+		"software_version": "Software version",
+		"update": "Save",
+		"delete": "Delete"
+	},
+	"list_input": {
+		"new": "New",
+		"delete": "Delete"
+	},
 	"oauth2": {
 		"scopes": {
-			"openid": "OpenID Connect",
-			"profile": "Profile",
-			"email": "Email",
-			"address": "Address",
-			"phone": "Phone",
-			"offline_access": "Offline access"
+			"profile": "View your profile",
+			"email": "View your email",
+			"address": "View your address",
+			"phone": "View your phone",
+			"offline_access": "Unattended access"
 		}
+	},
+	"private": {
+		"title": "Private"
+	},
+	"public": {
+		"title": "Public"
 	}
 }

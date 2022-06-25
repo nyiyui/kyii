@@ -24,7 +24,7 @@ from flask_mail import Message
 from sqlalchemy.exc import NoResultFound
 
 from .. import verifiers
-from ..db import AF, AP, Email, Group, OAuth2Token, User, UserLogin, ap_reqs, db
+from ..db import AF, AP, Email, Group, OAuth2Token, OAuth2Client, User, UserLogin, ap_reqs, db
 from ..etc import login_ul, mail
 from ..session import API_V1_APID, API_V1_SOLVED, API_V1_UID
 from ..ul import current_ul, current_user, login_required, login_user, logout_user
@@ -897,6 +897,81 @@ def oauth_grants_revoke():
     except NoResultFound:
         return make_resp(error=dict(code="grant_not_found", message="grant not found"))
     db.session.commit()
+    return make_resp()
+
+
+@bp.route("/oauth/oclients", methods=("GET",))
+@req_perms(("api_v2.oauth.oclients",))
+def oauth_oclients():
+    oclients = list(
+        oclient.for_api_v2 for oclient in OAuth2Client.query.filter_by(user=current_user)
+    )
+    return make_resp(data=dict(oclients=oclients))
+
+
+OCLIENTS_DELETE_SCHEMA = {
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "type": "object",
+    "properties": {
+        "oclid": {"type": "string"},
+    },
+}
+
+
+@bp.route("/oauth/oclients/delete", methods=("POST",))
+@req_perms(("api_v2.oauth.oclients.delete",))
+def oauth_oclients_delete():
+    jsonschema.validate(request.json, OCLIENTS_DELETE_SCHEMA)
+    oclid = request.json['oclid']
+    try:
+        OAuth2Client.query.filter_by(user=current_user, id=oclid).delete()
+    except NoResultFound:
+        return make_resp(error=dict(code="ocl_not_found", message="oclient not found"))
+    return make_resp()
+
+
+OCLIENTS_EDIT_SCHEMA = {
+    "$schema": "https://json-schema.org/draft/2019-09/schema",
+    "type": "object",
+    "properties": {
+        "oclid": {"type": "string"},
+        "ocl": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "uri": {"type": "string"},
+                "grant_types": {"type": "array", "items": {"type": "string"}},
+                "redirect_uris": {"type": "array", "items": {"type": "string"}},
+                "response_types": {"type": "array", "items": {"type": "string"}},
+                "scope": {"type": "string"},
+                "token_endpoint_auth_method": {"type": "string"},
+            }
+        },
+    },
+}
+
+
+@bp.route("/oauth/oclients/edit", methods=("POST",))
+@req_perms(("api_v2.oauth.oclients.edit",))
+def oauth_oclients_edit():
+    jsonschema.validate(request.json, OCLIENTS_EDIT_SCHEMA)
+    oclid = request.json.get('oclid')
+    ocli = request.json['ocl']
+    try:
+        if oclid is None:
+            ocl = OAuth2Client(user=current_user)
+        else:
+            ocl = OAuth2Client.query.filter_by(user=current_user, id=oclid).one()
+    except NoResultFound:
+        return make_resp(error=dict(code="ocl_not_found", message="oclient not found"))
+    ocl.set_client_metadata(ocli)
+    print(ocl.client_metadata)
+    print(ocl._client_metadata)
+    db.session.is_modified = True
+    db.session.commit()
+    print(ocl._client_metadata)
+    ocl = OAuth2Client.query.filter_by(user=current_user, id=oclid).one()
+    print(ocl._client_metadata)
     return make_resp()
 
 

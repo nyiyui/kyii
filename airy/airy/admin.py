@@ -1,7 +1,7 @@
 from urllib.parse import urlencode, urljoin
 
 from flask import current_app, redirect, request, url_for
-from flask_admin import Admin
+from flask_admin import Admin, AdminIndexView, expose
 from flask_admin.contrib import sqla
 from flask_login import current_user
 
@@ -12,9 +12,19 @@ from .db import (
     OAuth2Client,
     OAuth2Token,
     User,
+    UserGroups,
+    Group,
+    GroupPerms,
+    Email,
     UserLogin,
     db,
 )
+
+
+class IndexView(AdminIndexView):
+    @expose('/')
+    def index(self):
+        return self.render('admin/index.html', current_user=current_user)
 
 
 class AiryModelView(sqla.ModelView):
@@ -27,7 +37,7 @@ class AiryModelView(sqla.ModelView):
         return redirect(f"{base}?{query}")
 
 
-admin = Admin(name="Kyii Airy", template_mode="bootstrap3")
+admin = Admin(name="Kyii Airy", index_view=IndexView(), template_mode="bootstrap3")
 admin.add_view(AiryModelView(User, db.session))
 admin.add_view(AiryModelView(UserLogin, db.session))
 admin.add_view(AiryModelView(AP, db.session))

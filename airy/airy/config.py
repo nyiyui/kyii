@@ -54,6 +54,9 @@ class Config:
         "api_v2.user.img",
     }
     AIRY_DEFAULT_PERMS = AIRY_ANONYMOUS_PERMS | {
+        "api_v2.oauth.oclients",
+        "api_v2.oauth.oclients.edit",
+        "api_v2.oauth.oclients.delete",
         "api_v2.user.lookup",
         "api_v2.config.id",
         "api_v2.oauth.grants",

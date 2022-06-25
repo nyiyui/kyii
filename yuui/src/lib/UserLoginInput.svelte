@@ -13,6 +13,9 @@
 	export let ul: UserLogin
 	let unsavedChanges = false
 	let newName: string | null = ul.name || null
+	let nameSpan: HTMLSpanElement
+
+	$: unsavedChanges = (ul.name || '') !== (newName || '')
 
 	async function revoke() {
 		await client.revokeUl(ul.uuid)
@@ -45,10 +48,6 @@
 		second: 'numeric',
 		timeZoneName: 'short'
 	}
-
-	let nameSpan: HTMLSpanElement
-
-	$: unsavedChanges = (ul.name || '') !== (newName || '')
 </script>
 
 <section class="ul panel flex flex-column">

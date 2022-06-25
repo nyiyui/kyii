@@ -116,8 +116,46 @@ type TAF = {
 
 type OClient = {
 	user_id: string
+	user_name: string
 	name: string
 	uri: string
+	logo_uri: string
+	tos_uri: string
+	policy_uri: string
+}
+
+type OClient2 = {
+	id?: string
+	redirect_uris: Array<string>
+	token_endpoint_auth_method: string
+	grant_types: Array<string>
+	response_types: Array<string>
+	client_name: string
+	client_uri: string
+	logo_uri: string
+	scope: string
+	contacts: Array<string>
+	tos_uri: string
+	policy_uri: string
+	jwks_uri: string
+	jwks: Array<string>
+	software_id: string
+	software_version: string
+
+	client_id: string
+	client_secret: string
+	client_id_issued_at: number
+	client_secret_expires_at: number
+}
+
+type OClient2Input = {
+	name: string
+	uri: string
+	grant_types: Array<string>
+	redirect_uris: Array<string>
+	response_types: Array<string>
+	scope: string
+	token_endpoint_auth_method: string
 }
 
 type Grant = {
@@ -804,6 +842,42 @@ class Client extends BaseClient {
 		}
 	}
 
+	async oclientsList(): Promise<Array<OClient2>> {
+		const r = await this.fetch<{ oclients: Array<OClient2> }>('oauth/oclients', {
+			method: 'GET'
+		})
+		this.assertNoErrors(r)
+		return r.data.oclients.map(oclient => ({
+			...oclient,
+			contacts: oclient.contacts ? oclient.contacts : [],
+			jwks: oclient.jwks ? oclient.jwks : [],
+		}))
+	}
+
+	private async oclientAction(action: string, oclid: string | null, ocl?: OClient2Input): Promise<void> {
+		const r = await this.fetch<null>(`oauth/oclients/${action}`, {
+			method: 'POST',
+			body: JSON.stringify({
+				...(oclid ? { oclid } : {}),
+				...(ocl ? { ocl } : {}),
+			}),
+			headers: {
+				'Content-Type': 'application/json'
+			},
+		})
+		this.assertNoErrors(r)
+	}
+
+
+	async oclientDelete(oclid: string): Promise<void> {
+		await this.oclientAction('delete', oclid)
+	}
+
+	async oclientEdit(oclid: string | null, ocl: OClient2Input): Promise<void> {
+		await this.oclientAction('edit', oclid, ocl)
+	}
+
+
 	// ================================
 	// Email Verification
 	// ================================
@@ -859,7 +933,7 @@ const client = new Client(baseUrl)
 
 export { client, ulos, currentUlid }
 export { Ap, Af, Client, User, verifiers }
-export type { Status, ApInput, AfPublic, AfInput, Id, AxInput, UserLogin, Grant, OClient }
+export type { Status, ApInput, AfPublic, AfInput, Id, AxInput, UserLogin, Grant, OClient, OClient2 }
 export type { ULO, LooseULO }
 export { MissingPermsError, UnauthenticatedError, ManyErrors }
 

@@ -12,6 +12,7 @@
 		"loading": "読込中…",
 		"config": "設定",
 		"uls": "セッション",
+		"oclients": "クライアント",
 		"grants": "認可",
 		"login": "ログイン",
 		"signup": "登録",
@@ -132,14 +133,55 @@
 	"grants": {
 		"count": "{count, plural, =0 {認可無し} one {#認可} other {#認可}}:"
 	},
+	"oclients": {
+		"reload": "再読込",
+		"new": "作成",
+		"count": "{count, plural, =0 {クライアント無し} one {#クライアント} other {#クライアント}}:"
+	},
+	"oclient": {
+		"meta": "メタデータ",
+		"oauth": "OAuth 設定",
+		"identity": "アイデンティティ",
+		"id": "ID",
+		"client_id": "OAuth ID",
+		"client_id_issued_at": "OAuth IDの発行時間",
+		"client_secret": "OAuth シークレット",
+		"client_secret_expires_at": "OAuth シークレットの期限",
+		"redirect_uris": "リダイレクトURI",
+		"token_endpoint_auth_method": "トークンエンドポイント認証方法",
+		"grant_types": "認可種類",
+		"response_types": "レスポンスタイプ",
+		"scope": "スコープ",
+		"jwks_uri": "JWKS用URI",
+		"jwks": "JWKS",
+		"client_name": "名前",
+		"client_uri": "URI",
+		"logo_uri": "ロゴのURI",
+		"contacts": "連絡先",
+		"tos_uri": "ToS・利用規約のURI",
+		"policy_uri": "プライバシーポリシーのURI",
+		"software_id": "ソフトウェアID",
+		"software_version": "ソフトウェアバージョン",
+		"update": "保存",
+		"delete": "削除"
+	},
+	"list_input": {
+		"new": "作成",
+		"delete": "削除"
+	},
 	"oauth2": {
 		"scopes": {
-			"openid": "OpenID Connect",
-			"profile": "プロフィール",
-			"email": "メールアドレス",
-			"address": "住所",
-			"phone": "電話番号",
-			"offline_access": "オフラインアクセス"
+			"profile": "プロフィールを見る",
+			"email": "メールアドレスを見る",
+			"address": "住所を見る",
+			"phone": "電話番号を見る",
+			"offline_access": "無人アクセス"
 		}
+	},
+	"private": {
+		"title": "非公開"
+	},
+	"public": {
+		"title": "公開"
 	}
 }
