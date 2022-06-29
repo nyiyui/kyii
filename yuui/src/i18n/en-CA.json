@@ -25,8 +25,7 @@
 		"id": {
 			"title": "Identity",
 			"img": {
-				"title": "Profile Picture",
-				"dropzone": "Drag here or click to select files.",
+				"dropzone": "Drag here or click to select update your profile picture.",
 				"preview": {
 					"title": "Preview"
 				}

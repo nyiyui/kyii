@@ -298,7 +298,7 @@ def api_signup():
 
 def dbify_taf(tafid: UUID, user=current_user) -> None:
     data = session[f"taf-{tafid}"]
-    if not dåta["gen_done"]:
+    if not data["gen_done"]:
         raise False
     try:
         af = AF.query.filter_by(id=str(tafid), user=user).one()
@@ -458,7 +458,9 @@ def api_config_ax():
                 af2.name = af["name"]
         if "tafs" in session:
             for tafid in session["tafs"]:
-                del session[f"taf-{tafid}"]
+                key = f"taf-{tafid}"
+                if key in session:
+                    del session[key]
             del session["tafs"]
         db.session.commit()
         return make_resp(data=dict(warnings=warnings))

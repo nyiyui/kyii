@@ -14,7 +14,6 @@
 	let candFileObjectUrl: string | null = null
 
 	function handleFilesSelect(e) {
-		// TODO; remove old candFile (override candFile weith new selection)
 		const { acceptedFiles } = e.detail
 		if (acceptedFiles.length) {
 			candFile = acceptedFiles[0]
@@ -112,7 +111,6 @@
 		</h2>
 		<form class="identity">
 			<div class="img">
-				{$_('config.id.img.title')}
 				<div class="dropzone">
 					<Dropzone on:drop={handleFilesSelect} multiple={false} accept="image/*">
 						{$_('config.id.img.dropzone')}
@@ -139,24 +137,24 @@
 					bind:value={slug}
 					on:input={slugFind}
 				/>
-				<span class="status">
-					{#if slugTaken === true}
-						<Icon icon="mdi:alert" style="color: var(--color-error);" />
-						Taken
-					{:else if slug === ''}
-						<Icon icon="mdi:cancel" style="color: var(--color-error);" />
-						Cannot be blank
-					{:else if slugTaken === null}
-						<Icon icon="mdi:check" style="color: var(--color-info);" />
-						Current
-					{:else if slugTaken === false}
-						<Icon icon="mdi:check" style="color: var(--color-ok);" />
-						Available
-					{:else}
-						Loading
-					{/if}
-				</span>
 			</label>
+			<span class="status" role="status">
+				{#if slugTaken === true}
+					<Icon icon="mdi:alert" style="color: var(--color-error);" />
+					Taken
+				{:else if slug === ''}
+					<Icon icon="mdi:cancel" style="color: var(--color-error);" />
+					Cannot be blank
+				{:else if slugTaken === null}
+					<Icon icon="mdi:check" style="color: var(--color-info);" />
+					Current
+				{:else if slugTaken === false}
+					<Icon icon="mdi:check" style="color: var(--color-ok);" />
+					Available
+				{:else}
+					Loading
+				{/if}
+			</span>
 			<br />
 			<label>
 				<span class="label">Name</span>
@@ -167,26 +165,28 @@
 					bind:value={name}
 					on:input={() => (idUnsavedChanges = true)}
 				/>
-				<span class="status">
-					{#if name === ''}
-						<Icon icon="mdi:cancel" style="color: var(--color-error);" />
-						Cannot be blank
-					{:else if name !== ''}
-						<Icon icon="mdi:check" style="color: var(--color-ok);" />
-					{:else}
-						Loading
-					{/if}
-				</span>
 			</label>
+			<span class="status" role="status">
+				{#if name === ''}
+					<Icon icon="mdi:cancel" style="color: var(--color-error);" />
+					Cannot be blank
+				{:else if name !== ''}
+					<Icon icon="mdi:check" style="color: var(--color-ok);" />
+				{:else}
+					Loading
+				{/if}
+			</span>
 			<br />
-			<input
-				class="update"
-				type="button"
-				on:click={submitId}
-				value={$_('config.update')}
-				disabled={submitIdLoading}
-			/>
-			<BoxError msg={submitIdError} />
+			<div class="commit">
+				<input
+					class="update"
+					type="button"
+					on:click={submitId}
+					value={$_('config.update')}
+					disabled={submitIdLoading}
+				/>
+				<BoxError msg={submitIdError} passive />
+			</div>
 		</form>
 	</div>
 	{#if $debugMode}
@@ -274,19 +274,37 @@
 
 	label {
 		display: flex;
-		flex-direction: row;
+	}
+
+	.img {
+		display: flex;
+	}
+
+	.img .dropzone {
+		flex-grow: 1;
+	}
+
+	.identity {
+		display: flex;
+		flex-direction: column;
 	}
 
 	.identity .label {
-		flex: 10%;
+		flex-grow: 1;
 	}
 
 	.identity input {
-		flex: 50%;
+		flex-grow: 1;
 	}
 
 	.identity .status {
 		flex-grow: 1;
+		align-self: flex-end;
+	}
+
+	.identity .commit {
+		flex-grow: 1;
+		align-self: flex-end;
 	}
 
 	.img {

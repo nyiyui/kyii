@@ -281,7 +281,9 @@
 			</label>
 			<AF verifier={af.verifier} />
 			<Box level="debug">
-				N: {n}; UUID: <code>{af.uuid}</code>
+				N: {n};
+				AFID: {af.uuid};
+				TAFID: {tafid}
 			</Box>
 		</div>
 		<div class="params">
