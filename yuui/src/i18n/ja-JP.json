@@ -138,6 +138,8 @@
 		"count": "{count, plural, =0 {クライアント無し} one {#クライアント} other {#クライアント}}:"
 	},
 	"oclient": {
+		"title": "アプリ 「{name}」",
+		"links": "リンク",
 		"meta": "メタデータ",
 		"oauth": "OAuth 設定",
 		"identity": "アイデンティティ",

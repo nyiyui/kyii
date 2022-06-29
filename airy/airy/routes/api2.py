@@ -902,6 +902,14 @@ def oauth_grants_revoke():
     return make_resp()
 
 
+@bp.route("/oauth/oclient", methods=("GET",))
+@req_perms(("api_v2.oauth.oclients",))
+def oauth_oclient():
+    oclid = request.args["oclid"]
+    ocl = OAuth2Client.query.filter_by(client_id=oclid).one()
+    return make_resp(data=dict(oclient=ocl.as_dict()))
+
+
 @bp.route("/oauth/oclients", methods=("GET",))
 @req_perms(("api_v2.oauth.oclients",))
 def oauth_oclients():

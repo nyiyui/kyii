@@ -138,6 +138,8 @@
 		"count": "{count, plural, =0 {No clients} one {# client} other {# clients}}."
 	},
 	"oclient": {
+		"title": "App {name}",
+		"links": "Links",
 		"meta": "Metadata",
 		"oauth": "OAuth Settings",
 		"identity": "Identity",

@@ -1,4 +1,5 @@
 <script lang="ts" type="module">
+	import { _ } from 'svelte-i18n'
 	import { page } from '$app/stores'
 	import { client } from '$lib/api2'
 	import { browser } from '$app/env'
@@ -46,13 +47,13 @@
 		</Box>
 	{:else}
 		<p>
-			<a href={grant.client.uri}>{grant.client.name}</a>
+			<a href="/oclient?oclid={grant.args.client_id}">{grant.client.name}</a>
 			by <a href={`/user?uid=${grant.client.user_id}`}>{grant.client.user_name}</a>
 			is requesting access to your
 			<a href={`/user?uid=${ulo.uid}`}>{ulo.name}</a>
 			account.
 		</p>
-		If you allow, it will have access to:
+		If you allow, the app will have access to:
 		<ul>
 			{#each grant.request.scope.split(' ') as scope}
 				{#if scope === "openid"}

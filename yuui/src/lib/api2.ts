@@ -842,6 +842,14 @@ class Client extends BaseClient {
 		}
 	}
 
+	async oclient(oclid: string): Promise<OClient2> {
+		const r = await this.fetch<{ oclient: OClient2 }>(`oauth/oclient?oclid=${encodeURIComponent(oclid)}`, {
+			method: 'GET'
+		})
+		this.assertNoErrors(r)
+		return r.data.oclient
+	}
+
 	async oclientsList(): Promise<Array<OClient2>> {
 		const r = await this.fetch<{ oclients: Array<OClient2> }>('oauth/oclients', {
 			method: 'GET'
