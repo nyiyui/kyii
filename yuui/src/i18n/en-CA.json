@@ -79,7 +79,7 @@
 		"anonymous": "No session",
 		"switcher": {
 			"switch": "Switch",
-			"or": "Or, <a href=\"/login?selfnext=/iori\">log in</a>."
+			"or": "Or, <a href=\"/login?selfnext=/iori\">login</a>."
 		},
 		"ulo": {
 			"choose": "Choose",
@@ -184,6 +184,7 @@
 		"title": "Public"
 	},
 	"index": {
-		"logged_in_as": "You are logged in as:"
+		"logged_in_as": "You are logged in as:",
+		"login_pls": "Please <a href=\"/login?selfnext=/iori\">login</a>."
 	}
 }

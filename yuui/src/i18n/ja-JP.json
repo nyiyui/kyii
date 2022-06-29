@@ -184,6 +184,7 @@
 		"title": "公開"
 	},
 	"index": {
-		"logged_in_as": "以下のユーザーとしてログインしています。"
+		"logged_in_as": "以下のユーザーとしてログインしています。",
+		"login_pls": "<a href=\"/login?selfnext=/iori\">ログイン</a>して下さい。お願いしま〜す。"
 	}
 }
