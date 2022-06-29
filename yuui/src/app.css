@@ -2,11 +2,11 @@
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--color-bg: #111;
-		--color-fg: #ddd;
-		--color-1: #9dd;
-		--color-2: #ccc;
-		--color-neutral: #888;
+		--color-bg: #000;
+		--color-fg: #fff;
+		--color-1: #8df;
+		--color-2: #ddd;
+		--color-neutral: #ccc;
 		--color-ok: #cfc;
 		--color-info: #ccf;
 		--color-warn: #ffc;
@@ -16,17 +16,18 @@
 }
 
 @media (prefers-color-scheme: light) {
+	/* TODO: get a WCAG AAA light theme */
 	:root {
-		--color-bg: #eee;
-		--color-fg: #000;
-		--color-1: #08d;
-		--color-2: #666;
+		--color-bg: #000;
+		--color-fg: #fff;
+		--color-1: #8df;
+		--color-2: #ddd;
 		--color-neutral: #ccc;
-		--color-ok: #6b6;
-		--color-info: #08d;
-		--color-warn: #cc7;
-		--color-error: #d00;
-		--color-debug: #d80;
+		--color-ok: #cfc;
+		--color-info: #ccf;
+		--color-warn: #ffc;
+		--color-error: #fcc;
+		--color-debug: #fc0;
 	}
 }
 
