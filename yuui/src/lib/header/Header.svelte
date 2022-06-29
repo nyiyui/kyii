@@ -7,8 +7,7 @@
 	import { browser } from '$app/env'
 	import { _ } from 'svelte-i18n'
 
-	import { client, ulos as ulosStore } from '$lib/api2'
-	import { get } from 'svelte/store'
+	import { client } from '$lib/api2'
 
 	let loggedIn: boolean
 	;(async () => {

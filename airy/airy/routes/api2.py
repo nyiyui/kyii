@@ -967,13 +967,9 @@ def oauth_oclients_edit():
     except NoResultFound:
         return make_resp(error=dict(code="ocl_not_found", message="oclient not found"))
     ocl.set_client_metadata(ocli)
-    print(ocl.client_metadata)
-    print(ocl._client_metadata)
     db.session.is_modified = True
     db.session.commit()
-    print(ocl._client_metadata)
     ocl = OAuth2Client.query.filter_by(user=current_user, id=oclid).one()
-    print(ocl._client_metadata)
     return make_resp()
 
 
