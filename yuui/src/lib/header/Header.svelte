@@ -1,4 +1,5 @@
 <script lang="ts" type="module">
+	import Icon from '@iconify/svelte'
 	import Logo from '$lib/header/Logo.svelte'
 	import User from '$lib/header/User.svelte'
 	import { page } from '$app/stores'
@@ -26,7 +27,7 @@
 			{/if}
 		</li>
 		<li class:active={$page.url.pathname === '/about'}>
-			<a sveltekit:prefetch href="/about">{$_('header.about')}</a>
+			<a sveltekit:prefetch href="/about"><Icon icon="mdi:about" /> {$_('header.about')}</a>
 		</li>
 		{#if $debugMode}
 			<li class:active={$page.url.pathname === '/ui'}>
@@ -42,13 +43,13 @@
 			</li>
 		{:else if loggedIn}
 			<li class:active={$page.url.pathname === '/uls'}>
-				<a sveltekit:prefetch href="/uls">{$_('header.uls')}</a>
+				<a sveltekit:prefetch href="/uls"><Icon icon="mdi:account-box-multiple" /> {$_('header.uls')}</a>
 			</li>
 			<li class:active={$page.url.pathname === '/oclients'}>
-				<a sveltekit:prefetch href="/oclients">{$_('header.oclients')}</a>
+				<a sveltekit:prefetch href="/oclients"><Icon icon="mdi:apps" /> {$_('header.oclients')}</a>
 			</li>
 			<li class:active={$page.url.pathname === '/grants'}>
-				<a sveltekit:prefetch href="/grants">{$_('header.grants')}</a>
+				<a sveltekit:prefetch href="/grants"><Icon icon="mdi:shield-check" /> {$_('header.grants')}</a>
 			</li>
 		{:else}
 			<li class:active={$page.url.pathname === '/signup'}>
@@ -56,7 +57,7 @@
 			</li>
 		{/if}
 		<li class:active={$page.url.pathname === '/config'}>
-			<a sveltekit:prefetch href="/config">{$_('header.config')}</a>
+			<a sveltekit:prefetch href="/config"><Icon icon="mdi:cog" /> {$_('header.config')}</a>
 		</li>
 		<li class="iori" class:active={$page.url.pathname === '/iori'}>
 			<a sveltekit:prefetch href="/iori">
