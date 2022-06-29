@@ -182,5 +182,8 @@
 	},
 	"public": {
 		"title": "Public"
+	},
+	"index": {
+		"logged_in_as": "You are logged in as:"
 	}
 }
