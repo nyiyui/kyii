@@ -25,8 +25,7 @@
 		"id": {
 			"title": "Identity",
 			"img": {
-				"title": "Profile Picture",
-				"dropzone": "Drag here or click to select files.",
+				"dropzone": "Drag here or click to select update your profile picture.",
 				"preview": {
 					"title": "Preview"
 				}
@@ -80,7 +79,7 @@
 		"anonymous": "No session",
 		"switcher": {
 			"switch": "Switch",
-			"or": "Or, <a href=\"/login?selfnext=/iori\">log in</a>."
+			"or": "Or, <a href=\"/login?selfnext=/iori\">login</a>."
 		},
 		"ulo": {
 			"choose": "Choose",
@@ -183,5 +182,9 @@
 	},
 	"public": {
 		"title": "Public"
+	},
+	"index": {
+		"logged_in_as": "You are logged in as:",
+		"login_pls": "Please <a href=\"/login?selfnext=/iori\">login</a>."
 	}
 }

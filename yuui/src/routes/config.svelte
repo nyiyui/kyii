@@ -1,5 +1,6 @@
 <script lang="ts" type="module">
 	import { _ } from 'svelte-i18n'
+	import Icon from '@iconify/svelte'
 	import Autosaved from '$lib/Autosaved.svelte'
 	import { client } from '$lib/api2'
 	import { debugMode, allowAnonymous, allowMULPU } from '$lib/store'
@@ -36,13 +37,18 @@
 <main>
 	<Tabs>
 		<TabList>
-			<Tab
-				>{$_('config.id.title')}{#if idUC}<UnsavedChanges />{/if}</Tab
-			>
-			<Tab
-				>{$_('config.ax.title')}{#if axUC}<UnsavedChanges />{/if}</Tab
-			>
-			<Tab>{$_('config.client.title')} <Autosaved /></Tab>
+			<Tab>
+				<Icon icon="mdi:account" />
+				{$_('config.id.title')}{#if idUC}<UnsavedChanges />{/if}
+			</Tab>
+			<Tab>
+				<Icon icon="mdi:shield-key" />
+				{$_('config.ax.title')}{#if axUC}<UnsavedChanges />{/if}
+			</Tab>
+			<Tab>
+				<Icon icon="mdi:airplane" />
+				{$_('config.client.title')} <Autosaved />
+			</Tab>
 		</TabList>
 		<TabPanel>
 			{#if loggedIn}

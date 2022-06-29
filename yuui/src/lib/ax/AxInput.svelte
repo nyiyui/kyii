@@ -28,7 +28,7 @@
 		aps = aps
 	}
 
-	let tafids = {}
+	let tafids: Record<number, string> = {}
 	let afs = new Array<AfInput>()
 	let regens = new Map<number, boolean>()
 	let delAfs = new Array<string>()
@@ -71,7 +71,7 @@
 		console.log('prepare', aps)
 		preparedAx = {
 			aps,
-			afs: afs.map((af) => ({ uuid: af.uuid, name: af.name })),
+			afs: Array.from(afs.entries()).map(([n, af]) => ({ uuid: af.uuid || tafids[n], name: af.name })),
 			del_aps: delAps,
 			del_afs: delAfs.concat(
 				Array.from(regens.entries())
@@ -113,7 +113,9 @@
 			{#if aps}
 				<input class="new" type="button" on:click={newAp} value={$_('config.new')} />
 				{#each Array.from(aps.entries()) as [i, ap]}
-					<APInput bind:ap {afs} afids={tafids} on:delete={() => delAp(i)} />
+					<div class="ax-input">
+						<APInput bind:ap {afs} afids={tafids} on:delete={() => delAp(i)} />
+					</div>
 				{/each}
 			{:else}
 				<Loading />
@@ -172,6 +174,8 @@
 	}
 
 	.ax-input:not(:last-child) {
+		padding-bottom: 16px;
+		border-bottom: 1px solid var(--color-2);
 		margin-bottom: 16px;
 	}
 </style>

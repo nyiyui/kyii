@@ -6,7 +6,7 @@
 	import { client, ulos as ulosStore, currentUlid } from '$lib/api2'
 	import type { UUID } from 'uuid'
 	import type { ULO } from '$lib/api2'
-	import { User } from '$lib/api2'
+	import type { User } from '$lib/api2'
 	import { UnauthenticatedError } from '$lib/api2'
 	import { debugMode, allowAnonymous } from '$lib/store'
 	import { createEventDispatcher } from 'svelte'
