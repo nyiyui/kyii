@@ -1,0 +1,21 @@
+name: Lint
+on:
+  push:
+
+# TODO: line airy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+    - name: Yuui
+      run: |
+        cd yuui
+        npm i --include=dev
+        npm run lint
