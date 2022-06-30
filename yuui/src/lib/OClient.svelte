@@ -25,8 +25,17 @@
 	let token_endpoint_auth_method = { value: oclient.token_endpoint_auth_method, label: oclient.token_endpoint_auth_method }
 	$: oclient.token_endpoint_auth_method = token_endpoint_auth_method.value
 
-	let response_types = oclient.response_types.map(type_ => ({ value: type_, label: type_ }))
-	$: oclient.response_types = response_types.map(pair => pair.value)
+	let response_types: Record<string, boolean> = {}
+	for (const rt of oclient.response_types) {
+		response_types[rt] = true
+	}
+	$: oclient.response_types = Object.entries(response_types).map((pair) => pair[0])
+
+	let grant_types: Record<string, boolean> = {}
+	for (const gt of oclient.grant_types) {
+		grant_types[gt] = true
+	}
+	$: oclient.grant_types = Object.entries(grant_types).map((pair) => pair[0])
 
 	let error: string
 
@@ -124,20 +133,57 @@
 				<Private />
 				<ListInput bind:list={oclient.redirect_uris} />
 				<br />
-				{$_('oclient.token_endpoint_auth_method')}
-				<Private />
-				<Select
-					items={oidcConfig.token_endpoint_auth_methods_supported.map(method => ({ value: method, label: method }))}
-					bind:value={token_endpoint_auth_method}
-				/>
-				{$_('oclient.grant_types')}
-				<Private />
-				<ListInput bind:list={oclient.grant_types} />
-				<br />
-				{$_('oclient.response_types')}
-				<Private />
-				<ListSelect bind:list={response_types} items={oidcConfig.response_types_supported.map(type_ => ({ value: type_, label: type_ }))} />
-				<br />
+				<div class="prop">
+					<div class="label">
+						{$_('oclient.token_endpoint_auth_method')}
+						<Private />
+					</div>
+					<Select
+						items={oidcConfig.token_endpoint_auth_methods_supported.map(method => ({ value: method, label: method }))}
+						bind:value={token_endpoint_auth_method}
+					/>
+					<!--
+					{#each oidcConfig.token_endpoint_auth_methods_supported as team}
+						<label>
+							<input
+								type="radio"
+								name="token-endpoint-auth-method"
+								value={team}
+								checked={oclient.token_endpoint_auth_method === team}
+								bind:group={oclient.token_endpoint_auth_method}
+							/>
+							{oclient.token_endpoint_auth_method === team}
+							<code>{team}</code>
+						</label>
+					{/each}
+					-->
+				</div>
+				<div class="prop">
+					<div class="prop">
+						<div class="label">
+							{$_('oclient.grant_types')}
+							<Private />
+						</div>
+						{#each oidcConfig.grant_types_supported as gt}
+							<label>
+								<input type="checkbox" bind:checked={grant_types[gt]} />
+								<code>{gt}</code>
+							</label>
+						{/each}
+					</div>
+				</div>
+				<div class="prop">
+					<div class="label">
+						{$_('oclient.response_types')}
+						<Private />
+					</div>
+					{#each oidcConfig.response_types_supported as rt}
+						<label>
+							<input type="checkbox" bind:checked={response_types[rt]} />
+							<code>{rt}</code>
+						</label>
+					{/each}
+				</div>
 				<label>
 					{$_('oclient.scope')}
 					<Private />
@@ -217,5 +263,9 @@
 	.meta > .action {
 		align-self: flex-end;
 	}
-</style>
 
+	.prop {
+		display: flex;
+		flex-direction: column;
+	}
+</style>
