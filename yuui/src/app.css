@@ -16,18 +16,17 @@
 }
 
 @media (prefers-color-scheme: light) {
-	/* TODO: get a WCAG AAA light theme */
 	:root {
-		--color-bg: #000;
-		--color-fg: #fff;
-		--color-1: #8df;
-		--color-2: #ddd;
-		--color-neutral: #ccc;
-		--color-ok: #cfc;
-		--color-info: #ccf;
-		--color-warn: #ffc;
-		--color-error: #fcc;
-		--color-debug: #fc0;
+		--color-bg: #fff;
+		--color-fg: #000;
+		--color-1: #058;
+		--color-2: #444;
+		--color-neutral: #444;
+		--color-ok: #050;
+		--color-info: #11f;
+		--color-warn: #550;
+		--color-error: #a00;
+		--color-debug: #540;
 	}
 }
 
