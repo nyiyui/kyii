@@ -1,9 +1,7 @@
 <script lang="ts" type="module">
 	import Select from 'svelte-select'
 	import Public from '$lib/Public.svelte'
-	import Private from '$lib/Private.svelte'
 	import ListInput from '$lib/ListInput.svelte'
-	import ListSelect from '$lib/ListSelect.svelte'
 	import { _ } from 'svelte-i18n'
 	import Loading from '$lib/Loading.svelte'
 	import BoxError from '$lib/BoxError.svelte'
@@ -130,13 +128,11 @@
 			<div class="padded flex-in">
 				<h3>{$_('oclient.oauth')}</h3>
 				{$_('oclient.redirect_uris')}
-				<Private />
 				<ListInput bind:list={oclient.redirect_uris} />
 				<br />
 				<div class="prop">
 					<div class="label">
 						{$_('oclient.token_endpoint_auth_method')}
-						<Private />
 					</div>
 					<Select
 						items={oidcConfig.token_endpoint_auth_methods_supported.map(method => ({ value: method, label: method }))}
@@ -162,7 +158,6 @@
 					<div class="prop">
 						<div class="label">
 							{$_('oclient.grant_types')}
-							<Private />
 						</div>
 						{#each oidcConfig.grant_types_supported as gt}
 							<label>
@@ -175,7 +170,6 @@
 				<div class="prop">
 					<div class="label">
 						{$_('oclient.response_types')}
-						<Private />
 					</div>
 					{#each oidcConfig.response_types_supported as rt}
 						<label>
@@ -186,7 +180,6 @@
 				</div>
 				<label>
 					{$_('oclient.scope')}
-					<Private />
 					<input type="text" bind:value={oclient.scope} />
 				</label>
 				<br />
