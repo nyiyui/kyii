@@ -81,6 +81,9 @@ class Config:
         rp_name="Airy",
     )
 
+    # OAuth2
+    OAUTH2_CACHE = {}
+
 
 def init_app(app):
     app.config.from_object(Config)

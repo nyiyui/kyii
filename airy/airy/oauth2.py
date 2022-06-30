@@ -1,4 +1,8 @@
 from authlib.integrations.flask_oauth2 import AuthorizationServer, ResourceProtector
+from authlib.integrations.flask_oauth1.cache import (
+    register_nonce_hooks,
+    register_temporary_credential_hooks
+)
 from authlib.integrations.sqla_oauth2 import (
     create_bearer_token_validator,
     create_query_client_func,
@@ -140,6 +144,10 @@ def config_oauth(app):
     query_client = create_query_client_func(db.session, OAuth2Client)
     save_token = create_save_token_func(db.session, OAuth2Token)
     authorization.init_app(app, query_client=query_client, save_token=save_token)
+
+    cache = app.config['OAUTH2_CACHE']
+    register_nonce_hooks(server, cache)
+    register_temporary_credential_hooks(server, cache)
 
     # support all openid grants
     authorization.register_grant(
