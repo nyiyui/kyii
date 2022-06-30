@@ -130,11 +130,6 @@
 					items={oidcConfig.token_endpoint_auth_methods_supported.map(method => ({ value: method, label: method }))}
 					bind:value={token_endpoint_auth_method}
 				/>
-				<Box level="info">
-					{#if oidcConfig}
-						{JSON.stringify(oidcConfig.token_endpoint_auth_methods_supported)}
-					{/if}
-				</Box>
 				{$_('oclient.grant_types')}
 				<Private />
 				<ListInput bind:list={oclient.grant_types} />
@@ -142,11 +137,6 @@
 				{$_('oclient.response_types')}
 				<Private />
 				<ListSelect bind:list={response_types} items={oidcConfig.response_types_supported.map(type_ => ({ value: type_, label: type_ }))} />
-				<Box level="info">
-					{#if oidcConfig}
-						{JSON.stringify(oidcConfig.response_types_supported)}
-					{/if}
-				</Box>
 				<br />
 				<label>
 					{$_('oclient.scope')}
