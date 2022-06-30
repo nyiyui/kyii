@@ -179,6 +179,7 @@ def openid_configuration():
     def external_url(function_name):
         return url_for(function_name, _external=True)
 
+    # NOTE: see https://ldapwiki.com/wiki/Openid-configuration
     return {
         "authorization_endpoint": external_url(".oauth_authorize"),
         "token_endpoint": external_url(".oauth_token"),
@@ -195,6 +196,8 @@ def openid_configuration():
             "client_secret_basic",
         ],
         "grant_types_supported": [*current_app.config["OAUTH2_GRANT_TYPES"]],
+        # TODO: impl introspection_endpoint field
+        # TODO: impl revocation_endpoint field
     }
 
 
