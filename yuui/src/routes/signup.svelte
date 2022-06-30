@@ -43,7 +43,7 @@
 	}
 
 	onMount(async () => {
-		if ($currentUlid === "anonymous") {
+		if ($currentUlid === 'anonymous') {
 			signup()
 		}
 		if ($ulos.get($currentUlid).slug !== null) {
@@ -59,7 +59,12 @@
 <main>
 	{#if ok}
 		<form id="signup">
-			<input type="button" disabled={state !== State.Init} on:click={signup} value="Create New Account" />
+			<input
+				type="button"
+				disabled={state !== State.Init}
+				on:click={signup}
+				value="Create New Account"
+			/>
 			<Box level="info">
 				You can choose your name, username, APs, AFs, etc <em>after</em> you create your account.
 			</Box>

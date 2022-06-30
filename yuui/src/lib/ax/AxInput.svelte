@@ -71,7 +71,10 @@
 		console.log('prepare', aps)
 		preparedAx = {
 			aps,
-			afs: Array.from(afs.entries()).map(([n, af]) => ({ uuid: af.uuid || tafids[n], name: af.name })),
+			afs: Array.from(afs.entries()).map(([n, af]) => ({
+				uuid: af.uuid || tafids[n],
+				name: af.name
+			})),
 			del_aps: delAps,
 			del_afs: delAfs.concat(
 				Array.from(regens.entries())

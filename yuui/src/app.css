@@ -221,10 +221,10 @@ h6 {
 }
 
 .selectContainer {
-		--background: var(--color-bg);
-		--color: var(--color-fg);
-		--border: 1px solid var(--color-2);
-		--borderRadius: 8px;
-		--padding: 6px;
-		--margin: 2px;
-	}
+	--background: var(--color-bg);
+	--color: var(--color-fg);
+	--border: 1px solid var(--color-2);
+	--borderRadius: 8px;
+	--padding: 6px;
+	--margin: 2px;
+}

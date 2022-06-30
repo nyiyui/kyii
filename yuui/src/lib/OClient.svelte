@@ -20,7 +20,10 @@
 	let newName: string | null = oclient.client_name || null
 	let nameSpan: HTMLSpanElement
 
-	let token_endpoint_auth_method = { value: oclient.token_endpoint_auth_method, label: oclient.token_endpoint_auth_method }
+	let token_endpoint_auth_method = {
+		value: oclient.token_endpoint_auth_method,
+		label: oclient.token_endpoint_auth_method
+	}
 	$: oclient.token_endpoint_auth_method = token_endpoint_auth_method.value
 
 	let response_types: Record<string, boolean> = {}
@@ -46,23 +49,23 @@
 		}
 	}
 
-	let preparedOclient2: OClient2Input;
+	let preparedOclient2: OClient2Input
 	$: preparedOclient2 = {
 		...oclient,
-		client_name: newName,
+		client_name: newName
 	}
 
 	async function update() {
 		try {
 			await client.oclientEdit(oclient.id, preparedOclient2)
 			error = ''
-		} catch(e) {
+		} catch (e) {
 			error = e.toString()
 		}
 		oclient = oclient
 	}
 
-	let oidcConfig;
+	let oidcConfig
 
 	onMount(async () => {
 		const url = new URL(`.well-known/openid-configuration`, client.baseUrl)
@@ -87,12 +90,7 @@
 				{/if}
 			</h2>
 			<div class="action">
-				<input
-					class="delete"
-					type="button"
-					value={$_('oclient.delete')}
-					on:click={remove}
-				/>
+				<input class="delete" type="button" value={$_('oclient.delete')} on:click={remove} />
 				<input class="update" type="button" value={$_('oclient.update')} on:click={update} />
 				<BoxError msg={error} passive />
 			</div>
@@ -135,7 +133,10 @@
 						{$_('oclient.token_endpoint_auth_method')}
 					</div>
 					<Select
-						items={oidcConfig.token_endpoint_auth_methods_supported.map(method => ({ value: method, label: method }))}
+						items={oidcConfig.token_endpoint_auth_methods_supported.map((method) => ({
+							value: method,
+							label: method
+						}))}
 						bind:value={token_endpoint_auth_method}
 					/>
 					<!--

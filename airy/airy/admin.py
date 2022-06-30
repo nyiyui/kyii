@@ -22,9 +22,9 @@ from .db import (
 
 
 class IndexView(AdminIndexView):
-    @expose('/')
+    @expose("/")
     def index(self):
-        return self.render('admin/index.html', current_user=current_user)
+        return self.render("admin/index.html", current_user=current_user)
 
 
 class AiryModelView(sqla.ModelView):

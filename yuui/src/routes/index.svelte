@@ -8,18 +8,14 @@
 </script>
 
 <main>
-	{#if $currentUlid === "anonymous"}
+	{#if $currentUlid === 'anonymous'}
 		<Box level="info">
 			{@html $_('index.login_pls')}
 		</Box>
 	{:else}
 		{$_('index.logged_in_as')}
 		{#if ulo}
-			<User
-				uid={ulo.uid}
-				name={ulo.name}
-				slug={ulo.slug}
-			/>
+			<User uid={ulo.uid} name={ulo.name} slug={ulo.slug} />
 		{/if}
 	{/if}
 </main>

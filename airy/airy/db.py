@@ -378,13 +378,13 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
 
     def set_client_metadata(self, client_metadata):
         super().set_client_metadata(client_metadata)
-        del client_metadata['id']
-        del client_metadata['client_id']
-        del client_metadata['client_id_issued_at']
-        del client_metadata['client_secret']
-        del client_metadata['client_secret_expires_at']
-        if 'client_metadata' in self.__dict__:
-            del self.__dict__['client_metadata']
+        del client_metadata["id"]
+        del client_metadata["client_id"]
+        del client_metadata["client_id_issued_at"]
+        del client_metadata["client_secret"]
+        del client_metadata["client_secret_expires_at"]
+        if "client_metadata" in self.__dict__:
+            del self.__dict__["client_metadata"]
 
     def as_dict(self):
         return dict(

@@ -56,7 +56,7 @@
 		If you allow, the app will have access to:
 		<ul>
 			{#each grant.request.scope.split(' ') as scope}
-				{#if scope === "openid"}
+				{#if scope === 'openid'}
 					<li>Your user ID (i.e. {ulo.uid}) (via OpenID Connect's <code>sub</code>)</li>
 				{:else}
 					<li><Scope name={scope} /></li>

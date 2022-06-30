@@ -50,15 +50,26 @@
 			client_id: '',
 			client_secret: '',
 			client_id_issued_at: '',
-			client_secret_expires_at: '',
+			client_secret_expires_at: ''
 		})
 		oclients = oclients
 	}
 </script>
 
 <main class="oclients">
-	<input type="button" value={$_('oclients.reload')} on:click={reload} disabled={state === State.Loading} />
-	<input class="new" type="button" value={$_('oclients.new')} on:click={new_} disabled={state === State.Loading} />
+	<input
+		type="button"
+		value={$_('oclients.reload')}
+		on:click={reload}
+		disabled={state === State.Loading}
+	/>
+	<input
+		class="new"
+		type="button"
+		value={$_('oclients.new')}
+		on:click={new_}
+		disabled={state === State.Loading}
+	/>
 	{#if state === State.Loading}
 		<Loading />
 	{:else if state === State.LoadingError}
@@ -70,4 +81,3 @@
 		{/each}
 	{/if}
 </main>
-

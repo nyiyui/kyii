@@ -256,7 +256,12 @@
 						<ul>
 							{#each id.default_perms as perm}
 								<li>
-									<a href={new URL(`/perms/${perm}.html`, import.meta.env.VITE_PAIMON_BASE_URL.toString()).href}><code>{perm}</code></a>
+									<a
+										href={new URL(
+											`/perms/${perm}.html`,
+											import.meta.env.VITE_PAIMON_BASE_URL.toString()
+										).href}><code>{perm}</code></a
+									>
 								</li>
 							{/each}
 						</ul>

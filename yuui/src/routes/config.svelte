@@ -48,7 +48,8 @@
 			</Tab>
 			<Tab>
 				<Icon icon="mdi:airplane" />
-				{$_('config.client.title')} <Autosaved />
+				{$_('config.client.title')}
+				<Autosaved />
 			</Tab>
 		</TabList>
 		<TabPanel>

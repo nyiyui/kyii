@@ -42,13 +42,17 @@
 			</li>
 		{:else if loggedIn}
 			<li class:active={$page.url.pathname === '/uls'}>
-				<a sveltekit:prefetch href="/uls"><Icon icon="mdi:account-box-multiple" /> {$_('header.uls')}</a>
+				<a sveltekit:prefetch href="/uls"
+					><Icon icon="mdi:account-box-multiple" /> {$_('header.uls')}</a
+				>
 			</li>
 			<li class:active={$page.url.pathname === '/oclients'}>
 				<a sveltekit:prefetch href="/oclients"><Icon icon="mdi:apps" /> {$_('header.oclients')}</a>
 			</li>
 			<li class:active={$page.url.pathname === '/grants'}>
-				<a sveltekit:prefetch href="/grants"><Icon icon="mdi:shield-check" /> {$_('header.grants')}</a>
+				<a sveltekit:prefetch href="/grants"
+					><Icon icon="mdi:shield-check" /> {$_('header.grants')}</a
+				>
 			</li>
 		{:else}
 			<li class:active={$page.url.pathname === '/signup'}>

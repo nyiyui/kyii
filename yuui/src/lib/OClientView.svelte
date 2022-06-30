@@ -9,13 +9,9 @@
 <h2>{$_({ id: 'oclient.title', values: { name: ocl.name } })}</h2>
 <div class="oclient flex">
 	<div class="left">
-		<img
-			alt={$_('oclient.logo')}
-			class="user-img"
-			src={ocl.logo_uri}
-		/>
+		<img alt={$_('oclient.logo')} class="user-img" src={ocl.logo_uri} />
 		Author: <a href={`/user?uid=${ocl.user_id}`}>{ocl.user_name}</a>
-</div>
+	</div>
 	<div class="links flex-in">
 		<h3>{$_('oclient.links')}</h3>
 		<a href={ocl.policy_uri}>{$_('oclient.policy_uri')}</a>

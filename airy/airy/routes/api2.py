@@ -24,7 +24,18 @@ from flask_mail import Message
 from sqlalchemy.exc import NoResultFound
 
 from .. import verifiers
-from ..db import AF, AP, Email, Group, OAuth2Token, OAuth2Client, User, UserLogin, ap_reqs, db
+from ..db import (
+    AF,
+    AP,
+    Email,
+    Group,
+    OAuth2Token,
+    OAuth2Client,
+    User,
+    UserLogin,
+    ap_reqs,
+    db,
+)
 from ..etc import login_ul, mail
 from ..session import API_V1_APID, API_V1_SOLVED, API_V1_UID
 from ..ul import current_ul, current_user, login_required, login_user, logout_user
@@ -914,7 +925,8 @@ def oauth_oclient():
 @req_perms(("api_v2.oauth.oclients",))
 def oauth_oclients():
     oclients = list(
-        oclient.for_api_v2 for oclient in OAuth2Client.query.filter_by(user=current_user)
+        oclient.for_api_v2
+        for oclient in OAuth2Client.query.filter_by(user=current_user)
     )
     return make_resp(data=dict(oclients=oclients))
 
@@ -932,7 +944,7 @@ OCLIENTS_DELETE_SCHEMA = {
 @req_perms(("api_v2.oauth.oclients.delete",))
 def oauth_oclients_delete():
     jsonschema.validate(request.json, OCLIENTS_DELETE_SCHEMA)
-    oclid = request.json['oclid']
+    oclid = request.json["oclid"]
     try:
         OAuth2Client.query.filter_by(user=current_user, id=oclid).delete()
     except NoResultFound:
@@ -955,7 +967,7 @@ OCLIENTS_EDIT_SCHEMA = {
                 "response_types": {"type": "array", "items": {"type": "string"}},
                 "scope": {"type": "string"},
                 "token_endpoint_auth_method": {"type": "string"},
-            }
+            },
         },
     },
 }
@@ -965,8 +977,8 @@ OCLIENTS_EDIT_SCHEMA = {
 @req_perms(("api_v2.oauth.oclients.edit",))
 def oauth_oclients_edit():
     jsonschema.validate(request.json, OCLIENTS_EDIT_SCHEMA)
-    oclid = request.json.get('oclid')
-    ocli = request.json['ocl']
+    oclid = request.json.get("oclid")
+    ocli = request.json["ocl"]
     try:
         if oclid is None:
             ocl = OAuth2Client(user=current_user)

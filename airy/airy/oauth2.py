@@ -1,7 +1,7 @@
 from authlib.integrations.flask_oauth2 import AuthorizationServer, ResourceProtector
 from authlib.integrations.flask_oauth1.cache import (
     register_nonce_hooks,
-    register_temporary_credential_hooks
+    register_temporary_credential_hooks,
 )
 from authlib.integrations.sqla_oauth2 import (
     create_bearer_token_validator,
@@ -87,15 +87,11 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
 
 
 class RefreshTokenGrant(_RefreshTokenGrant):
-    TOKEN_ENDPOINT_AUTH_METHODS = [
-        'client_secret_basic', 'client_secret_post'
-    ]
+    TOKEN_ENDPOINT_AUTH_METHODS = ["client_secret_basic", "client_secret_post"]
 
 
 class ClientCredentialsGrant(_ClientCredentialsGrant):
-    TOKEN_ENDPOINT_AUTH_METHODS = [
-        'client_secret_basic', 'client_secret_post'
-    ]
+    TOKEN_ENDPOINT_AUTH_METHODS = ["client_secret_basic", "client_secret_post"]
 
 
 class OpenIDCode(_OpenIDCode):
@@ -145,7 +141,7 @@ def config_oauth(app):
     save_token = create_save_token_func(db.session, OAuth2Token)
     authorization.init_app(app, query_client=query_client, save_token=save_token)
 
-    cache = app.config['OAUTH2_CACHE']
+    cache = app.config["OAUTH2_CACHE"]
     register_nonce_hooks(server, cache)
     register_temporary_credential_hooks(server, cache)
 
@@ -159,7 +155,13 @@ def config_oauth(app):
     )
     authorization.register_grant(RefreshTokenGrant)
     authorization.register_grant(ClientCredentialsGrant)
-    app.config['OAUTH2_GRANT_TYPES'] = set(cls.GRANT_TYPE for cls, _ in [*authorization._authorization_grants, *authorization._token_grants])
+    app.config["OAUTH2_GRANT_TYPES"] = set(
+        cls.GRANT_TYPE
+        for cls, _ in [
+            *authorization._authorization_grants,
+            *authorization._token_grants,
+        ]
+    )
 
     # protect resource
     bearer_cls = create_bearer_token_validator(db.session, OAuth2Token)

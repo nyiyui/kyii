@@ -843,9 +843,12 @@ class Client extends BaseClient {
 	}
 
 	async oclient(oclid: string): Promise<OClient2> {
-		const r = await this.fetch<{ oclient: OClient2 }>(`oauth/oclient?oclid=${encodeURIComponent(oclid)}`, {
-			method: 'GET'
-		})
+		const r = await this.fetch<{ oclient: OClient2 }>(
+			`oauth/oclient?oclid=${encodeURIComponent(oclid)}`,
+			{
+				method: 'GET'
+			}
+		)
 		this.assertNoErrors(r)
 		return r.data.oclient
 	}
@@ -855,27 +858,30 @@ class Client extends BaseClient {
 			method: 'GET'
 		})
 		this.assertNoErrors(r)
-		return r.data.oclients.map(oclient => ({
+		return r.data.oclients.map((oclient) => ({
 			...oclient,
 			contacts: oclient.contacts ? oclient.contacts : [],
-			jwks: oclient.jwks ? oclient.jwks : [],
+			jwks: oclient.jwks ? oclient.jwks : []
 		}))
 	}
 
-	private async oclientAction(action: string, oclid: string | null, ocl?: OClient2Input): Promise<void> {
+	private async oclientAction(
+		action: string,
+		oclid: string | null,
+		ocl?: OClient2Input
+	): Promise<void> {
 		const r = await this.fetch<null>(`oauth/oclients/${action}`, {
 			method: 'POST',
 			body: JSON.stringify({
 				...(oclid ? { oclid } : {}),
-				...(ocl ? { ocl } : {}),
+				...(ocl ? { ocl } : {})
 			}),
 			headers: {
 				'Content-Type': 'application/json'
-			},
+			}
 		})
 		this.assertNoErrors(r)
 	}
-
 
 	async oclientDelete(oclid: string): Promise<void> {
 		await this.oclientAction('delete', oclid)
@@ -884,7 +890,6 @@ class Client extends BaseClient {
 	async oclientEdit(oclid: string | null, ocl: OClient2Input): Promise<void> {
 		await this.oclientAction('edit', oclid, ocl)
 	}
-
 
 	// ================================
 	// Email Verification

@@ -15,7 +15,7 @@
 	import { onMount } from 'svelte'
 
 	let slug: string
-	let slugFound: boolean | "mulpu" | undefined = undefined
+	let slugFound: boolean | 'mulpu' | undefined = undefined
 	let autosel: boolean
 	let chosen = false
 	let apUuid: string
@@ -51,9 +51,9 @@
 		window.history.replaceState({}, '', url)
 
 		// NOTE: DNC about slugs changing (too much effort (for now))
-		console.log('allow', $allowMULPU);
+		console.log('allow', $allowMULPU)
 		if (!$allowMULPU && isMULPUBySlug(slug)) {
-			slugFound = "mulpu"
+			slugFound = 'mulpu'
 			return
 		}
 
@@ -139,7 +139,7 @@
 				/>
 				{#if slugFound === true}
 					<Icon icon="mdi:account-check" style="color: var(--color-ok);" />
-				{:else if slugFound === "mulpu"}
+				{:else if slugFound === 'mulpu'}
 					<Icon icon="mdi:account-cancel" style="color: var(--color-warn);" />
 					{$_('login.user_mulpu')}
 				{:else}

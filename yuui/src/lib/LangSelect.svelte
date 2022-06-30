@@ -25,9 +25,15 @@
 	function getValue(l: Lang) {
 		if (l === null) {
 			const value = getLocaleFromNavigator()
-			return { value: null, label: $_({ id: 'langs.user_agent', values: { label: getValue(getLocaleFromNavigator()).label } }) }
+			return {
+				value: null,
+				label: $_({
+					id: 'langs.user_agent',
+					values: { label: getValue(getLocaleFromNavigator()).label }
+				})
+			}
 		}
-		return { value: l, label: $_(`langs.${l}`)}
+		return { value: l, label: $_(`langs.${l}`) }
 	}
 </script>
 

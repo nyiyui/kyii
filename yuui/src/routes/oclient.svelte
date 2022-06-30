@@ -24,7 +24,6 @@
 
 	let ocl: OClient
 	let error: string
-
 	;(async () => {
 		if (browser) {
 			if (!(await client.loggedIn())) {
