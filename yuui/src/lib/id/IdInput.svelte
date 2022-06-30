@@ -142,7 +142,7 @@
 				{#if slugTaken === true}
 					<Icon icon="mdi:alert" style="color: var(--color-error);" />
 					Taken
-				{:else if slug === ''}
+				{:else if slug === '' || slug === null}
 					<Icon icon="mdi:cancel" style="color: var(--color-error);" />
 					Cannot be blank
 				{:else if slugTaken === null}
@@ -167,7 +167,7 @@
 				/>
 			</label>
 			<span class="status" role="status">
-				{#if name === ''}
+				{#if name === '' || name === null}
 					<Icon icon="mdi:cancel" style="color: var(--color-error);" />
 					Cannot be blank
 				{:else if name !== ''}
@@ -239,7 +239,7 @@
 		</div>
 		<div class="flex-in">
 			<h2>Perms</h2>
-			{#if id}
+			{#if id && id.perms}
 				<div class="flex">
 					<div class="flex-in">
 						<h4>Your</h4>
