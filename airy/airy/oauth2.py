@@ -151,6 +151,7 @@ def config_oauth(app):
     )
     authorization.register_grant(RefreshTokenGrant)
     authorization.register_grant(ClientCredentialsGrant)
+    app.config['OAUTH2_GRANT_TYPES'] = set(cls.GRANT_TYPE for cls, _ in [*authorization._authorization_grants, *authorization._token_grants])
 
     # protect resource
     bearer_cls = create_bearer_token_validator(db.session, OAuth2Token)

@@ -194,6 +194,7 @@ def openid_configuration():
             "client_secret_post",
             "client_secret_basic",
         ],
+        "grant_types_supported": [*current_app.config["OAUTH2_GRANT_TYPES"]],
     }
 
 
