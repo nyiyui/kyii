@@ -51,7 +51,6 @@ class Config:
     AIRY_ANONYMOUS_PERMS = {
         "api_v2.signup",
         "api_v1.signup",
-        "api_v2.user.img",
     }
     AIRY_DEFAULT_PERMS = AIRY_ANONYMOUS_PERMS | {
         "api_v2.oauth.oclients",
