@@ -4,8 +4,11 @@ from authlib.integrations.sqla_oauth2 import (
     create_query_client_func,
     create_save_token_func,
 )
+from authlib.oauth2.rfc7636 import CodeChallenge
 from authlib.oauth2.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
+    RefreshTokenGrant as _RefreshTokenGrant,
+    ClientCredentialsGrant as _ClientCredentialsGrant,
 )
 from authlib.oidc.core import UserInfo
 from authlib.oidc.core.grants import OpenIDCode as _OpenIDCode
@@ -79,6 +82,18 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
         return ac
 
 
+class RefreshTokenGrant(_RefreshTokenGrant):
+    TOKEN_ENDPOINT_AUTH_METHODS = [
+        'client_secret_basic', 'client_secret_post'
+    ]
+
+
+class ClientCredentialsGrant(_ClientCredentialsGrant):
+    TOKEN_ENDPOINT_AUTH_METHODS = [
+        'client_secret_basic', 'client_secret_post'
+    ]
+
+
 class OpenIDCode(_OpenIDCode):
     def exists_nonce(self, nonce, request):
         return exists_nonce(nonce, request)
@@ -131,10 +146,11 @@ def config_oauth(app):
         AuthorizationCodeGrant,
         [
             OpenIDCode(require_nonce=False),  # TODO: fix mCTF to add nonce
+            CodeChallenge(required=False),
         ],
     )
-    # authorization.register_grant(ImplicitGrant)
-    # authorization.register_grant(HybridGrant)
+    authorization.register_grant(RefreshTokenGrant)
+    authorization.register_grant(ClientCredentialsGrant)
 
     # protect resource
     bearer_cls = create_bearer_token_validator(db.session, OAuth2Token)
