@@ -114,7 +114,7 @@
 				<input class="new" type="button" on:click={newAp} value={$_('config.new')} />
 				{#each Array.from(aps.entries()) as [i, ap]}
 					<div class="ax-input">
-						<APInput bind:ap {afs} afids={tafids} on:delete={() => delAp(i)} />
+						<APInput bind:aps bind:ap {afs} afids={tafids} on:delete={() => delAp(i)} />
 					</div>
 				{/each}
 			{:else}

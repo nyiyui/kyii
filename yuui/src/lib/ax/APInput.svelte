@@ -6,6 +6,7 @@
 
 	const dispatch = createEventDispatcher()
 
+	export let aps: unknown
 	export let ap: ApInput
 	export let afs: Array<AfInput>
 	export let afids
@@ -20,6 +21,11 @@
 
 	function getAfid(af: AfInput, n: number) {
 		return af.uuid || afids[n]
+	}
+
+	$: {
+		ap = ap
+		aps = aps
 	}
 
 	//	$: {
@@ -85,6 +91,9 @@
 						>
 					{/if}
 					<Box level="debug"><code>{getAfid(af, n)}</code></Box>
+					<Box level="debug">{JSON.stringify(afReq)}</Box>
+					<Box level="debug">{getAfid(af, n)}</Box>
+					<Box level="debug">{af}, {n}</Box>
 				</label>
 				<br />
 			{/each}
