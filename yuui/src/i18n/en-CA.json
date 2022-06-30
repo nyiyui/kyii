@@ -49,11 +49,6 @@
 			"allow_mulpu_help": "Allow multiple sessions to concurrently login on this client for a given user",
 			"reset": "Factory reset",
 			"reset_help": "Re-initalize all data stored on this client.",
-			"lang": {
-				"title": "Language",
-				"current": "English",
-				"help": "To change this, change your User Agent's language settings."
-			},
 			"cs": {
 				"title": "Colour Scheme",
 				"light": "Light",
@@ -188,5 +183,12 @@
 	"index": {
 		"logged_in_as": "You are logged in as:",
 		"login_pls": "Please <a href=\"/login?selfnext=/iori\">login</a>."
+	},
+	"langs": {
+		"label": "UI Language",
+		"user_agent": "Per User Agent: {label}",
+		"help": "Please reload to propagate changes.",
+		"en": "English",
+		"ja": "Japanese / 日本語"
 	}
 }

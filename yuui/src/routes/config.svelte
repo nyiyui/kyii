@@ -1,5 +1,6 @@
 <script lang="ts" type="module">
 	import { _ } from 'svelte-i18n'
+	import LangSelect from '$lib/LangSelect.svelte'
 	import Icon from '@iconify/svelte'
 	import Autosaved from '$lib/Autosaved.svelte'
 	import { client } from '$lib/api2'
@@ -99,12 +100,11 @@
 			</label>
 			<br />
 			<label>
-				{$_('config.client.lang.title')}
-				<input type="text" value={$_('config.client.lang.current')} disabled />
+				{$_('config.client.paimon_base_url')}
+				<input type="url" value={import.meta.env.VITE_PAIMON_BASE_URL.toString()} disabled />
 			</label>
-			<Box level="info">
-				{$_('config.client.lang.help')}
-			</Box>
+			<br />
+			<LangSelect />
 			<label>
 				{$_('config.client.cs.title')}
 				<input class="light" type="text" value={$_('config.client.cs.light')} disabled />

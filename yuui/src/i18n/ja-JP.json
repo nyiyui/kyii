@@ -49,11 +49,6 @@
 			"allow_mulpu_help": "一つにユーザーに対し複数のセッションを作れます。",
 			"reset": "初期化",
 			"reset_help": "設定を全て初期化します。",
-			"lang": {
-				"title": "言語",
-				"current": "日本語",
-				"help": "変えるにはユーザーエージェントの言語設定を変えて下さい。"
-			},
 			"cs": {
 				"title": "カラーテーマ",
 				"light": "明色",
@@ -188,5 +183,12 @@
 	"index": {
 		"logged_in_as": "以下のユーザーとしてログインしています。",
 		"login_pls": "<a href=\"/login?selfnext=/iori\">ログイン</a>して下さい。お願いしま〜す。"
+	},
+	"langs": {
+		"label": "表示言語",
+		"user_agent": "ユーザーエージェントの設定：{label}",
+		"help": "設定してからリロードして下さい。",
+		"en": "英語 / English",
+		"ja": "日本語"
 	}
 }
