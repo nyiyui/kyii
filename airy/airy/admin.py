@@ -1,6 +1,6 @@
 from urllib.parse import urlencode, urljoin
 
-from flask import current_app, redirect, request, url_for
+from flask import current_app, redirect, request
 from flask_admin import Admin, AdminIndexView, expose
 from flask_admin.contrib import sqla
 from flask_login import current_user
@@ -12,10 +12,6 @@ from .db import (
     OAuth2Client,
     OAuth2Token,
     User,
-    UserGroups,
-    Group,
-    GroupPerms,
-    Email,
     UserLogin,
     db,
 )

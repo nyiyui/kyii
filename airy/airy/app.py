@@ -19,7 +19,7 @@ def __setup_app(app):
     app.url_map.strict_slashes = False
     db.init_app(app)
     routes.init_app(app)
-    migrate = Migrate(app, db.db)
+    Migrate(app, db.db)
     session.init_app(app)
     config_oauth(app)
     etc.init_app(app)
@@ -28,7 +28,3 @@ def __setup_app(app):
     upload_path = app.config["UPLOAD_PATH"]
     Path(os.path.join(upload_path, "img-tmp")).mkdir(parents=True, exist_ok=True)
     Path(os.path.join(upload_path, "img")).mkdir(parents=True, exist_ok=True)
-
-
-if __name__ == "__main__":
-    app.run(debug=True)

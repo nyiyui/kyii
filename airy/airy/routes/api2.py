@@ -33,7 +33,6 @@ from ..db import (
     OAuth2Client,
     User,
     UserLogin,
-    ap_reqs,
     db,
 )
 from ..etc import login_ul, mail
@@ -405,16 +404,6 @@ CONFIG_AX_SCHEMA = {  # TODO: move this to separate file?
                         "type": "array",
                         "items": {"type": "string", "format": "uuid"},
                     },
-                },
-            },
-        },
-        "aps": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "uuid": {"type": "string", "format": "uuid"},
-                    "name": {"type": "string"},
                 },
             },
         },
@@ -859,23 +848,26 @@ def api_config_id_img():
     if file:
         ext = os.path.splitext(file.filename)[1]
         if ext not in {".png", ".webp", ".jpg", ".jpeg"}:
-            # TODO(nyiyui): update to <https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html>
+            # TODO(nyiyui): update to
+            # <https://pillow.readthedocs.io/en/stable/handbook/image-file-formats.html>
             return make_resp(
                 error=dict(
                     code="unsupported_ext", message=f"unsupported file extension {ext}"
                 )
             )
         upload_path = current_app.config["UPLOAD_PATH"]
-        p = os.path.join(upload_path, f"img-tmp/{current_user.id}{ext}")
+        tmp_path = os.path.join(upload_path, f"img-tmp/{current_user.id}{ext}")
         dst = os.path.join(upload_path, f"img/{current_user.id}.webp")
-        file.save(p)
         try:
-            conv_to_webp(p, dst)
-        except Exception as e:
-            return make_resp(
-                error=dict(code="conversion_failed", message="conversion failed")
-            )
-        os.remove(p)
+            file.save(tmp_path)
+            try:
+                conv_to_webp(tmp_path, dst)
+            except Exception:
+                return make_resp(
+                    error=dict(code="conversion_failed", message="conversion failed")
+                )
+        finally:
+            os.remove(tmp_path)
         return make_resp()
 
 
@@ -906,10 +898,11 @@ def oauth_grants():
 def oauth_grants_revoke():
     grant_id = request.form["grant_id"]
     try:
-        grant = OAuth2Token.query.filter_by(id=grant_id, user=current_user).delete()
+        OAuth2Token.query.filter_by(id=grant_id, user=current_user).delete()
     except NoResultFound:
         return make_resp(error=dict(code="grant_not_found", message="grant not found"))
-    db.session.commit()
+    else:
+        db.session.commit()
     return make_resp()
 
 

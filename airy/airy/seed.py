@@ -3,7 +3,7 @@ import json
 
 from passlib.hash import django_pbkdf2_sha256
 
-from .db import AF, AP, Email, Group, GroupPerms, OAuth2Client, User, db, gen_uuid
+from .db import AF, AP, Group, GroupPerms, OAuth2Client, User, db, gen_uuid
 
 
 def init_app(app):

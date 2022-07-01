@@ -30,8 +30,6 @@ webauthn = "*"
 [dev-packages]
 pytest = "*"
 flake8 = "*"
-flake8-import-order = "*"
-flake8-isort = "*"
 black = "*"
 
 [requires]

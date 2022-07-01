@@ -2,7 +2,8 @@ from pathlib import Path
 
 from authlib.jose import JsonWebKey, KeySet
 
-SECRET_KEY = "876e1d975ea1cc9e3851ada3e992c3ba745101e902616189254ff9f8eaee5e2f3a3b02164d2da8ff8d1fa0b140c91bc286c83f434156ffd96ee19829ef47a2d7"
+SECRET_KEY = "876e1d975ea1cc9e3851ada3e992c3ba745101e902616189254ff9f8eaee5e2f" \
+             "3a3b02164d2da8ff8d1fa0b140c91bc286c83f434156ffd96ee19829ef47a2d7"
 
 
 def setup_jwt_public():

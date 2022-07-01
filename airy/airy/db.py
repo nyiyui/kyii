@@ -13,9 +13,8 @@ from blake3 import blake3
 from flask_login import current_user
 from flask_sqlalchemy import SQLAlchemy
 from marshmallow import Schema, fields, validate
-from sqlalchemy import column
 from sqlalchemy_utils import EmailType  # TODO: use UUIDType
-from sqlalchemy_utils import ChoiceType, JSONType, UUIDType
+from sqlalchemy_utils import JSONType
 
 
 db = SQLAlchemy()

@@ -72,7 +72,8 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
         return User.query.get(authorization_code.user_id)
 
     def save_authorization_code(self, code, request):
-        # TODO: pkce https://github.com/authlib/example-oauth2-server/blob/master/website/oauth2.py
+        # TODO: pkce:
+        # <https://github.com/authlib/example-oauth2-server/blob/master/website/oauth2.py>
         client = request.client
         ac = OAuth2AuthorizationCode(
             code=code,
@@ -142,8 +143,8 @@ def config_oauth(app):
     authorization.init_app(app, query_client=query_client, save_token=save_token)
 
     cache = app.config["OAUTH2_CACHE"]
-    register_nonce_hooks(server, cache)
-    register_temporary_credential_hooks(server, cache)
+    register_nonce_hooks(authorization, cache)
+    register_temporary_credential_hooks(authorization, cache)
 
     # support all openid grants
     authorization.register_grant(

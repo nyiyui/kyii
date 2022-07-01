@@ -1,10 +1,6 @@
-import json
-from pathlib import Path
-import logging
 import time
+from pathlib import Path
 import uuid
-from datetime import datetime
-from typing import Optional
 from urllib.parse import urlencode, urljoin
 
 from flask_cors import CORS
@@ -13,10 +9,7 @@ from authlib.oauth2 import OAuth2Error
 from authlib.jose import JsonWebKey, KeySet
 from flask import (
     Blueprint,
-    Response,
-    abort,
     current_app,
-    g,
     jsonify,
     redirect,
     render_template,
@@ -24,10 +17,10 @@ from flask import (
     session,
     url_for,
 )
-from flask_login import current_user, login_required, login_user, logout_user
+from flask_login import current_user, login_required
 from werkzeug.security import gen_salt
 
-from ..db import AF, AP, OAuth2Client, User, UserLogin, db
+from ..db import OAuth2Client, User, db
 from ..etc import csrf, login_manager
 from ..oauth2 import authorization, generate_user_info, require_oauth
 
@@ -40,10 +33,9 @@ def unauthorized_callback():
         base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/closet")
         query = urlencode({"next": request.path, "args": urlencode(request.args)})
         return redirect(f"{base}?{query}")
-    else:
-        return redirect(
-            url_for("rika.login", next=request.path, args=urlencode(request.args))
-        )
+    return redirect(
+        url_for("rika.login", next=request.path, args=urlencode(request.args))
+    )
 
 
 def init_app(app):
@@ -79,8 +71,8 @@ def home():
     return render_template("home.html", user=user, clients=clients)
 
 
-def split_by_crlf(s):
-    return [v for v in s.splitlines() if v]
+def split_by_crlf(string: str):
+    return [v for v in string.splitlines() if v]
 
 
 @bp.route("/create_client", methods=("GET", "POST"))
@@ -117,6 +109,9 @@ def create_client():
 
 
 def grant_as_dict(grant):
+    """
+    Converts a grant to a dict for authorization requests.
+    """
     return dict(
         client=grant.client.as_dict(),
         request=dict(
@@ -148,8 +143,7 @@ def oauth_authorize():
             )
             query = urlencode(dict(azrqid=azrqid))
             return redirect(f"{base}?{query}")
-        else:
-            return render_template("authz.html", user=user, grant=grant)
+        return render_template("authz.html", user=user, grant=grant)
     if "azrqid" not in request.args:
         return "azrqid required", 400
     azrqid = request.args["azrqid"]
