@@ -168,6 +168,7 @@
 	},
 	"oauth2": {
 		"scopes": {
+			"openid": "OpenID Connect",
 			"profile": "プロフィールを見る",
 			"email": "メールアドレスを見る",
 			"address": "住所を見る",
