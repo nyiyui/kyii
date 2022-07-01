@@ -12,7 +12,6 @@ from authlib.integrations.sqla_oauth2 import (
 from blake3 import blake3
 from flask_login import current_user
 from flask_sqlalchemy import SQLAlchemy
-from marshmallow import Schema, fields, validate
 from sqlalchemy_utils import EmailType  # TODO: use UUIDType
 from sqlalchemy_utils import JSONType
 
@@ -333,39 +332,6 @@ class AF(db.Model):
             verifier=self.verifier,
             public_params=self.public_params,
         )
-
-
-class APSchema(Schema):
-    uuid = fields.UUID()  # TODO: validate
-    name = fields.Str(required=True, validate=validate.Length(max=256))
-    reqs = fields.List(fields.Int, required=True)
-
-    def dbify(self, afids: List[UUID], user=current_user) -> UUID:
-        if self.uuid != "":
-            ap = AP.query.filter_by(id=uuid, user=user).one()
-        else:
-            ap = AP(user=user)
-        ap.name = self.name
-        self.reqs = map(afids.__getitem__, reqs)
-        db.session.add(ap)
-
-
-class AFSchema(Schema):
-    uuid = fields.UUID()  # TODO: validate
-    name = fields.Str(required=True, validate=validate.Length(max=256))
-    verifier = fields.Str(required=True, validate=validate.Length(max=64))
-    params = fields.Str(required=True)
-
-    def dbify(self, user=current_user) -> UUID:
-        if self.uuid != "":
-            af = AF.query.filter_by(id=uuid, user=user).one()
-        else:
-            af = AF(user=user)
-        af.name = self.name
-        af.verifier = self.verifier
-        af.params = self.params
-        db.session.add(af)
-        return af.id
 
 
 class OAuth2Client(db.Model, OAuth2ClientMixin):
