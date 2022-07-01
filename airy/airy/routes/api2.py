@@ -763,7 +763,6 @@ CONFIG_ID_SCHEMA = {  # TODO: move this to separate file?
     ),
 )
 @req_perms(("api_v2.config.id",), cond=lambda: request.method == "POST")
-@login_required
 def api_config_id():
     if request.method == "GET":
         return make_resp(
@@ -874,6 +873,7 @@ def api_config_id_img():
 
 
 @bp.route("/oauth/clients", methods=("GET", "POST"))
+@login_required
 @req_perms(("api_v2.oauth.clients",))
 def oauth_clients():
     if request.method == "GET":
@@ -882,6 +882,7 @@ def oauth_clients():
 
 
 @bp.route("/oauth/grants", methods=("GET",))
+@login_required
 @req_perms(("api_v2.oauth.grants",))
 def oauth_grants():
     tokens = list(
@@ -891,6 +892,7 @@ def oauth_grants():
 
 
 @bp.route("/oauth/grants/revoke", methods=("POST",))
+@login_required
 @req_perms(("api_v2.oauth.grants",))
 def oauth_grants_revoke():
     grant_id = request.form["grant_id"]
@@ -903,6 +905,7 @@ def oauth_grants_revoke():
 
 
 @bp.route("/oauth/oclient", methods=("GET",))
+@login_required
 @req_perms(("api_v2.oauth.oclients",))
 def oauth_oclient():
     oclid = request.args["oclid"]
@@ -911,8 +914,11 @@ def oauth_oclient():
 
 
 @bp.route("/oauth/oclients", methods=("GET",))
+@login_required
 @req_perms(("api_v2.oauth.oclients",))
 def oauth_oclients():
+    print(OAuth2Client.query.all(), current_user)
+    print(OAuth2Client.query.filter_by(user=current_user).all())
     oclients = list(
         oclient.for_api_v2 for oclient in OAuth2Client.query.filter_by(user=current_user)
     )
@@ -929,6 +935,7 @@ OCLIENTS_DELETE_SCHEMA = {
 
 
 @bp.route("/oauth/oclients/delete", methods=("POST",))
+@login_required
 @req_perms(("api_v2.oauth.oclients.delete",))
 def oauth_oclients_delete():
     jsonschema.validate(request.json, OCLIENTS_DELETE_SCHEMA)
@@ -962,6 +969,7 @@ OCLIENTS_EDIT_SCHEMA = {
 
 
 @bp.route("/oauth/oclients/edit", methods=("POST",))
+@login_required
 @req_perms(("api_v2.oauth.oclients.edit",))
 def oauth_oclients_edit():
     jsonschema.validate(request.json, OCLIENTS_EDIT_SCHEMA)
@@ -982,6 +990,7 @@ def oauth_oclients_edit():
 
 
 @bp.route("/oauth/azrq", methods=("GET",))
+@login_required
 def oauth_azrq():
     azrqid = str(UUID(request.args["azrqid"]))
     key = f"azrq-{azrqid}"
