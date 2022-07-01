@@ -25,7 +25,7 @@ jobs:
     - name: Install Airy Dependencies
       run: |
         python -m pip install pipenv
-        pipenv install --skip-lock
+        pipenv install --dev --skip-lock
     - name: Flake8
       run: pipenv run flake8
     - name:
