@@ -24,7 +24,6 @@
 
 	function getValue(l: Lang) {
 		if (l === null) {
-			const value = getLocaleFromNavigator()
 			return {
 				value: null,
 				label: $_({
