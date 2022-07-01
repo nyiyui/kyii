@@ -80,7 +80,7 @@
 			console.log(`feedback2`, feedback)
 			const credential = (await navigator.credentials.create({
 				publicKey: feedback
-			})) as PublicKeyCredential
+			})) as PublicKeyCredential // eslint-disable-line no-undef
 			console.log('webauthn credential', credential)
 			const credentialJSON = JSON.stringify({
 				id: credential.id,
@@ -88,6 +88,7 @@
 				response: {
 					clientDataJSON: encodeBase64(credential.response.clientDataJSON),
 					attestationObject: encodeBase64(
+						// eslint-disable-next-line no-undef
 						(credential.response as AuthenticatorAttestationResponse).attestationObject
 					)
 				},
@@ -167,7 +168,7 @@
 				console.log('webauthn ao', ao)
 				const assertion = (await navigator.credentials.get({
 					publicKey: ao
-				})) as PublicKeyCredential
+				})) as PublicKeyCredential // eslint-disable-line no-undef
 				console.log('webauthn assertion', assertion)
 				;({
 					success,
@@ -176,8 +177,7 @@
 					feedback: verifyFeedback
 				} = await client.verifyTaf(
 					tafid,
-					JSON.stringify({ state: '2_verify', credential: JSON.stringify(assertion) }),
-					true
+					JSON.stringify({ state: '2_verify', credential: JSON.stringify(assertion) })
 				))
 				if (!done) {
 					throw new TypeError('webauthn unexpected not done')
