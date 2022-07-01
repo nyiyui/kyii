@@ -31,6 +31,12 @@ webauthn = "*"
 pytest = "*"
 flake8 = "*"
 mypy = "*"
+# NOTE: remember to add type stubs (as they become available)
+types-Pillow = "*"
+types-Flask = "*"
+types-Flask-SQLAlchemy = "*"
+types-sqlalchemy_utils = "*"
+types-SQLAlchemy = "*"
 black = "*"
 
 [requires]
