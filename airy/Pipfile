@@ -30,6 +30,7 @@ webauthn = "*"
 [dev-packages]
 pytest = "*"
 flake8 = "*"
+mypy = "*"
 black = "*"
 
 [requires]
