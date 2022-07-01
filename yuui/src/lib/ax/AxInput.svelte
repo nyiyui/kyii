@@ -12,7 +12,7 @@
 	let aps = new Array<ApInput>()
 	let delAps = new Array<string>()
 	let preparedAx
-	let warnings: Array<any>
+	let warnings: Array<any> // eslint-disable-line @typescript-eslint/no-explicit-any
 
 	function newAp() {
 		aps.push({ uuid: '', name: 'New AP', reqs: [] })
@@ -78,8 +78,8 @@
 			del_aps: delAps,
 			del_afs: delAfs.concat(
 				Array.from(regens.entries())
-					.filter(([_, regen]) => regen)
-					.map(([n, _]) => tafids[n])
+					.filter((pair) => pair[1])
+					.map((pair) => tafids[pair[0]])
 			)
 		}
 	}

@@ -220,7 +220,7 @@ class Ap {
 type AfPublic = {
 	uuid: UUID
 	name: string
-	verifeir: string
+	verifier: string
 	public_params: unknown
 }
 

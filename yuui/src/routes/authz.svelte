@@ -1,5 +1,4 @@
 <script lang="ts" type="module">
-	import { _ } from 'svelte-i18n'
 	import { page } from '$app/stores'
 	import { client } from '$lib/api2'
 	import { browser } from '$app/env'

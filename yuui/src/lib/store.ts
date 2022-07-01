@@ -1,7 +1,6 @@
 import { browser } from '$app/env'
 import { writable, get } from 'svelte/store'
 import type { Writable } from 'svelte/store'
-import { getLocaleFromNavigator } from 'svelte-i18n'
 
 // Some code by Spenhouet <https://stackoverflow.com/users/2230045/spenhouet> on https://stackoverflow.com/a/68785061/12070265.
 

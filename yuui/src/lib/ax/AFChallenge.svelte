@@ -7,11 +7,10 @@
 	import BoxError from '$lib/BoxError.svelte'
 	import type { AfPublic } from '$lib/api2'
 	import { AttemptResultStatus } from '$lib/util'
-	import { client } from '$lib/api2'
 
 	export let af: AfPublic
 	export let attempt: string
-	export let callback: (afid: string, attempt: string) => Promise<any>
+	export let callback: (afid: string, attempt: string) => Promise<any> // eslint-disable-line @typescript-eslint/no-explicit-any
 	export let result: { status: AttemptResultStatus; msg?: string; feedback?: string }
 
 	let solved: boolean

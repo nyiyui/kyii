@@ -135,7 +135,7 @@
 		tafSynched = false
 	}
 
-	async function callback(_: string, attempt: string): any {
+	async function callback(_: string, attempt: string): Promise<any> { // eslint-disable-line @typescript-eslint/no-explicit-any
 		try {
 			if (af.verifier === 'webauthn') {
 				let success: boolean
