@@ -433,10 +433,13 @@ class BaseClient {
 		return r.data.csrf_token
 	}
 
-	private async commonOpts(method: 'GET' | 'POST', headers?): Promise<{
-		method: string,
-		credentials: string,
-		headers: Record<string, string>,
+	private async commonOpts(
+		method: 'GET' | 'POST',
+		headers?
+	): Promise<{
+		method: string
+		credentials: string
+		headers: Record<string, string>
 	}> {
 		return {
 			method,
