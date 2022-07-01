@@ -1,4 +1,4 @@
-from flask import Blueprint, redirect, render_template, url_for
+from flask import Blueprint, redirect, render_template, url_for, request
 from flask_wtf import FlaskForm
 from wtforms import RadioField, StringField
 from wtforms.validators import DataRequired
@@ -37,8 +37,7 @@ class LoginChooseForm(FlaskForm):
 def login_choose():
     form = LoginChooseForm()
     slug = request.args["slug"]
-    u = User.query.filter_by(slug=slug).one()
-    aps = u.aps
+    User.query.filter_by(slug=slug).one()
     if form.validate_on_submit():
         return redirect(url_for("rika.login_choose", slug=form.slug))
     return render_template("authn/login_choose.html", form=form)

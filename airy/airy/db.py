@@ -1,8 +1,7 @@
 import secrets
 import uuid
 from datetime import datetime
-from typing import List, Optional, Set, Tuple
-from uuid import UUID
+from typing import Optional, Set, Tuple
 
 from authlib.integrations.sqla_oauth2 import (
     OAuth2AuthorizationCodeMixin,
@@ -10,7 +9,6 @@ from authlib.integrations.sqla_oauth2 import (
     OAuth2TokenMixin,
 )
 from blake3 import blake3
-from flask_login import current_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_utils import EmailType  # TODO: use UUIDType
 from sqlalchemy_utils import JSONType
