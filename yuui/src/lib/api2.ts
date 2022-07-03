@@ -951,6 +951,8 @@ if (!baseUrl) {
 
 const client = new Client(baseUrl)
 
+export const autoSubmitVerifiers = ['limited'] // TODO: consider making Airy do this
+
 export { client, ulos, currentUlid }
 export { Ap, Af, Client, User, verifiers }
 export type { Status, ApInput, AfPublic, AfInput, Id, AxInput, UserLogin, Grant, OClient, OClient2 }

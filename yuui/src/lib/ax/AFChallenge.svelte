@@ -2,11 +2,13 @@
 	// TODO: callback → event dispatch
 	import { _ } from 'svelte-i18n'
 	import Icon from '@iconify/svelte'
+	import Loading from '$lib/Loading.svelte'
 	import AF from '$lib/ax/AF.svelte'
 	import Box from '$lib/Box.svelte'
 	import BoxError from '$lib/BoxError.svelte'
 	import type { AfPublic } from '$lib/api2'
 	import { AttemptResultStatus } from '$lib/util'
+	import { autoSubmitVerifiers } from '$lib/api2'
 
 	export let af: AfPublic
 	export let attempt: string
@@ -37,6 +39,12 @@
 	$: {
 		attempt
 		autoAttempt()
+	}
+
+	$: {
+		if (autoSubmitVerifiers.includes(af.verifier)) {
+			callback(af.uuid, attempt)
+		}
 	}
 </script>
 
@@ -74,12 +82,7 @@
 					/>
 				</label>
 			{:else if af.verifier === 'limited'}
-				<input
-					type="button"
-					value={$_('af.submit')}
-					on:click={() => callback(af.uuid, attempt)}
-					disabled={solved}
-				/>
+				<Loading />
 			{:else if af.verifier === 'webauthn'}
 				<input type="button" value={$_('af.submit')} on:click={webauthnSubmit} disabled={solved} />
 			{/if}
