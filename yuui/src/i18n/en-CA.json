@@ -208,6 +208,10 @@
 	"closet": {
 		"title": "Select a Session",
 		"move": "Go to the next page when you are happy with your choice.",
-		"next": "Go to the next page"
+		"next": "Go to the next page",
+		"no_next": "Next page not given."
+	},
+	"logout": {
+		"logout": "Logout"
 	}
 }

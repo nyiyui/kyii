@@ -1,4 +1,5 @@
 <script lang="ts" type="module">
+	import { _ } from 'svelte-i18n'
 	import { client } from '$lib/api2'
 	import { browser } from '$app/env'
 	;(async () => {
@@ -17,9 +18,9 @@
 </script>
 
 <svelte:head>
-	<title>Logout</title>
+	<title>{$_('logout.logout')}</title>
 </svelte:head>
 
 <main class="logout">
-	<input type="button" value="Logout" on:click={logout} />
+	<input type="button" value="{$_('logout.logout')}" on:click={logout} />
 </main>
