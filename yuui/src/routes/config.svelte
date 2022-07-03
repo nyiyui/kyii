@@ -40,11 +40,13 @@
 		<TabList>
 			<Tab>
 				<Icon icon="mdi:account" />
-				{$_('config.id.title')}{#if idUC}<UnsavedChanges />{/if}
+				{$_('config.id.title')}
+				{#if idUC}<UnsavedChanges />{/if}
 			</Tab>
 			<Tab>
 				<Icon icon="mdi:shield-key" />
-				{$_('config.ax.title')}{#if axUC}<UnsavedChanges />{/if}
+				{$_('config.ax.title')}
+				{#if axUC}<UnsavedChanges />{/if}
 			</Tab>
 			<Tab>
 				<Icon icon="mdi:airplane" />

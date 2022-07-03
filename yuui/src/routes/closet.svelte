@@ -22,7 +22,11 @@
 	{#if next}
 		<Box level="info">
 			{$_('closet.move')}
-			<input type="button" on:click={() => window.location.href = next.toString()} value={$_('closet.next')} />
+			<input
+				type="button"
+				on:click={() => (window.location.href = next.toString())}
+				value={$_('closet.next')}
+			/>
 		</Box>
 	{/if}
 	{#if browser}
