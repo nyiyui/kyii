@@ -1027,7 +1027,7 @@ def api_perms_has():
 
 @bp.route("/uls", methods=("GET",))
 @login_required
-@req_perms(("api_v1.ul",))
+@req_perms(("api_v2.ul",))
 def uls_list():
     uls = UserLogin.query.filter_by(user=current_user)
     return make_resp(

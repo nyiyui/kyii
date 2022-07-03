@@ -1,29 +1,23 @@
 from pathlib import Path
 import urllib.parse
 
-from authlib.jose import JsonWebKey
+SECRET_KEY = (
+    "876e1d975ea1cc9e3851ada3e992c3ba745101e902616189254ff9f8eaee5e2f"
+    "3a3b02164d2da8ff8d1fa0b140c91bc286c83f434156ffd96ee19829ef47a2d7"
+)
 
 
 def init_app(app):
     app.config["HOST"] = "http://localhost:5000"
-    JWT_CONFIG = app.config["JWT_CONFIG"] = dict(
-        key=JsonWebKey.import_key(Path("./jwt.pem").read_text()),
-        alg="RS256",
-        iss=app.config["HOST"],
-        exp=60 * 60,
-    )
     app.config.update(
         dict(
+            SECRET_KEY=SECRET_KEY,
             KYII_YUUI_ORIGIN="http://localhost:3000",
-        )
-    )
-    app.config.update(
-        dict(
             OAUTH2_JWT_ENABLED=True,
-            OAUTH2_JWT_ALG=JWT_CONFIG["alg"],
+            OAUTH2_JWT_ALG="RS256",
             OAUTH2_JWT_KEY_PATH="./jwt.pem",
-            OAUTH2_JWT_ISS=JWT_CONFIG["iss"],
-            OAUTH2_JWT_EXP=JWT_CONFIG["exp"],
+            OAUTH2_JWT_ISS=app.config["HOST"],
+            OAUTH2_JWT_EXP=60 * 60,
             UPLOAD_PATH=Path("/tmp/kyii-airy"),
             VERIFIER_WEBAUTHN=dict(
                 # https://github.com/w3c/webauthn/issues/963#issuecomment-399898625
@@ -32,7 +26,6 @@ def init_app(app):
             ),
         )
     )
-    print(app.config["UPLOAD_PATH"])
     from logging.config import dictConfig
 
     dictConfig(

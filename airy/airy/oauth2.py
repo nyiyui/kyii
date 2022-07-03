@@ -2,6 +2,7 @@
 oauth2.py implements OAuth 2- and OpenID Connect-related functionality.
 """
 
+from flask import current_app
 from authlib.integrations.flask_oauth2 import AuthorizationServer, ResourceProtector
 from authlib.integrations.sqla_oauth2 import (
     create_bearer_token_validator,
@@ -18,6 +19,8 @@ from authlib.oidc.core import UserInfo
 from authlib.oidc.core.grants import OpenIDCode as _OpenIDCode
 from authlib.oidc.core.grants import OpenIDHybridGrant as _OpenIDHybridGrant
 from authlib.oidc.core.grants import OpenIDImplicitGrant as _OpenIDImplicitGrant
+
+from authlib.jose import JsonWebKey
 from flask_login import current_user
 from werkzeug.security import gen_salt
 
@@ -100,7 +103,7 @@ class OpenIDCode(_OpenIDCode):
         return exists_nonce(nonce, request)
 
     def get_jwt_config(self, grant):
-        return JWT_CONFIG
+        return get_jwt_config()
 
     def generate_user_info(self, user, scope):
         return generate_user_info(user, scope)
@@ -111,7 +114,7 @@ class ImplicitGrant(_OpenIDImplicitGrant):
         return exists_nonce(nonce, request)
 
     def get_jwt_config(self, grant):
-        return JWT_CONFIG
+        return get_jwt_config()
 
     def generate_user_info(self, user, scope):
         return generate_user_info(user, scope)
@@ -125,7 +128,7 @@ class HybridGrant(_OpenIDHybridGrant):
         return exists_nonce(nonce, request)
 
     def get_jwt_config(self):
-        return JWT_CONFIG
+        return get_jwt_config()
 
     def generate_user_info(self, user, scope):
         return generate_user_info(user, scope)
@@ -135,9 +138,20 @@ authorization = AuthorizationServer()
 require_oauth = ResourceProtector()
 
 
+def get_jwt_config():
+    return dict(
+        key=current_app.config["OAUTH2_JWT_KEY"]
+        if "OAUTH2_JWT_KEY" in current_app.config
+        else JsonWebKey.import_key(
+            Path(current_app.config["OAUTH2_JWT_KEY"]).read_text()
+        ),
+        alg=current_app.config["OAUTH2_JWT_ALG"],
+        iss=current_app.config["OAUTH2_JWT_ISS"],
+        exp=current_app.config["OAUTH2_JWT_EXP"],
+    )
+
+
 def config_oauth(app):
-    global JWT_CONFIG
-    JWT_CONFIG = app.config["JWT_CONFIG"]
     query_client = create_query_client_func(db.session, OAuth2Client)
     save_token = create_save_token_func(db.session, OAuth2Token)
     authorization.init_app(app, query_client=query_client, save_token=save_token)
