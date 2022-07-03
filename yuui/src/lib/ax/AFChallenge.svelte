@@ -79,6 +79,7 @@
 						bind:value={attempt}
 						autocomplete="one-time-code"
 						pattern="[0-9]*"
+						disabled={solved}
 					/>
 				</label>
 			{:else if af.verifier === 'limited'}
