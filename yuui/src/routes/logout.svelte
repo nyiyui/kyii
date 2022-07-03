@@ -22,5 +22,5 @@
 </svelte:head>
 
 <main class="logout">
-	<input type="button" value="{$_('logout.logout')}" on:click={logout} />
+	<input type="button" value={$_('logout.logout')} on:click={logout} />
 </main>
