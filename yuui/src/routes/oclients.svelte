@@ -56,6 +56,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{$_('header.oclients')}</title>
+</svelte:head>
+
 <main class="oclients">
 	<input
 		type="button"
