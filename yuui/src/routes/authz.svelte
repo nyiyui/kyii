@@ -1,7 +1,9 @@
 <script lang="ts" type="module">
+	import { _ } from 'svelte-i18n'
 	import { page } from '$app/stores'
 	import { client } from '$lib/api2'
 	import { browser } from '$app/env'
+	import Loading from '$lib/Loading.svelte'
 	import Scope from '$lib/Scope.svelte'
 	import Box from '$lib/Box.svelte'
 	import type { Grant } from '$lib/api2'
@@ -29,37 +31,33 @@
 </script>
 
 <svelte:head>
-	<title>Authorize</title>
+	<title>{$_('authz.title')}</title>
 </svelte:head>
 
 <main>
+	<h1>{$_('authz.title')}</h1>
 	{#if grant === undefined}
-		Loading
+		<Loading />
 	{:else if grant === null}
-		<Box level="error">Grant already used (may be authorized or denied).</Box>
+		<Box level="error">{$_('authz.already_used')}</Box>
 		<Box level="info">
-			If you want to retry, you may want to <input
+			{$_('authz.retry')}
+			<input
 				type="button"
 				on:click={() => history.back()}
-				value="go back"
-			/> (again).
+				value={$_('authz.go_back')}
+			/>.
 		</Box>
 	{:else}
 		<p>
-			<a href="/oclient?oclid={grant.args.client_id}">{grant.client.name}</a>
-			by <a href={`/user?uid=${grant.client.user_id}`}>{grant.client.user_name}</a>
-			is requesting access to your
-			<a href={`/user?uid=${ulo.uid}`}>{ulo.name}</a>
-			account.
+			{$_({ id: 'authz.prompt', values: { user_name: ulo.name } })}
+			<br />
+			{$_('authz.client_lhs')} <a href="/oclient?oclid={grant.args.client_id}">{grant.client.name}</a>
 		</p>
-		If you allow, the app will have access to:
+		{$_('authz.then')}
 		<ul>
 			{#each grant.request.scope.split(' ') as scope}
-				{#if scope === 'openid'}
-					<li>Your user ID (i.e. {ulo.uid}) (via OpenID Connect's <code>sub</code>)</li>
-				{:else}
-					<li><Scope name={scope} /></li>
-				{/if}
+				<li><Scope name={scope} /></li>
 			{/each}
 		</ul>
 		<Box level="debug">
@@ -70,8 +68,8 @@
 			method="post"
 		>
 			<input type="hidden" name="_csrf_token" value={csrfToken} />
-			<input class="update" type="submit" name="action_allow" value="Allow" />
-			<input class="delete" type="submit" name="action_deny" value="Deny" />
+			<input class="update" type="submit" name="action_allow" value={$_('authz.allow')} />
+			<input class="delete" type="submit" name="action_deny" value={$_('authz.deny')} />
 		</form>
 	{/if}
 </main>

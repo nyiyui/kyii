@@ -167,6 +167,7 @@
 		"delete": "Delete"
 	},
 	"oauth2": {
+		"sub": "Your User ID (i.e. {uid})",
 		"scopes": {
 			"openid": "OpenID Connect",
 			"profile": "View your profile",
@@ -192,5 +193,16 @@
 		"help": "Please reload to propagate changes.",
 		"en": "English",
 		"ja": "Japanese / 日本語"
+	},
+	"authz": {
+		"already_used": "Authorization Request already used.",
+		"retry": "To retry authorizing, a new Authorization Request must be made. Going back may help with that.",
+		"go_back": "Go back",
+		"prompt": "The following client is requesting access to {user_name} account:",
+		"client_lhs": "Client:",
+		"then": "If you allow, the client will have access to:",
+		"title": "Authorize",
+		"allow": "Allow",
+		"deny": "Deny"
 	}
 }
