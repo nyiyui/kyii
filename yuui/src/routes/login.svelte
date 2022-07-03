@@ -148,7 +148,7 @@
 				{/if}
 			</div>
 		</div>
-		{#if slugFound}
+		{#if slugFound === true}
 			<div class="flex">
 				{#if !autosel}
 					<div class="padded flex-in">
