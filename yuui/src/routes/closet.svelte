@@ -1,4 +1,5 @@
 <script lang="ts" type="module">
+	import { _ } from 'svelte-i18n'
 	import Box from '$lib/Box.svelte'
 	import Switcher from '$lib/iori/Switcher.svelte'
 	import { browser } from '$app/env'
@@ -13,15 +14,15 @@
 </script>
 
 <svelte:head>
-	<title>Closet</title>
+	<title>{$_('closet.title')}</title>
 </svelte:head>
 
 <main>
+	<h1>{$_('closet.title')}</h1>
 	{#if next}
 		<Box level="info">
-			Please move
-			<a href={next.toString()}>next</a>
-			once you want to!
+			{$_('closet.move')}
+			<input type="button" on:click={() => window.location.href = next.toString()} value={$_('closet.next')} />
 		</Box>
 	{/if}
 	{#if browser}

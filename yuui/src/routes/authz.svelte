@@ -42,17 +42,14 @@
 		<Box level="error">{$_('authz.already_used')}</Box>
 		<Box level="info">
 			{$_('authz.retry')}
-			<input
-				type="button"
-				on:click={() => history.back()}
-				value={$_('authz.go_back')}
-			/>.
+			<input type="button" on:click={() => history.back()} value={$_('authz.go_back')} />.
 		</Box>
 	{:else}
 		<p>
 			{$_({ id: 'authz.prompt', values: { user_name: ulo.name } })}
 			<br />
-			{$_('authz.client_lhs')} <a href="/oclient?oclid={grant.args.client_id}">{grant.client.name}</a>
+			{$_('authz.client_lhs')}
+			<a href="/oclient?oclid={grant.args.client_id}">{grant.client.name}</a>
 		</p>
 		{$_('authz.then')}
 		<ul>

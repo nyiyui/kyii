@@ -204,5 +204,10 @@
 		"title": "Authorize",
 		"allow": "Allow",
 		"deny": "Deny"
+	},
+	"closet": {
+		"title": "Select a Session",
+		"move": "Go to the next page when you are happy with your choice.",
+		"next": "Go to the next page"
 	}
 }
