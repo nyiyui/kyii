@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;400&family=Noto+Sans:wght@100;400&display=swap');
+/* TODO: only load japanese font if required (i.e. based on i18n) */
 
 @media (prefers-color-scheme: dark) {
 	:root {
@@ -31,10 +32,17 @@
 }
 
 body {
-	font-family: 'Roboto', sans-serif;
 	background-color: var(--color-bg);
 	color: var(--color-fg);
 	margin: 0;
+	font-family: 'Noto Sans', 'Noto Sans JP', sans-serif;
+	font-weight: 400;
+}
+
+h1,
+h2,
+h3 {
+	font-weight: 100;
 }
 
 a {
