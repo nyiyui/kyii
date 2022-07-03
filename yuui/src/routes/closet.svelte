@@ -11,6 +11,12 @@
 	if (browser) {
 		next = getNext($page.url.searchParams)
 	}
+
+	function choose() {
+		if (next) {
+			window.location.href = next.toString()
+		}
+	}
 </script>
 
 <svelte:head>
@@ -19,17 +25,12 @@
 
 <main>
 	<h1>{$_('closet.title')}</h1>
-	{#if next}
-		<Box level="info">
-			{$_('closet.move')}
-			<input
-				type="button"
-				on:click={() => (window.location.href = next.toString())}
-				value={$_('closet.next')}
-			/>
+	{#if !next}
+		<Box level="error">
+			{$_('closet.no_next')}
 		</Box>
 	{/if}
 	{#if browser}
-		<Switcher anonymous={false} />
+		<Switcher on:choose={choose} force />
 	{/if}
 </main>

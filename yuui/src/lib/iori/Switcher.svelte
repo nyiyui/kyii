@@ -13,6 +13,8 @@
 
 	const dispatch = createEventDispatcher()
 
+	export let force = false
+
 	async function choose(ulid) {
 		if (ulid === null || ulid === 'anonymous') {
 			client.uloReset()
@@ -116,7 +118,7 @@
 						reload()
 					}}
 					on:reload={reload}
-					chosen={$currentUlid === ulo.ulid}
+					chosen={$currentUlid === ulo.ulid && !force}
 				/>
 			</div>
 		{/if}
@@ -126,7 +128,7 @@
 			<ULOView
 				ulo="anonymous"
 				on:choose={() => choose('anonymous')}
-				chosen={[null, 'anonymous'].includes($currentUlid)}
+				chosen={[null, 'anonymous'].includes($currentUlid) && !force}
 			/>
 		</div>
 	{/if}
