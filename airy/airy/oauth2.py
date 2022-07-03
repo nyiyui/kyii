@@ -144,7 +144,7 @@ def get_jwt_config():
         key=current_app.config["OAUTH2_JWT_KEY"]
         if "OAUTH2_JWT_KEY" in current_app.config
         else JsonWebKey.import_key(
-            Path(current_app.config["OAUTH2_JWT_KEY"]).read_text()
+            Path(current_app.config["OAUTH2_JWT_KEY_PATH"]).read_text()
         ),
         alg=current_app.config["OAUTH2_JWT_ALG"],
         iss=current_app.config["OAUTH2_JWT_ISS"],
