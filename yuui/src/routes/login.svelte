@@ -108,8 +108,8 @@
 				done = resp.all_done
 				attemptResults.set(afUuid, { status: AttemptResultStatus.Success, msg: '', ...common })
 				if (done) {
-					if (next) window.navigation.navigate(next.toString())
-					else window.navigation.reload()
+					if (next) window.location.href = next.toString()
+					else window.location.reload()
 				}
 			} else {
 				attemptResults.set(afUuid, { status: AttemptResultStatus.Fail, msg: resp.msg, ...common })

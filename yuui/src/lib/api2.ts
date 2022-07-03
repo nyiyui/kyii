@@ -641,6 +641,14 @@ class Client extends BaseClient {
 		return r.data
 	}
 
+	async remoteDecide(token: string): Promise<void> {
+		const r = await this.fetch<null>(`remote_decide`, {
+			method: 'POST',
+			body: new URLSearchParams({ token })
+		})
+		this.assertNoErrors(r)
+	}
+
 	// ================================
 	// Config: Authentication
 	// ================================

@@ -35,7 +35,7 @@ from ..db import (
     UserLogin,
     db,
 )
-from ..etc import login_ul, mail
+from ..etc import login_ul, mail, cache
 from ..session import API_V1_APID, API_V1_SOLVED, API_V1_UID
 from ..ul import current_ul, current_user, login_required, login_user, logout_user
 from ..util2 import all_perms, gen_token, has_perms
@@ -244,8 +244,9 @@ def login_attempt():
     if af.user != u:
         return make_resp(error=dict(code="af_not_owned", message="AF not owned"))
 
+    uid = session[API_V1_UID]
     try:
-        feedback, cur_done = af.verify(attempt)
+        feedback, cur_done = af.verify(attempt, target_id=uid)
     except VerificationError as e:
         return make_resp(
             error=dict(code="verification_failed", message=str(e), data=str(e))
@@ -278,6 +279,14 @@ def login_attempt():
 def logout():
     # TODO: merge with uls_revoke?
     logout_user()
+    return make_resp()
+
+
+@bp.route("/remote_decide", methods=("POST",))
+@login_required
+def remote_decide():
+    token = request.form["token"]
+    verifiers.remote._remote_decide(token, target_id=current_user.id)
     return make_resp()
 
 
@@ -615,7 +624,11 @@ def api_config_ax_taf_verify():
     state = taf.get("state")
     try:
         new_params, new_state, feedback, done = verifiers.verify(
-            verifier, attempt, params, state
+            verifier,
+            attempt,
+            params,
+            state,
+            target_id=current_user.id,
         )
     except VerificationError as e:
         taf["solved"] = False

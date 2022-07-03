@@ -106,6 +106,18 @@
 		},
 		"webauthn": {
 			"label": "WebAuthn"
+		},
+		"remote": {
+			"label": "Remote Verification",
+			"submit": "Refresh",
+			"generating": "Generting token…",
+			"wait": "Approve it within {timeout, plural, one {# second} other {# seconds}}.",
+			"do": "Token: {remoteToken}",
+			"steps": [
+				"From an already-logged-in device, go to \"Remote Authorization\".",
+				"Enter the token below:"
+			],
+			"or_qr": "Or, scan the QR code below and click \"Allow\"."
 		}
 	},
 	"user": {
@@ -213,5 +225,11 @@
 	},
 	"logout": {
 		"logout": "Logout"
+	},
+	"remote-decide": {
+		"title": "Remote Authorization",
+		"warn": "Allowing a token may grant access to your account (by solving an AF).",
+		"token_label": "Token",
+		"button_value": "Allow"
 	}
 }

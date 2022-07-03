@@ -26,12 +26,15 @@
 		{:else if verifier === 'otp_totp'}
 			<Icon icon="mdi:clock-outline" />
 			{$_('af.otp_totp.label')}
+		{:else if verifier === 'webauthn'}
+			<icon icon="mdi:key" />
+			{$_('af.webauthn.label')}
 		{:else if verifier === 'limited'}
 			<Icon icon="mdi:timer-outline" />
 			{$_('af.limited.label')}
-		{:else if verifier === 'webauthn'}
-			<Icon icon="mdi:key" />
-			{$_('af.webauthn.label')}
+		{:else if verifier === 'remote'}
+			<Icon icon="mdi:devices" />
+			{$_('af.remote.label')}
 		{:else if verifier === 'ctrl_email' && $debugMode}
 			<Icon icon="mdi:at" />
 			Control of Email Address (TODO)

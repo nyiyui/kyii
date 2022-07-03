@@ -300,11 +300,11 @@ class AF(db.Model):
         )
         return feedback
 
-    def verify(self, attempt: str) -> Tuple[Optional[dict], bool]:
+    def verify(self, attempt: str, **kwargs) -> Tuple[Optional[dict], bool]:
         from . import verifiers
 
         self.params, self.state, feedback, done = verifiers.verify(
-            self.verifier, attempt, self.params, self.state
+            self.verifier, attempt, self.params, self.state, **kwargs
         )
         return feedback, done
 

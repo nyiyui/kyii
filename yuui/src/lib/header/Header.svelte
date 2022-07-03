@@ -62,6 +62,11 @@
 		<li class:active={$page.url.pathname === '/config'}>
 			<a sveltekit:prefetch href="/config"><Icon icon="mdi:cog" /> {$_('header.config')}</a>
 		</li>
+		<li class:active={$page.url.pathname === '/remote-decide'}>
+			<a sveltekit:prefetch href="/remote-decide"
+				><Icon icon="mdi:devices" /> {$_('remote-decide.title')}</a
+			>
+		</li>
 		<li class="iori" class:active={$page.url.pathname === '/iori'}>
 			<a sveltekit:prefetch href="/iori">
 				<User />

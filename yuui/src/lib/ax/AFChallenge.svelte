@@ -1,6 +1,7 @@
 <script lang="ts" type="module">
 	// TODO: callback → event dispatch
 	import { _ } from 'svelte-i18n'
+	import qrCode from 'qrcode'
 	import Icon from '@iconify/svelte'
 	import Loading from '$lib/Loading.svelte'
 	import AF from '$lib/ax/AF.svelte'
@@ -18,11 +19,18 @@
 	let solved: boolean
 	$: solved = result && result.status === AttemptResultStatus.Success
 
+	let remoteToken: string | null
+	let canvas: HTMLCanvasElement
+
 	async function webauthnSubmit() {
-		const feedback = await callback(af.uuid, JSON.stringify({ state: '1_generate' }))
-		const assertion = await navigator.credentials.get(feedback)
+		await callback(af.uuid, JSON.stringify({ state: '1_generate' }))
+		const assertion = await navigator.credentials.get(result.feedback)
 		console.log('webauthn assertion', assertion)
 		await callback(af.uuid, JSON.stringify({ state: '2_verify', assertion }))
+	}
+
+	async function remoteSubmit() {
+		await callback(af.uuid, JSON.stringify({ state: '2_verify', token: remoteToken }))
 	}
 
 	async function autoAttempt() {
@@ -44,6 +52,19 @@
 	$: {
 		if (autoSubmitVerifiers.includes(af.verifier)) {
 			callback(af.uuid, attempt)
+		}
+		if (af.verifier === 'remote' && !remoteToken) {
+			;(async () => {
+				await callback(af.uuid, JSON.stringify({ state: '1_generate' }))
+				remoteToken = result.feedback.token
+				result = undefined
+				setInterval(remoteSubmit, 1000)
+
+				const url = new URL(`https://${window.location.host}/remote-decide?token=${remoteToken}`)
+				qrCode.toCanvas(canvas, url.toString(), (error) => {
+					if (error) console.error(error)
+				})
+			})()
 		}
 	}
 </script>
@@ -86,6 +107,35 @@
 				<Loading />
 			{:else if af.verifier === 'webauthn'}
 				<input type="button" value={$_('af.submit')} on:click={webauthnSubmit} disabled={solved} />
+			{:else if af.verifier === 'remote'}
+				{#if !remoteToken}
+					<Loading />
+					{$_('af.remote.generating')}
+				{:else}
+					<Box level="info"
+						>{$_({ id: 'af.remote.wait', values: { timeout: af.public_params.timeout } })}</Box
+					>
+					<div>
+						<ol>
+							{#each $_('af.remote.steps') as step}
+								<li>{step}</li>
+							{/each}
+						</ol>
+						{$_({ id: 'af.remote.do', values: { remoteToken } })}
+					</div>
+					<hr />
+					<div>
+						{$_('af.remote.or_qr')}
+						<br />
+						<canvas bind:this={canvas} />
+					</div>
+				{/if}
+				<input
+					type="button"
+					value={$_('af.remote.submit')}
+					on:click={remoteSubmit}
+					disabled={solved}
+				/>
 			{/if}
 		</div>
 		<div class="result">

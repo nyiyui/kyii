@@ -6,7 +6,7 @@ import pyotp
 from nacl.exceptions import InvalidkeyError
 from passlib.hash import django_pbkdf2_sha256
 
-from . import webauthn
+from . import webauthn, remote
 from .errors import GenerationError, VerificationError
 
 # TODO: convert to modules
@@ -15,7 +15,7 @@ from .errors import GenerationError, VerificationError
 class Verifier:
     @classmethod
     def gen(
-        cls, gen_params: dict, state: Optional[dict]
+        cls, gen_params: dict, state: Optional[dict], **kwargs
     ) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
         """
         Generate params from gen_params and return params and feedback.
@@ -28,7 +28,7 @@ class Verifier:
 
     @classmethod
     def verify(
-        cls, attempt: str, params: dict, state: Optional[dict] = None
+        cls, attempt: str, params: dict, state: Optional[dict] = None, **kwargs
     ) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
         """
         Verify attempt and return params and new state.
@@ -41,7 +41,7 @@ class Verifier:
         raise NotImplementedError()
 
     @classmethod
-    def public_params(cls, params: dict) -> dict:
+    def public_params(cls, params: dict, **kwargs) -> dict:
         """
         Get public params.
 
@@ -54,7 +54,7 @@ class Verifier:
 
 class Pw(Verifier):
     @classmethod
-    def gen(cls, gen_params: dict, state: Optional[dict]):
+    def gen(cls, gen_params: dict, state: Optional[dict], **kwargs):
         password = gen_params["password"]
         if not isinstance(password, str):
             raise TypeError("password must be a str")
@@ -71,7 +71,7 @@ class Pw(Verifier):
 
     @classmethod
     def verify(
-        cls, attempt: str, params: dict, state
+        cls, attempt: str, params: dict, state, **kwargs
     ) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
         hash_ = base64.b64decode(params["hash"].encode("ascii"))
         if "compat" in params.keys():
@@ -101,7 +101,7 @@ class Pw(Verifier):
 
 class TOTP(Verifier):
     @classmethod
-    def gen(cls, gen_params: dict, state: Optional[dict]):
+    def gen(cls, gen_params: dict, state: Optional[dict], **kwargs):
         algorithm = "SHA1"  # TODO: multiple algorithms
         digits = gen_params.get("digits", 6)
         if digits not in (6, 8):
@@ -121,7 +121,7 @@ class TOTP(Verifier):
 
     @classmethod
     def verify(
-        cls, attempt: str, params: dict, state: dict
+        cls, attempt: str, params: dict, state: dict, **kwargs
     ) -> Tuple[dict, Optional[dict]]:
         totp = pyotp.TOTP(
             params["secret_key"],
@@ -137,13 +137,13 @@ class TOTP(Verifier):
         return params, dict(last_otp=attempt), None, True
 
     @classmethod
-    def public_params(cls, params: dict) -> dict:
+    def public_params(cls, params: dict, **kwargs) -> dict:
         return dict(digits=params["digits"])
 
 
 class Limited(Verifier):
     @classmethod
-    def gen(cls, gen_params: dict, state: Optional[dict]):
+    def gen(cls, gen_params: dict, state: Optional[dict], **kwargs):
         if "times" not in gen_params:
             raise GenerationError("times must be specified")
         times = gen_params["times"]
@@ -153,7 +153,7 @@ class Limited(Verifier):
 
     @classmethod
     def verify(
-        cls, attempt: str, params: dict, state: dict
+        cls, attempt: str, params: dict, state: dict, **kwargs
     ) -> Tuple[dict, Optional[dict]]:
         limit = params["limit"]
         used = state["used"]
@@ -167,20 +167,24 @@ VERIFIERS = {
     "otp_totp": TOTP,
     "webauthn": webauthn,
     "limited": Limited,
+    "remote": remote,
 }
 
 
 def gen(
     verifier: str, gen_params: dict, state: Optional[dict]
 ) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
-    return VERIFIERS[verifier].gen(gen_params, state)
+    return VERIFIERS[verifier].gen(gen_params, state, **kwargs)
 
 
 def verify(
-    verifier: str, attempt: str, params: dict, state: Optional[dict] = None
+    verifier: str, attempt: str, params: dict, state: Optional[dict] = None, **kwargs
 ) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
-    return VERIFIERS[verifier].verify(attempt, params, state)
+    return VERIFIERS[verifier].verify(attempt, params, state, **kwargs)
 
 
-def public_params(verifier: str, params: dict) -> dict:
-    return VERIFIERS[verifier].public_params(params)
+def public_params(verifier: str, params: dict, **kwargs) -> dict:
+    v = VERIFIERS[verifier]
+    if hasattr(v, "public_params"):
+        return v.public_params(params, **kwargs)
+    return None

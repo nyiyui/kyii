@@ -52,10 +52,12 @@ def init_app(app):
 
 
 REQUIRED_KEYS = [
+    "SECRET_KEY",
     "KYII_YUUI_ORIGIN",
     "HOST",
     "UPLOAD_PATH",
-    "SECRET_KEY",
+    "VERIFIER_WEBAUTHN",
+    "CACHE_TYPE",
 ]
 
 

@@ -25,6 +25,7 @@ flask-mail = "*"
 blake3 = "*"
 pillow = "*"
 webauthn = "*"
+flask-caching = "*"
 
 [dev-packages]
 pytest = "*"
