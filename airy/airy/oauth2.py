@@ -3,6 +3,7 @@ oauth2.py implements OAuth 2- and OpenID Connect-related functionality.
 """
 
 from flask import current_app
+from pathlib import Path
 from authlib.integrations.flask_oauth2 import AuthorizationServer, ResourceProtector
 from authlib.integrations.sqla_oauth2 import (
     create_bearer_token_validator,
