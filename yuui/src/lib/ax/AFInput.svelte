@@ -321,7 +321,14 @@
 							on:input={tafDesync}
 						/>
 					</label>
-					<br />
+					<label>
+						Algorithm
+						<select bind:value={af.params.algorithm} disabled={!regen} on:input={tafDesync}>
+							<option value="SHA1"> SHA-1 </option>
+							<option value="SHA256"> SHA-256 </option>
+							<option value="SHA512"> SHA-512 </option>
+						</select>
+					</label>
 					<label>
 						Period/Interval
 						<input
@@ -330,13 +337,6 @@
 							disabled={!regen}
 							on:input={tafDesync}
 						/>
-					</label>
-					<br />
-					<label>
-						Algorithm
-						<select bind:value={af.params.algorithm} disabled on:input={tafDesync}>
-							<option value="SHA1">SHA1</option>
-						</select>
 					</label>
 				{:else if af.verifier === 'limited'}
 					<label>
@@ -425,5 +425,10 @@
 
 	.top h4 {
 		flex-grow: 1;
+	}
+
+	form {
+		display: flex;
+		flex-direction: column;
 	}
 </style>
