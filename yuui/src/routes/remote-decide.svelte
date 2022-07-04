@@ -5,7 +5,7 @@
 	import { client } from '$lib/api2'
 	import { onMount } from 'svelte'
 
-	let token = $page.url.searchParams.get('token')
+	let token = ''
 
 	async function decide() {
 		await client.remoteDecide(token)
@@ -16,6 +16,7 @@
 			console.log('not logged in; cannot logout')
 			window.location.replace('/login')
 		}
+		token = $page.url.searchParams.get('token')
 	})
 </script>
 
