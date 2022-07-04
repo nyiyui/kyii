@@ -13,9 +13,7 @@
 	items = [null, ...langs].map(getValue)
 
 	$: {
-		if ($lang) {
-			value = getValue($lang)
-		}
+		value = getValue($lang)
 	}
 
 	function choose() {

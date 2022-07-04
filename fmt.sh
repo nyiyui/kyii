@@ -1,6 +1,14 @@
 #!/bin/sh
 
-(cd ./airy && pipenv run black --check ./airy) &
+(
+	AIRY_CHANGED=$(git diff --name-only --cached | grep 'airy/') &&
+	if [ -z "$AIRY_CHANGED" ]; then
+		echo noice
+	else
+		(cd ./airy && pipenv run black --check $AIRY_CHANGED)
+	fi
+) &
+
 (cd ./yuui && npm run lint) &
 
 wait

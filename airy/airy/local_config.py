@@ -24,7 +24,7 @@ def init_app(app):
                 rp_id=urllib.parse.urlparse(app.config["KYII_YUUI_ORIGIN"]).hostname,
                 rp_name="Airy",
             ),
-            CACHE_TYPE = "SimpleCache",
+            CACHE_TYPE="SimpleCache",
         )
     )
     from logging.config import dictConfig
