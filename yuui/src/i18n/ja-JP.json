@@ -33,7 +33,10 @@
 		},
 		"ax": {
 			"title": "認証",
-			"login_required": "認証方法を設定する為には<a href=\"/login\">ログイン</a>が必要です。"
+			"login_required": "認証方法を設定する為には<a href=\"/login\">ログイン</a>が必要です。",
+			"del_taf": "仮認証方法を削除",
+			"gen_taf": "仮認証方法を生成",
+			"alloc_taf": "認証方法を再生性（仮認証方法を割当てる）"
 		},
 		"client": {
 			"title": "アプリ固有",

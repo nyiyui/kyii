@@ -1,4 +1,5 @@
 <script lang="ts" type="module">
+	import { _ } from 'svelte-i18n'
 	import { debugMode } from '$lib/store'
 	import qrCode from 'qrcode'
 	import { newUrl } from '$lib/otp'
@@ -270,7 +271,12 @@
 				<VerifiedChanges verified={tafVerified} />
 			{/if}
 		</h4>
-		<input class="delete" type="button" on:click={() => dispatch('delete')} value="Delete" />
+		<input
+			class="delete"
+			type="button"
+			on:click={() => dispatch('delete')}
+			value={$_('config.delete')}
+		/>
 	</div>
 	<div class="non-top">
 		<div class="meta">
@@ -293,10 +299,10 @@
 				{/if}
 			</h5>
 			{#if regen}
-				<input class="delete" type="button" value="Delete Temporary AF" on:click={delRegen} />
-				<input type="button" value="Generate Temporary AF" on:click={setRegen} />
+				<input class="delete" type="button" value={$_('config.ax.del_taf')} on:click={delRegen} />
+				<input type="button" value={$_('config.ax.gen_taf')} on:click={setRegen} />
 			{:else}
-				<input class="new" type="button" value="Regenerate AF (allocate TAF)" on:click={newRegen} />
+				<input class="new" type="button" value={$_('config.ax.alloc_taf')} on:click={newRegen} />
 			{/if}
 			<form>
 				{#if af.verifier === 'pw'}

@@ -1,4 +1,5 @@
 <script lang="ts" type="module">
+	import { _ } from 'svelte-i18n'
 	import Box from '$lib/Box.svelte'
 	import type { AfInput, ApInput } from '$lib/api2'
 	import { doc } from '$lib/api2'
@@ -62,7 +63,12 @@
 	<div class="name">
 		<div class="top">
 			<h4 contenteditable="true" bind:textContent={ap.name} />
-			<input class="delete" type="button" on:click={() => dispatch('delete')} value="Delete" />
+			<input
+				class="delete"
+				type="button"
+				on:click={() => dispatch('delete')}
+				value={$_('config.delete')}
+			/>
 		</div>
 		<Box level="debug">
 			UUID: <code>{ap.uuid}</code>

@@ -33,7 +33,10 @@
 		},
 		"ax": {
 			"title": "Authentication",
-			"login_required": "<a href=\"/login\">Logging in</a> is required to configure authentication."
+			"login_required": "<a href=\"/login\">Logging in</a> is required to configure authentication.",
+			"del_taf": "Delete TAF",
+			"gen_taf": "Generate TAF",
+			"alloc_taf": "Regenerate AF (allocate TAF)"
 		},
 		"client": {
 			"title": "Client-specific",
