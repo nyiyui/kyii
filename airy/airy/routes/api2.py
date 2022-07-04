@@ -35,7 +35,7 @@ from ..db import (
     UserLogin,
     db,
 )
-from ..etc import login_ul, mail, cache
+from ..etc import login_ul, mail
 from ..session import API_V1_APID, API_V1_SOLVED, API_V1_UID
 from ..ul import current_ul, current_user, login_required, login_user, logout_user
 from ..util2 import all_perms, gen_token, has_perms

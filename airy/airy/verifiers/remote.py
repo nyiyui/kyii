@@ -1,5 +1,5 @@
-from ..ul import current_user
-import json, secrets
+import json
+import secrets
 from typing import Tuple, Optional
 from .errors import GenerationError, VerificationError
 from ..etc import cache
@@ -35,7 +35,7 @@ def verify(
         if cache.get(key) is None:
             raise VerificationError("token invalid")
         val = cache.get(key)
-        if val == True:
+        if val is True:
             return params, None, None, True
         raise VerificationError("not yet")
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 (
-	AIRY_CHANGED=$(git diff --name-only --cached | grep 'airy/') &&
+	AIRY_CHANGED=$(cd ./airy && git diff --name-only --cached | grep 'airy/' | cut -c 6-) &&
 	if [ -z "$AIRY_CHANGED" ]; then
 		echo noice
 	else
