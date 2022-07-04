@@ -43,6 +43,8 @@ export const allowAnonymous = storage('allowAnonymous', defaultDebugMode)
 
 export const allowMULPU = storage('allowMULPU', defaultDebugMode)
 
+export const devOauth = storage('devOauth', defaultDebugMode)
+
 export type Lang = null | string
 
 export const lang = storage<Lang>('lang', null)

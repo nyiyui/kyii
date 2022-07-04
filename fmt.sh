@@ -5,7 +5,7 @@
 	if [ -z "$AIRY_CHANGED" ]; then
 		echo noice
 	else
-		(cd ./airy && pipenv run black --check $AIRY_CHANGED)
+		(pipenv run black --check $AIRY_CHANGED)
 	fi
 ) &
 

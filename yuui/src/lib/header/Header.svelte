@@ -3,7 +3,7 @@
 	import Logo from '$lib/header/Logo.svelte'
 	import User from '$lib/header/User.svelte'
 	import { page } from '$app/stores'
-	import { debugMode } from '$lib/store'
+	import { debugMode, devOauth } from '$lib/store'
 	import { browser } from '$app/env'
 	import { _ } from 'svelte-i18n'
 
@@ -46,9 +46,12 @@
 					><Icon icon="mdi:account-box-multiple" /> {$_('header.uls')}</a
 				>
 			</li>
-			<li class:active={$page.url.pathname === '/oclients'}>
-				<a sveltekit:prefetch href="/oclients"><Icon icon="mdi:apps" /> {$_('header.oclients')}</a>
-			</li>
+			{#if $devOauth}
+				<li class:active={$page.url.pathname === '/oclients'}>
+					<a sveltekit:prefetch href="/oclients"><Icon icon="mdi:apps" /> {$_('header.oclients')}</a
+					>
+				</li>
+			{/if}
 			<li class:active={$page.url.pathname === '/grants'}>
 				<a sveltekit:prefetch href="/grants"
 					><Icon icon="mdi:shield-check" /> {$_('header.grants')}</a

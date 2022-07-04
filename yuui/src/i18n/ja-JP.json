@@ -48,6 +48,8 @@
 			"allow_anonymous_help": "匿名セッションを表示する",
 			"allow_mulpu": "ユーザー毎に複数セッション",
 			"allow_mulpu_help": "一つにユーザーに対し複数のセッションを作れます。",
+			"dev_oauth": "OAuth開発者モード",
+			"dev_oauth_help": "主にOAuth開発用なUIを表示する",
 			"reset": "初期化",
 			"reset_help": "設定を全て初期化します。",
 			"cs": {
@@ -147,6 +149,7 @@
 	},
 	"oclient": {
 		"title": "アプリ 「{name}」",
+		"public_preview": "公開情報を見る",
 		"links": "リンク",
 		"meta": "メタデータ",
 		"oauth": "OAuth 設定",
@@ -165,6 +168,8 @@
 		"jwks": "JWKS",
 		"client_name": "名前",
 		"client_uri": "URI",
+		"logo": "ロゴ",
+		"author": "制作者：",
 		"logo_uri": "ロゴのURI",
 		"contacts": "連絡先",
 		"tos_uri": "ToS・利用規約のURI",

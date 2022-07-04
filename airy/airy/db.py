@@ -358,6 +358,7 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
             logo_uri=self.logo_uri,
             tos_uri=self.tos_uri,
             policy_uri=self.policy_uri,
+            contacts=self.contacts,
         )
 
     @property

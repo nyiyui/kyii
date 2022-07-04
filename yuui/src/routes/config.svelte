@@ -4,7 +4,7 @@
 	import Icon from '@iconify/svelte'
 	import Autosaved from '$lib/Autosaved.svelte'
 	import { client } from '$lib/api2'
-	import { debugMode, allowAnonymous, allowMULPU } from '$lib/store'
+	import { debugMode, allowAnonymous, allowMULPU, devOauth } from '$lib/store'
 	import Box from '$lib/Box.svelte'
 	import { Tabs, Tab, TabList, TabPanel } from 'svelte-tabs'
 	import IdInput from '$lib/id/IdInput.svelte'
@@ -91,6 +91,13 @@
 			</label>
 			<Box level="info">
 				{$_('config.client.allow_mulpu_help')}
+			</Box>
+			<label>
+				<input type="checkbox" bind:checked={$devOauth} />
+				{$_('config.client.dev_oauth')}
+			</label>
+			<Box level="info">
+				{$_('config.client.dev_oauth_help')}
 			</Box>
 			<input type="button" on:click={reset} value={$_('config.client.reset')} />
 			<Box level="info">

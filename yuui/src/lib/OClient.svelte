@@ -1,4 +1,5 @@
 <script lang="ts" type="module">
+	import OClientView from '$lib/OClientView.svelte'
 	import Select from 'svelte-select'
 	import Public from '$lib/Public.svelte'
 	import ListInput from '$lib/ListInput.svelte'
@@ -7,10 +8,12 @@
 	import BoxError from '$lib/BoxError.svelte'
 	import Box from '$lib/Box.svelte'
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte'
-	import { client } from '$lib/api2'
+	import { client, ulos, currentUlid } from '$lib/api2'
 	import type { OClient2, OClient2Input } from '$lib/api2'
 	import { createEventDispatcher } from 'svelte'
 	import { onMount } from 'svelte'
+
+	let ulo = $ulos.get($currentUlid)
 
 	const dispatch = createEventDispatcher()
 
@@ -95,39 +98,34 @@
 				<BoxError msg={error} passive />
 			</div>
 		</div>
-		<div class="content flex">
-			<div class="padded flex-in">
+		<div class="ocl content flex">
+			<div class="oclmeta padded flex-in">
 				<h3>{$_('oclient.meta')}</h3>
 				<label>
 					{$_('oclient.id')}
 					<input type="text" value={oclient.id} disabled />
 				</label>
-				<br />
 				<label>
 					{$_('oclient.client_id')}
 					<input type="text" value={oclient.client_id} disabled />
 				</label>
-				<br />
 				<label>
 					{$_('oclient.client_id_issued_at')}
 					<input type="text" value={oclient.client_id_issued_at} disabled />
 				</label>
-				<br />
 				<label>
 					{$_('oclient.client_secret')}
 					<input type="text" value={oclient.client_secret} disabled />
 				</label>
-				<br />
 				<label>
 					{$_('oclient.client_secret_expires_at')}
 					<input type="text" value={oclient.client_secret_expires_at} disabled />
 				</label>
 			</div>
-			<div class="padded flex-in">
+			<div class="ocloauth padded flex-in">
 				<h3>{$_('oclient.oauth')}</h3>
 				{$_('oclient.redirect_uris')}
 				<ListInput bind:list={oclient.redirect_uris} />
-				<br />
 				<div class="prop">
 					<div class="label">
 						{$_('oclient.token_endpoint_auth_method')}
@@ -183,16 +181,14 @@
 					{$_('oclient.scope')}
 					<input type="text" bind:value={oclient.scope} />
 				</label>
-				<br />
 				<label>
 					{$_('oclient.jwks_uri')}
 					<input type="text" bind:value={oclient.jwks_uri} />
 				</label>
-				<br />
 				{$_('oclient.jwks')}
 				<ListInput bind:list={oclient.jwks} />
 			</div>
-			<div class="padded flex-in">
+			<div class="oclidentity padded flex-in">
 				<h3>{$_('oclient.identity')}</h3>
 				<label>
 					{$_('oclient.client_name')}
@@ -246,10 +242,19 @@
 				<pre>{JSON.stringify(preparedOclient2, null, 2)}</pre>
 			</Box>
 		</div>
+		<div class="oclpp padded flex-in">
+			<h3>{$_('oclient.public_preview')}</h3>
+			<OClientView ocl={oclient} name={newName} userId={ulo.uid} userName={ulo.name} />
+		</div>
 	</section>
 {/if}
 
 <style>
+	.ocl div {
+		display: flex;
+		flex-direction: column;
+	}
+
 	.meta > h2 {
 		flex-grow: 1;
 	}

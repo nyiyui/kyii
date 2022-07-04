@@ -48,6 +48,8 @@
 			"allow_anonymous_help": "Allow anonymous sessions, allowing you to choose an anonymous session voluntarily",
 			"allow_mulpu": "Allow multiple sessions per user",
 			"allow_mulpu_help": "Allow multiple sessions to concurrently login on this client for a given user",
+			"dev_oauth": "OAuth developer mode",
+			"dev_oauth_help": "Show UIs mainly for OAuth development.",
 			"reset": "Factory reset",
 			"reset_help": "Re-initalize all data stored on this client.",
 			"cs": {
@@ -147,6 +149,7 @@
 	},
 	"oclient": {
 		"title": "App {name}",
+		"public_preview": "Preview of public info",
 		"links": "Links",
 		"meta": "Metadata",
 		"oauth": "OAuth Settings",
@@ -165,6 +168,8 @@
 		"jwks": "JWKS",
 		"client_name": "Name",
 		"client_uri": "URI",
+		"logo": "Logo",
+		"author": "Author",
 		"logo_uri": "Logo URI",
 		"contacts": "Contacts",
 		"tos_uri": "Terms of service URI",
