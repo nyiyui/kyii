@@ -9,6 +9,7 @@
 
 	async function decide() {
 		await client.remoteDecide(token)
+		token = ''
 	}
 
 	onMount(async () => {
@@ -32,7 +33,13 @@
 	<form>
 		<label>
 			{$_('remote-decide.token_label')}
-			<input type="text" bind:value={token} />
+			<input
+				type="text"
+				inputmode="numeric"
+				bind:value={token}
+				autocomplete="one-time-code"
+				pattern={'[0-9]{6}'}
+			/>
 		</label>
 		<input class="warn" type="button" value={$_('remote-decide.button_value')} on:click={decide} />
 	</form>

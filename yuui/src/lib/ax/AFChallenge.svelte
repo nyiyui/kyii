@@ -99,7 +99,7 @@
 						inputmode="numeric"
 						bind:value={attempt}
 						autocomplete="one-time-code"
-						pattern="[0-9]*"
+						pattern={'[0-9]{6,8}'}
 						disabled={solved}
 					/>
 				</label>
