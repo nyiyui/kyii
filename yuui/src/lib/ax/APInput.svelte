@@ -1,5 +1,6 @@
 <script lang="ts" type="module">
 	import { _ } from 'svelte-i18n'
+	import Icon from '@iconify/svelte'
 	import Box from '$lib/Box.svelte'
 	import type { AfInput, ApInput } from '$lib/api2'
 	import { doc } from '$lib/api2'
@@ -87,6 +88,9 @@
 						disabled={!getAfid(af, n)}
 					/>
 					{af.name}
+					<a href={`#${getAfid(af, n)}`}>
+						<Icon icon="mdi:link" />
+					</a>
 					{#if !getAfid(af, n)}
 						<Box level="warn"
 							>This AF is <a
