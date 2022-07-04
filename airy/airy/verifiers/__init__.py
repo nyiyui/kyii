@@ -1,5 +1,5 @@
 import base64
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, Any
 
 import nacl.pwhash
 from nacl.exceptions import InvalidkeyError
@@ -70,7 +70,7 @@ class Pw(Verifier):
 
     @classmethod
     def verify(
-        cls, attempt: str, params: dict, state, **kwargs
+        cls, attempt: str, params: dict, state: Optional[dict] = None, **kwargs
     ) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
         hash_ = base64.b64decode(params["hash"].encode("ascii"))
         if "compat" in params.keys():
@@ -80,7 +80,7 @@ class Pw(Verifier):
         return cls.gen(dict(password=attempt), None)[0], None, None, True
 
     @classmethod
-    def __verify_compat(cls, attempt: str, hash_: str, compat: str) -> None:
+    def __verify_compat(cls, attempt: str, hash_: bytes, compat: str) -> None:
         if compat == "django_pbkdf2_sha256":
             ok = django_pbkdf2_sha256.verify(attempt, hash_)
             if not ok:
@@ -89,7 +89,7 @@ class Pw(Verifier):
             raise TypeError("invalid compat")
 
     @classmethod
-    def __verify(cls, attempt: str, hash_: str) -> None:
+    def __verify(cls, attempt: str, hash_: bytes) -> None:
         try:
             ok = nacl.pwhash.verify(hash_, attempt.encode("utf-8"))
             if not ok:
@@ -100,7 +100,9 @@ class Pw(Verifier):
 
 class Limited(Verifier):
     @classmethod
-    def gen(cls, gen_params: dict, state: Optional[dict], **kwargs):
+    def gen(
+        cls, gen_params: dict, state: Optional[dict], **kwargs
+    ) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
         if "times" not in gen_params:
             raise GenerationError("times must be specified")
         times = gen_params["times"]
@@ -110,16 +112,18 @@ class Limited(Verifier):
 
     @classmethod
     def verify(
-        cls, attempt: str, params: dict, state: dict, **kwargs
-    ) -> Tuple[dict, Optional[dict]]:
+        cls, attempt: str, params: dict, state: Optional[dict] = None, **kwargs
+    ) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
         limit = params["limit"]
+        if state is None:
+            raise VerificationError("state required")
         used = state["used"]
         if used >= limit:
             raise VerificationError("limit reached")
         return params, dict(used=used + 1), dict(remaining=limit - used), True
 
 
-VERIFIERS = {
+VERIFIERS: Dict[str, Any] = {
     "pw": Pw,
     "otp_totp": totp,
     "webauthn": webauthn,
@@ -147,4 +151,4 @@ def public_params(verifier: str, params: dict, **kwargs) -> dict:
     v = VERIFIERS[verifier]
     if hasattr(v, "public_params"):
         return v.public_params(params, **kwargs)
-    return None
+    return {}

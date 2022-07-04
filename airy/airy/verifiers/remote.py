@@ -12,13 +12,17 @@ PREFIX = "verifier_remote_"
 TIMEOUT = 30
 
 
-def gen(gen_params: dict, state: dict, **kwargs):
+def gen(
+    gen_params: dict,
+    state: dict,
+    **kwargs,
+) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
     return {}, None, None, True
 
 
 def verify(
     attempt: str, params: dict, state: dict, target_id: str, **kwargs
-) -> Tuple[dict, Optional[dict]]:
+) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
     args = json.loads(attempt)
     if args["state"] == "1_generate":
         token = secrets.token_hex(3)
@@ -29,7 +33,7 @@ def verify(
         return params, None, dict(token=token), False
     elif args["state"] == "2_verify":
         if "token" not in args:
-            return VerificationError("invalid")
+            raise VerificationError("invalid")
         token = args["token"]
         key = f"{PREFIX}{target_id}_{token}"
         if cache.get(key) is None:
@@ -38,6 +42,7 @@ def verify(
         if val is True:
             return params, None, None, True
         raise VerificationError("not yet")
+    raise VerificationError("invalid state")
 
 
 def public_params(params: dict, **kwargs) -> dict:

@@ -11,7 +11,11 @@ FUNCTIONS = {
 }
 
 
-def gen(gen_params: dict, state: Optional[dict], **kwargs):
+def gen(
+    gen_params: dict,
+    state: Optional[dict],
+    **kwargs,
+) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
     algorithm = gen_params.get("algorithm", "SHA1")
     digits = gen_params.get("digits", 6)
     if digits not in (6, 8):
@@ -32,7 +36,7 @@ def gen(gen_params: dict, state: Optional[dict], **kwargs):
 
 def verify(
     attempt: str, params: dict, state: dict, **kwargs
-) -> Tuple[dict, Optional[dict]]:
+) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
     totp = pyotp.TOTP(
         params["secret_key"],
         digits=int(params["digits"]),

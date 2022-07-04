@@ -26,7 +26,7 @@ login_manager = LoginManager()
 
 
 @login_manager.user_loader
-def load_user(uid: str) -> User:
+def load_user(uid: str) -> Optional[User]:
     ul = current_user_login()
     if ul is None:
         return None

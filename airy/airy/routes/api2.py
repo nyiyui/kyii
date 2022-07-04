@@ -315,10 +315,10 @@ def api_signup():
 ############################################
 
 
-def dbify_taf(tafid: UUID, user=current_user) -> None:
+def dbify_taf(tafid: UUID, user=current_user) -> bool:
     data = session[f"taf-{tafid}"]
     if not data["gen_done"]:
-        raise False
+        return False
     try:
         af = AF.query.filter_by(id=str(tafid), user=user).one()
     except NoResultFound:
@@ -345,7 +345,7 @@ def dbify_ap(data: dict, user=current_user) -> UUID:
     return ap.id
 
 
-def dbify_ax(data: dict, user=current_user) -> List[UUID]:
+def dbify_ax(data: dict, user=current_user):
     for del_ap in data["del_aps"]:
         AP.query.filter_by(id=del_ap, user=user).delete()
     for del_af in data["del_afs"]:

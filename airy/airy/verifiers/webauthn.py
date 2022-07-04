@@ -21,7 +21,11 @@ from .errors import GenerationError, VerificationError
 import secrets
 
 
-def gen(gen_params: dict, state: dict, **kwargs):
+def gen(
+    gen_params: dict,
+    state: dict,
+    **kwargs,
+) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
     if gen_params["state"] == "1_generate":
         config = current_app.config["VERIFIER_WEBAUTHN"]
         webauthn_id = secrets.token_hex(32)
@@ -34,7 +38,7 @@ def gen(gen_params: dict, state: dict, **kwargs):
         )
         jro = options_to_json(ro)
         return (
-            None,
+            {},
             dict(ro_gened=True, webauthn_id=webauthn_id, challenge=ro.challenge),
             jro,
             False,
@@ -69,8 +73,11 @@ def gen(gen_params: dict, state: dict, **kwargs):
 
 
 def verify(
-    attempt: str, params: dict, state: dict, **kwargs
-) -> Tuple[dict, Optional[dict]]:
+    attempt: str,
+    params: dict,
+    state: dict,
+    **kwargs,
+) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
     args = json.loads(attempt)
     vr = json.loads(params["vr"])
     if args["state"] == "1_generate":
