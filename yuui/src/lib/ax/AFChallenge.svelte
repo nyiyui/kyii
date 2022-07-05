@@ -36,7 +36,6 @@
 	async function webauthnSubmit() {
 		await callback(af.uuid, JSON.stringify({ state: '1_generate' }))
 		const assertion = await navigator.credentials.get(result.feedback)
-		console.log('webauthn assertion', assertion)
 		await callback(af.uuid, JSON.stringify({ state: '2_verify', assertion }))
 	}
 

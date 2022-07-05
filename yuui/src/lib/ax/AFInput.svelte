@@ -78,11 +78,9 @@
 					id: decodeBase64(feedback.user.id)
 				}
 			}
-			console.log(`feedback2`, feedback)
 			const credential = (await navigator.credentials.create({
 				publicKey: feedback
 			})) as PublicKeyCredential // eslint-disable-line no-undef
-			console.log('webauthn credential', credential)
 			const credentialJSON = JSON.stringify({
 				id: credential.id,
 				rawId: encodeBase64(credential.rawId),
@@ -95,7 +93,6 @@
 				},
 				type: credential.type
 			})
-			console.log('webauthn credential json', credentialJSON)
 			;({ feedback, done } = await client.genTaf(
 				tafid,
 				{
@@ -166,11 +163,9 @@
 						id: decodeBase64(c.id)
 					}))
 				}
-				console.log('webauthn ao', ao)
 				const assertion = (await navigator.credentials.get({
 					publicKey: ao
 				})) as PublicKeyCredential // eslint-disable-line no-undef
-				console.log('webauthn assertion', assertion)
 				;({
 					success,
 					done,
@@ -255,7 +250,6 @@
 			digits: feedback.digits,
 			period: feedback.period
 		})
-		console.log(canvas)
 		qrCode.toCanvas(canvas, url.toString(), (error) => {
 			if (error) console.error(error)
 		})

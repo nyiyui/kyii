@@ -51,7 +51,6 @@
 		window.history.replaceState({}, '', url)
 
 		// NOTE: DNC about slugs changing (too much effort (for now))
-		console.log('allow', $allowMULPU)
 		if (!$allowMULPU && isMULPUBySlug(slug)) {
 			slugFound = 'mulpu'
 			return
@@ -71,7 +70,6 @@
 			apUuid = ap.uuid
 			choose()
 		}
-		console.log(slug, aps)
 	}
 
 	onMount(async () => {
@@ -96,7 +94,6 @@
 			return
 		}
 		;({ afs } = resp)
-		console.log(resp)
 		chosen = true
 	}
 

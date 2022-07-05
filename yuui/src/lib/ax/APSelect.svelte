@@ -14,7 +14,6 @@
 	$: items = aps.map((ap) => ({ value: ap.uuid, label: ap.name }))
 
 	function choose() {
-		console.log('choose', chosen)
 		chosen = value.value
 		dispatch('choose')
 	}

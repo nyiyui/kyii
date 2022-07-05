@@ -18,7 +18,6 @@
 		for (const req of ap.reqs) {
 			afReq[req] = true
 		}
-		console.log('APInput1', afReq)
 	}
 
 	function getAfid(af: AfInput, n: number) {
@@ -30,26 +29,8 @@
 		aps = aps
 	}
 
-	//	$: {
-	//		const newReqs = new Array<number>();
-	//		console.log(1, afReq);
-	//		for (const [key, val] of Object.entries(afReq)) {
-	//			console.log(2, key, val);
-	//			if (val) {
-	//				newReqs.push(key);
-	//			}
-	//		}
-	//		console.log(33, newReqs);
-	//		ap.reqs = newReqs;
-	//		console.log(3, ap.uuid, ap.reqs, afReq);
-	//		console.log(4, ap);
-	//	}
-
 	function setReq(afid) {
-		console.log(afid)
-		console.log(afInputs)
 		const value = afInputs[afid].checked
-		console.log('APInput4', afid, value)
 		const i = ap.reqs.indexOf(afid)
 		if (value && i === -1) {
 			ap.reqs.push(afid)
