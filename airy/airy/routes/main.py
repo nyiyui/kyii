@@ -1,6 +1,4 @@
 from flask_cors import CORS
-from authlib.integrations.flask_oauth2 import current_token
-from authlib.oauth2 import OAuth2Error
 from flask import (
     Blueprint,
     current_app,
