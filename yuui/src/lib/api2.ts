@@ -3,6 +3,7 @@ import { browser } from '$app/env'
 import type { UUID } from 'uuid'
 import { get } from 'svelte/store'
 import { storage } from '$lib/store'
+import { goto } from '$app/navigation'
 
 type Ulos = Map<UUID, ULO>
 type Ulid = UUID | 'anonymous'
@@ -1004,3 +1005,11 @@ function decodeBase64(s: string): Uint8Array {
 }
 
 export { encodeBase64, decodeBase64 }
+
+async function forceLogin() {
+	if (!(await client.loggedIn())) {
+		goto('/closet')
+	}
+}
+
+export { forceLogin }

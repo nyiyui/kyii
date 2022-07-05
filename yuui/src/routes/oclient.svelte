@@ -4,7 +4,8 @@
 	import BoxError from '$lib/BoxError.svelte'
 	import Loading from '$lib/Loading.svelte'
 	import OClientView from '$lib/OClientView.svelte'
-	import { client } from '$lib/api2'
+	import { client, forceLogin } from '$lib/api2'
+	import { onMount } from 'svelte'
 	import { browser } from '$app/env'
 	import { page } from '$app/stores'
 
@@ -24,15 +25,11 @@
 
 	let ocl: OClient
 	let error: string
-	;(async () => {
-		if (browser) {
-			if (!(await client.loggedIn())) {
-				console.log('not logged in')
-				window.location.replace('/login')
-			}
-			await reload()
-		}
-	})()
+
+	onMount(async () => {
+		await forceLogin()
+		reload()
+	})
 
 	async function reload() {
 		console.log('reload')

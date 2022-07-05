@@ -3,8 +3,8 @@
 	import Loading from '$lib/Loading.svelte'
 	import GrantView from '$lib/Grant.svelte'
 	import BoxError from '$lib/BoxError.svelte'
-	import { browser } from '$app/env'
-	import { client } from '$lib/api2'
+	import { onMount } from 'svelte'
+	import { client, forceLogin } from '$lib/api2'
 	import type { Grant } from '$lib/api2'
 
 	let grants: Array<Grant>
@@ -15,15 +15,11 @@
 		Loaded
 	}
 	let state: State
-	;(async () => {
-		if (browser) {
-			if (!(await client.loggedIn())) {
-				console.log('not logged in')
-				window.location.replace('/login')
-			}
-			await reload()
-		}
-	})()
+
+	onMount(async () => {
+		await forceLogin()
+		await reload()
+	})
 
 	async function reload() {
 		console.log('reload')

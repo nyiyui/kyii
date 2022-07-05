@@ -8,6 +8,7 @@
 	import type { Grant } from '$lib/api2'
 	import { ulos, currentUlid } from '$lib/api2'
 	import { onMount } from 'svelte'
+	import { goto } from '$app/navigation'
 
 	let ulo = $ulos.get($currentUlid)
 
@@ -16,7 +17,7 @@
 
 	onMount(async () => {
 		if (!(await client.loggedIn()))
-			window.location.replace(
+			goto(
 				`/iori?selfnext=${encodeURIComponent(
 					window.location.pathname
 				)}&selfargs=${encodeURIComponent(window.location.search.slice(1))}`

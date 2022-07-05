@@ -2,7 +2,7 @@
 	import { _ } from 'svelte-i18n'
 	import Box from '$lib/Box.svelte'
 	import { page } from '$app/stores'
-	import { client } from '$lib/api2'
+	import { client, forceLogin } from '$lib/api2'
 	import { onMount } from 'svelte'
 
 	let token = ''
@@ -13,10 +13,7 @@
 	}
 
 	onMount(async () => {
-		if (!(await client.loggedIn())) {
-			console.log('not logged in; cannot logout')
-			window.location.replace('/login')
-		}
+		await forceLogin()
 		token = $page.url.searchParams.get('token')
 	})
 </script>

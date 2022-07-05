@@ -5,6 +5,7 @@
 	import { browser } from '$app/env'
 	import { page } from '$app/stores'
 	import { getNext } from '$lib/util'
+	import { goto } from '$app/navigation'
 
 	let next
 
@@ -22,11 +23,7 @@
 	{#if next}
 		<Box level="info">
 			{$_('closet.move')}
-			<input
-				type="button"
-				on:click={() => (window.location.href = next.toString())}
-				value={$_('closet.next')}
-			/>
+			<input type="button" on:click={() => goto(next)} value={$_('closet.next')} />
 		</Box>
 	{/if}
 	{#if browser}

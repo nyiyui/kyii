@@ -5,16 +5,18 @@
 	import { browser } from '$app/env'
 	import { page } from '$app/stores'
 	import { getNext } from '$lib/util'
+	import { onMount } from 'svelte'
+	import { goto } from '$app/navigation'
 
 	let next
 
-	if (browser) {
+	onMount(() => {
 		next = getNext($page.url.searchParams)
-	}
+	})
 
 	function choose() {
 		if (next) {
-			window.location.href = next.toString()
+			goto(next)
 		}
 	}
 </script>

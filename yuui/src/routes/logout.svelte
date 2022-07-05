@@ -1,19 +1,14 @@
 <script lang="ts" type="module">
 	import { _ } from 'svelte-i18n'
-	import { client } from '$lib/api2'
-	import { browser } from '$app/env'
-	;(async () => {
-		if (browser) {
-			if (!(await client.loggedIn())) {
-				console.log('not logged in; cannot logout')
-				window.location.replace('/login')
-			}
-		}
-	})()
+	import { client, forceLogin } from '$lib/api2'
+	import { onMount } from 'svelte'
+	import { goto } from '$app/navigation'
+
+	onMount(forceLogin)
 
 	async function logout() {
 		await client.logout()
-		window.location.replace('/')
+		goto('/')
 	}
 </script>
 

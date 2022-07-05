@@ -1,9 +1,9 @@
 <script lang="ts" type="module">
 	import Loading from '$lib/Loading.svelte'
 	import BoxError from '$lib/BoxError.svelte'
-	import { client } from '$lib/api2'
+	import { client, forceLogin } from '$lib/api2'
+	import { onMount } from 'svelte'
 	import type { UserLogin } from '$lib/api2'
-	import { browser } from '$app/env'
 	import UserLoginInput from '$lib/UserLoginInput.svelte'
 
 	let uls: Promise<Array<UserLogin>>
@@ -12,16 +12,10 @@
 		uls = client.ulsList()
 	}
 
-	;(async () => {
-		if (browser) {
-			if (!(await client.loggedIn())) {
-				console.log('not logged in')
-				window.location.replace('/login')
-			}
-
-			reload()
-		}
-	})()
+	onMount(async () => {
+		await forceLogin()
+		reload()
+	})
 </script>
 
 <svelte:head>

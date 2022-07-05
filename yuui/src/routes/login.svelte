@@ -13,6 +13,7 @@
 	import { AttemptResultStatus } from '$lib/util'
 	import { browser } from '$app/env'
 	import { onMount } from 'svelte'
+	import { goto } from '$app/navigation'
 
 	let slug: string
 	let slugFound: boolean | 'mulpu' | undefined = undefined
@@ -105,8 +106,8 @@
 				done = resp.all_done
 				attemptResults.set(afUuid, { status: AttemptResultStatus.Success, msg: '', ...common })
 				if (done) {
-					if (next) window.location.href = next.toString()
-					else window.location.reload()
+					if (next) goto(next)
+					else goto('/login')
 				}
 			} else {
 				attemptResults.set(afUuid, { status: AttemptResultStatus.Fail, msg: resp.msg, ...common })
