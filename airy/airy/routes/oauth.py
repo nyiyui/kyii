@@ -4,14 +4,12 @@ from urllib.parse import urlencode, urljoin
 
 from flask_cors import CORS
 from authlib.integrations.flask_oauth2 import current_token
-from authlib.oauth2 import OAuth2Error
 from authlib.jose import JsonWebKey, KeySet
 from flask import (
     Blueprint,
     current_app,
     jsonify,
     redirect,
-    render_template,
     request,
     session,
     url_for,
