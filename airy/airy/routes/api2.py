@@ -20,8 +20,10 @@ from flask import (
 )
 from flask_cors import CORS
 from flask_login import current_user as current_user2
+from authlib.oauth2 import OAuth2Error
 from flask_mail import Message
 from sqlalchemy.exc import NoResultFound
+from ..oauth2 import authorization
 
 from .. import verifiers
 from ..db import (
@@ -1013,8 +1015,49 @@ def oauth_azrq():
     azrqid = str(UUID(request.args["azrqid"]))
     key = f"azrq-{azrqid}"
     if key not in session:
-        return make_resp(error=dict(code="azrq_not_found", message="azrq not found"))
-    return make_resp(data=dict(azrq=session[key]["grant"]))
+        return make_resp(
+            error=dict(code="azrq_not_found", message="azrq not found"),
+        )
+    return make_resp(data=dict(args=session[key]["args"]))
+
+
+def grant_as_dict(grant):
+    """
+    Converts a grant to a dict for authorization requests.
+    """
+    return dict(
+        client=grant.client.as_dict(),
+        request=dict(
+            response_type=grant.request.response_type,
+            redirect_uri=grant.request.redirect_uri,
+            scope=grant.request.scope,
+            state=grant.request.state,
+        ),
+    )
+
+
+@bp.route("/oauth/az/step", methods=("POST",))
+@login_required
+def oauth_az_step():
+    azrqid = request.args["azrqid"]
+    args = session[f"azrq-{azrqid}"]["args"]
+    for key, value in args.items():
+        if key not in request.args:
+            return "args mismatch (missing)", 400
+        if request.args[key] != value:
+            return "args mismtach (not equal)", 400
+    try:
+        grant = authorization.get_consent_grant(end_user=current_user)
+    except OAuth2Error as error:
+        return jsonify(dict(error.get_body()))
+    return make_resp(
+        data=dict(
+            grant=dict(
+                args=request.args.to_dict(),
+                **grant_as_dict(grant),
+            )
+        )
+    )
 
 
 ########################################################################################

@@ -16,13 +16,13 @@ from flask import (
     session,
     url_for,
 )
-from flask_login import current_user, login_required
+from ..ul import current_user, login_required
 
 from ..etc import csrf
 from ..oauth2 import authorization, generate_user_info, require_oauth
 
 
-bp = Blueprint("main", __name__)
+bp = Blueprint("oauth", __name__)
 
 
 def init_app(app):
@@ -30,53 +30,46 @@ def init_app(app):
     CORS(app)
 
 
-def grant_as_dict(grant):
-    """
-    Converts a grant to a dict for authorization requests.
-    """
-    return dict(
-        client=grant.client.as_dict(),
-        request=dict(
-            response_type=grant.request.response_type,
-            redirect_uri=grant.request.redirect_uri,
-            scope=grant.request.scope,
-            state=grant.request.state,
-        ),
-    )
-
-
-@bp.route("/oauth/authorize", methods=("GET", "POST"))
-@login_required
+@bp.route("/oauth/authorize", methods=("GET",))
 def oauth_authorize():
-    user = current_user
-    if request.method == "GET":
-        try:
-            grant = authorization.get_consent_grant(end_user=user)
-        except OAuth2Error as error:
-            return jsonify(dict(error.get_body()))
-        if current_app.config["KYII_YUUI"]:
-            base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/authz")
-            azrqid = uuid.uuid4()
-            # SECURITY: azrqid is not for security (normal sessions are used for that),
-            # only for disambiguating between simultaneous azrqs
-            session[f"azrq-{azrqid}"] = dict(
-                grant=dict(
-                    args=dict(azrqid=azrqid, **request.args.to_dict()),
-                    **grant_as_dict(grant),
-                )
-            )
-            query = urlencode(dict(azrqid=azrqid))
-            return redirect(f"{base}?{query}")
-        return render_template("authz.html", user=user, grant=grant)
-    # TODO: re-impl in api2 (so session syncing isnt required)
+    KEYS = [
+        "response_type",
+        "client_id",
+        "redirect_uri",
+        "scope",
+        "state",
+        "code_challenge",
+        "code_challenge_method",
+    ]
+    args = {}
+    for key in KEYS:
+        if key in request.args:
+            args[key] = request.args[key]
+    base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/authz")
+    azrqid = uuid.uuid4()
+    # SECURITY: azrqids are not for security (normal sessions are used for that),
+    #           but for disambiguating between simultaneous azrqs. (Therefore,
+    #           using UUIDs which are not supposed to be infeasible to guess should
+    #           be fine.)
+    session[f"azrq-{azrqid}"] = dict(args=args)
+    query = urlencode(dict(azrqid=azrqid))
+    return redirect(f"{base}?{query}")
+
+
+@bp.route("/oauth/authorize", methods=("POST",))
+@login_required
+def oauth_authorize_post():
     if "azrqid" not in request.args:
         return "azrqid required", 400
     azrqid = request.args["azrqid"]
     del session[f"azrq-{azrqid}"]
-    if "action_allow" in request.form:
-        grant_user = user
-    else:
+    # SAFETY: If action_allow and action_deny are both present, default to deny.
+    if "action_deny" in request.form:
         grant_user = None
+    elif "action_allow" in request.form:
+        grant_user = current_user
+    else:
+        return "invalid choice", 400
     return authorization.create_authorization_response(grant_user=grant_user)
 
 

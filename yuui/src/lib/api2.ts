@@ -844,8 +844,8 @@ class Client extends BaseClient {
 		this.assertNoErrors(r)
 	}
 
-	async getAzrq(azrqid: UUID): Promise<Grant | null> {
-		const r = await this.fetch<{ azrq: Grant | null }>(
+	private async getAzrq(azrqid: UUID): Promise<Record<string, string> | null> {
+		const r = await this.fetch<{ args: Record<string, string> }>(
 			`oauth/azrq?azrqid=${encodeURIComponent(azrqid)}`,
 			{
 				method: 'GET'
@@ -855,8 +855,21 @@ class Client extends BaseClient {
 			return null
 		} else {
 			this.assertNoErrors(r)
-			return r.data.azrq
+			return r.data.args
 		}
+	}
+
+	async stepAzrq(azrqid: UUID): Promise<Grant | null> {
+		const args = await this.getAzrq(azrqid)
+		if (args == null) {
+			return null
+		}
+		args.azrqid = azrqid
+		const r = await this.fetch<{ grant: Grant }>(`oauth/az/step?${new URLSearchParams(args)}`, {
+			method: 'POST'
+		})
+		this.assertNoErrors(r)
+		return r.data.grant
 	}
 
 	async oclient(oclid: string): Promise<OClient2> {

@@ -15,6 +15,7 @@ from werkzeug.local import LocalProxy
 from .db import User, UserLogin, db, gen_uuid
 
 TOKEN_HEADER = "X-Airy-Token"
+TOKEN_NAME = "_airy_token"
 
 current_ul = LocalProxy(lambda: _get_current_ul())
 current_user = LocalProxy(lambda: _get_current_ul().user)
@@ -128,6 +129,8 @@ class ULManager:
 
     def _load_ul(self):
         token = request.headers.get(TOKEN_HEADER)
+        if token is None:
+            token = request.form.get(TOKEN_NAME)
         if token is not None:
             ulid, token_secret = token.split(":", 1)
             ulid = ulid.split("ul", 1)[1]

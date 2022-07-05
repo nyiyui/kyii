@@ -22,7 +22,7 @@ from authlib.oidc.core.grants import OpenIDHybridGrant as _OpenIDHybridGrant
 from authlib.oidc.core.grants import OpenIDImplicitGrant as _OpenIDImplicitGrant
 
 from authlib.jose import JsonWebKey
-from flask_login import current_user
+from .ul import current_user
 from werkzeug.security import gen_salt
 
 from .db import OAuth2AuthorizationCode, OAuth2Client, OAuth2Token, User, db
