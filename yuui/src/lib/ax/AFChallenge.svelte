@@ -1,6 +1,7 @@
 <script lang="ts" type="module">
 	// TODO: callback → event dispatch
 	import { _ } from 'svelte-i18n'
+	import { onDestroy } from 'svelte'
 	import qrCode from 'qrcode'
 	import Icon from '@iconify/svelte'
 	import Loading from '$lib/Loading.svelte'
@@ -19,7 +20,17 @@
 	let solved: boolean
 	$: solved = result && result.status === AttemptResultStatus.Success
 
+	let remoteInterval: number
 	let remoteToken: string | null
+	let remoteTokenExpiresAt: Date | undefined
+	let remoteTokenExpiresIn: number | undefined
+
+	function remoteTokenExpiresInRecalculate() {
+		remoteTokenExpiresIn = Math.max(0, remoteTokenExpiresAt - new Date())
+	}
+	setInterval(remoteTokenExpiresInRecalculate, 1000)
+	remoteTokenExpiresInRecalculate()
+
 	let canvas: HTMLCanvasElement
 
 	async function webauthnSubmit() {
@@ -27,6 +38,18 @@
 		const assertion = await navigator.credentials.get(result.feedback)
 		console.log('webauthn assertion', assertion)
 		await callback(af.uuid, JSON.stringify({ state: '2_verify', assertion }))
+	}
+
+	async function remoteResend() {
+		;({ token: remoteToken } = await callback(af.uuid, JSON.stringify({ state: '1_generate' })))
+		remoteTokenExpiresAt = new Date()
+		remoteTokenExpiresAt.setSeconds(remoteTokenExpiresAt.getSeconds() + af.public_params.timeout)
+		result = undefined
+
+		const url = new URL(`https://${window.location.host}/remote-decide?token=${remoteToken}`)
+		qrCode.toCanvas(canvas, url.toString(), (error) => {
+			if (error) console.error(error)
+		})
 	}
 
 	async function remoteSubmit() {
@@ -54,23 +77,18 @@
 			callback(af.uuid, attempt)
 		}
 		if (af.verifier === 'remote' && !remoteToken) {
-			;(async () => {
-				;({ remoteToken } = await callback(af.uuid, JSON.stringify({ state: '1_generate' })))
-				console.log('remoteToken1', remoteToken, typeof remoteToken)
-				remoteToken = result.feedback.token
-				console.log('remoteToken2', remoteToken, typeof remoteToken)
-				result = undefined
-				setInterval(remoteSubmit, 1000)
-
-				const url = new URL(`https://${window.location.host}/remote-decide?token=${remoteToken}`)
-				if (canvas) {
-					qrCode.toCanvas(canvas, url.toString(), (error) => {
-						if (error) console.error(error)
-					})
-				}
-			})()
+			remoteResend()
+			if (!remoteInterval) {
+				remoteInterval = setInterval(remoteSubmit, 1000)
+			}
 		}
 	}
+
+	onDestroy(() => {
+		if (remoteInterval) {
+			clearInterval(remoteInterval)
+		}
+	})
 </script>
 
 <div class="af-challenge">
@@ -112,14 +130,20 @@
 			{:else if af.verifier === 'webauthn'}
 				<input type="button" value={$_('af.submit')} on:click={webauthnSubmit} disabled={solved} />
 			{:else if af.verifier === 'remote'}
-				{JSON.stringify(af)}
 				{#if !remoteToken}
 					<Loading />
 					{$_('af.remote.generating')}
 				{:else}
-					<Box level="info">
-						{$_({ id: 'af.remote.wait', values: { timeout: af.public_params.timeout } })}
-					</Box>
+					{#if Math.round(remoteTokenExpiresIn) !== 0}
+						<Box level="info">
+							<span role="status">
+								{$_({
+									id: 'af.remote.wait',
+									values: { timeout: Math.round(remoteTokenExpiresIn / 1000) }
+								})}
+							</span>
+						</Box>
+					{/if}
 					<div>
 						<ol>
 							{#each $_('af.remote.steps') as step}
@@ -135,7 +159,12 @@
 						<canvas bind:this={canvas} />
 					</div>
 				{/if}
-				{remoteToken}
+				<input
+					type="button"
+					value={$_('af.remote.resend')}
+					on:click={remoteResend}
+					disabled={solved}
+				/>
 				<input
 					type="button"
 					value={$_('af.remote.submit')}
@@ -151,9 +180,17 @@
 				{#if result.status === AttemptResultStatus.Success}
 					<BoxError msg={null} />
 				{:else if result.status === AttemptResultStatus.Fail}
-					<Box level="error">
-						fail: {result.msg}
-					</Box>
+					{#if af.verifier === 'remote' && result.msg === 'not yet'}
+						<Icon icon="mdi:timer-outline" />
+						{$_('af.remote.not_yet')}
+					{:else if af.verifier === 'remote' && result.msg === 'token invalid'}
+						<Icon icon="mdi:cancel" />
+						{$_('af.remote.expired')}
+					{:else}
+						<Box level="error">
+							fail: {result.msg}
+						</Box>
+					{/if}
 				{:else if result.status === AttemptResultStatus.Error}
 					<Box level="error">
 						error: {result.msg}

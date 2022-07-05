@@ -368,7 +368,6 @@
 				{/if}
 			</form>
 		</div>
-		{JSON.stringify(af)}
 		{#if tafSet}
 			<div class="taf panel">
 				<h5>
