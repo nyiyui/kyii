@@ -280,7 +280,7 @@
 	</div>
 	<div class="non-top">
 		<div class="meta">
-			<h5>Meta</h5>
+			<h5>{$_('config.ax.meta')}</h5>
 			<label>
 				Verifier
 				<!-- (below)TODO: make this like a dropdown or sth -->
@@ -293,7 +293,7 @@
 		</div>
 		<div class="params">
 			<h5>
-				Params
+				{$_('config.ax.params')}
 				{#if !tafSynched}
 					<UnsavedChanges />
 				{/if}
@@ -308,7 +308,7 @@
 				{#if af.verifier === 'pw'}
 					<label>
 						<Icon icon="mdi:dialpad" />
-						Password
+						{$_('af.pw.pw')}
 						<input
 							type="password"
 							bind:value={af.params.password}
@@ -319,7 +319,7 @@
 					</label>
 				{:else if af.verifier === 'otp_totp'}
 					<label>
-						Digits
+						{$_('af.otp_totp.digits')}
 						<input
 							type="number"
 							bind:value={af.params.digits}
@@ -328,7 +328,7 @@
 						/>
 					</label>
 					<label>
-						Algorithm
+						{$_('af.otp_totp.algorithm')}
 						<select bind:value={af.params.algorithm} disabled={!regen} on:input={tafDesync}>
 							<option value="SHA1"> SHA-1 </option>
 							<option value="SHA256"> SHA-256 </option>
@@ -336,7 +336,7 @@
 						</select>
 					</label>
 					<label>
-						Period/Interval
+						{$_('af.otp_totp.period')}
 						<input
 							type="interval"
 							bind:value={af.params.period}
@@ -347,7 +347,7 @@
 				{:else if af.verifier === 'limited'}
 					<label>
 						<Icon icon="mdi:timer-outline" />
-						Times
+						{$_('af.limited.times')}
 						<input
 							type="number"
 							bind:value={af.params.times}
@@ -357,7 +357,7 @@
 					</label>
 				{:else if af.verifier === 'webauthn'}
 					<label>
-						Require User Verification
+						{$_('af.webauthn.req_uv')}
 						<input
 							type="checkbox"
 							bind:value={af.params.require_user_verification}
@@ -368,10 +368,15 @@
 				{/if}
 			</form>
 		</div>
+		{JSON.stringify(af)}
 		{#if tafSet}
 			<div class="taf panel">
-				<h5>Preview (temporary AF)</h5>
-				<Box level="info">State is temporary.</Box>
+				<h5>
+					{$_('config.ax.preview')}
+				</h5>
+				<Box level="info">
+					{$_('config.ax.preview_state')}
+				</Box>
 				<Box level="debug">
 					TAFID: <code>{tafid}</code>
 				</Box>
@@ -379,25 +384,22 @@
 			</div>
 			{#if feedback}
 				<div class="feedback">
-					<h5>Feedback</h5>
+					<h5>
+						{$_('config.ax.feedback')}
+					</h5>
 					{#if af.verifier === 'otp_totp'}
-						{#if feedback === null}
-							<Box level="info"
-								>No feedback due to having no modifications (therefore no regenerations)</Box
-							>
-						{:else}
-							<details>
-								<summary>QR Code</summary>
-								<canvas bind:this={canvas} />
-							</details>
-							<details>
-								<summary>Raw Config</summary>
-								Secret Key: <code>{feedback.secret_key}</code>
-								Algorithm: {feedback.algorithm}
-								Digits: {feedback.digits}
-								Period/interval: {feedback.period}
-							</details>
-						{/if}
+						{$_('af.otp_totp.qr')}
+						<canvas bind:this={canvas} />
+						<details>
+							<summary>{$_('af.otp_totp.details')}</summary>
+							{$_('af.otp_totp.secret_key')} <code>{feedback.secret_key}</code><br />
+							{$_('af.otp_totp.algorithm')}
+							{feedback.algorithm}<br />
+							{$_('af.otp_totp.digits')}
+							{feedback.digits}<br />
+							{$_('af.otp_totp.period')}
+							{feedback.period}<br />
+						</details>
 					{:else if $debugMode}
 						Feedback: <code>{JSON.stringify(feedback)}</code>
 					{/if}

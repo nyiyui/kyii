@@ -114,6 +114,7 @@
 			} else {
 				attemptResults.set(afUuid, { status: AttemptResultStatus.Fail, msg: resp.msg, ...common })
 			}
+			return resp.feedback
 		} catch (e) {
 			attemptResults.set(afUuid, { status: AttemptResultStatus.Error, msg: e.toString() })
 		}

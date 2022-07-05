@@ -36,7 +36,12 @@
 			"login_required": "認証方法を設定する為には<a href=\"/login\">ログイン</a>が必要です。",
 			"del_taf": "仮認証方法を削除",
 			"gen_taf": "仮認証方法を生成",
-			"alloc_taf": "認証方法を再生性（仮認証方法を割当てる）"
+			"alloc_taf": "認証方法を再生性（仮認証方法を割当てる）",
+			"meta": "メタ",
+			"params": "パラメーター",
+			"preview": "プレビュー（仮認証方法）",
+			"preview_state": "ステートは保存されません。",
+			"feedback": "フィードバック"
 		},
 		"client": {
 			"title": "アプリ固有",
@@ -104,13 +109,21 @@
 		},
 		"otp_totp": {
 			"label": "TOTP",
-			"challenge": "チャレンジ"
+			"challenge": "チャレンジ",
+			"qr": "QRコード：",
+			"details": "詳細",
+			"secret_key": "シークレットキー",
+			"algorithm": "ハッシュ関数",
+			"digits": "桁数",
+			"period": "有効時間"
 		},
 		"limited": {
-			"label": "回数制限"
+			"label": "回数制限",
+			"times": "回数"
 		},
 		"webauthn": {
-			"label": "WebAuthn"
+			"label": "WebAuthn",
+			"req_uv": "ユーザーベリフィケーションを必要とする"
 		},
 		"remote": {
 			"label": "遠隔認証",

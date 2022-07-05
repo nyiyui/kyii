@@ -25,7 +25,7 @@ def verify(
 ) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
     args = json.loads(attempt)
     if args["state"] == "1_generate":
-        token = str(secrets.randbits(20))
+        token = f"{secrets.randbits(20):06}"
         key = f"{PREFIX}{target_id}_{token}"
         if cache.get(key) is not None:
             raise GenerationError("token overlap")

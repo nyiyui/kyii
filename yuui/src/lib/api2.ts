@@ -229,12 +229,14 @@ class Af {
 	name: string
 	verifier: string
 	params
+	public_params: unknown
 
 	constructor(af) {
 		this.uuid = af.uuid
 		this.name = af.name
 		this.verifier = af.verifier
 		this.params = af.params
+		this.public_params = af.public_params
 	}
 
 	toInput(): AfInput {

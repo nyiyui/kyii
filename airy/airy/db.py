@@ -320,6 +320,7 @@ class AF(db.Model):
             uuid=self.id,
             name=self.name,
             verifier=self.verifier,
+            public_params=self.public_params,
         )
 
     @property

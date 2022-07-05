@@ -575,7 +575,7 @@ CONFIG_AX_TAF_SET = {  # TODO: move this to separate file?
 def api_config_ax_taf_gen():
     data = request.json
     jsonschema.validate(data, CONFIG_AX_TAF_SET)
-    name, verifier, gen_params = data["name"], data["verifier"], data["gen_params"]
+    name, verifier, gen_params = data["name"], data["verifier"], data.get("gen_params")
     cont = data["cont"]
     tafid = data["tafid"]
     if cont:

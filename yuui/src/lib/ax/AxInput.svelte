@@ -130,6 +130,7 @@
 			{#if afs}
 				<input class="new" type="button" on:click={newAf} value={$_('config.new')} />
 				{#each [...afs.entries()] as [n, af]}
+					{JSON.stringify(af)}
 					<div class="ax-input">
 						<AFInput
 							{n}

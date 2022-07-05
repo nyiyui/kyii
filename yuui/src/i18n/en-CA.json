@@ -36,7 +36,12 @@
 			"login_required": "<a href=\"/login\">Logging in</a> is required to configure authentication.",
 			"del_taf": "Delete TAF",
 			"gen_taf": "Generate TAF",
-			"alloc_taf": "Regenerate AF (allocate TAF)"
+			"alloc_taf": "Regenerate AF (allocate TAF)",
+			"meta": "Meta",
+			"params": "Params",
+			"preview": "Preview (temporary AF)",
+			"preview_state": "State is temporary.",
+			"feedback": "Feedback"
 		},
 		"client": {
 			"title": "Client-specific",
@@ -104,13 +109,21 @@
 		},
 		"otp_totp": {
 			"label": "TOTP",
-			"challenge": "Challenge"
+			"challenge": "Challenge",
+			"qr": "Enrollment QR Code",
+			"details": "Details",
+			"secret_key": "Secret key",
+			"algorithm": "Hash function",
+			"digits": "Digits",
+			"period": "Period/interval"
 		},
 		"limited": {
-			"label": "Counted Limit"
+			"label": "Counted Limit",
+			"times": "Times"
 		},
 		"webauthn": {
-			"label": "WebAuthn"
+			"label": "WebAuthn",
+			"req_uv": "Require user verification"
 		},
 		"remote": {
 			"label": "Remote Verification",

@@ -55,15 +55,19 @@
 		}
 		if (af.verifier === 'remote' && !remoteToken) {
 			;(async () => {
-				await callback(af.uuid, JSON.stringify({ state: '1_generate' }))
+				;({ remoteToken } = await callback(af.uuid, JSON.stringify({ state: '1_generate' })))
+				console.log('remoteToken1', remoteToken, typeof remoteToken)
 				remoteToken = result.feedback.token
+				console.log('remoteToken2', remoteToken, typeof remoteToken)
 				result = undefined
 				setInterval(remoteSubmit, 1000)
 
 				const url = new URL(`https://${window.location.host}/remote-decide?token=${remoteToken}`)
-				qrCode.toCanvas(canvas, url.toString(), (error) => {
-					if (error) console.error(error)
-				})
+				if (canvas) {
+					qrCode.toCanvas(canvas, url.toString(), (error) => {
+						if (error) console.error(error)
+					})
+				}
 			})()
 		}
 	}
@@ -108,13 +112,14 @@
 			{:else if af.verifier === 'webauthn'}
 				<input type="button" value={$_('af.submit')} on:click={webauthnSubmit} disabled={solved} />
 			{:else if af.verifier === 'remote'}
+				{JSON.stringify(af)}
 				{#if !remoteToken}
 					<Loading />
 					{$_('af.remote.generating')}
 				{:else}
-					<Box level="info"
-						>{$_({ id: 'af.remote.wait', values: { timeout: af.public_params.timeout } })}</Box
-					>
+					<Box level="info">
+						{$_({ id: 'af.remote.wait', values: { timeout: af.public_params.timeout } })}
+					</Box>
 					<div>
 						<ol>
 							{#each $_('af.remote.steps') as step}
@@ -130,6 +135,7 @@
 						<canvas bind:this={canvas} />
 					</div>
 				{/if}
+				{remoteToken}
 				<input
 					type="button"
 					value={$_('af.remote.submit')}
