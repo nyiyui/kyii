@@ -1,6 +1,7 @@
 from typing import Optional
 
-from flask import session
+from flask import session, current_app, request, redirect
+from urllib.parse import urlencode, urljoin
 from flask_login import LoginManager
 from flask_login import login_user as login_user2
 from flask_mail import Mail
@@ -33,6 +34,15 @@ def load_user(uid: str) -> Optional[User]:
     if ul.end is not None:
         return None
     return User.query.get(uid)
+
+
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    if current_app.config["KYII_YUUI"]:
+        base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/closet")
+        query = urlencode({"next": request.path, "args": urlencode(request.args)})
+        return redirect(f"{base}?{query}")
+    raise TypeError("KYII_YUUI is not set")
 
 
 def login_ul(ul: UserLogin, **kwargs):

@@ -53,6 +53,7 @@ def init_app(app):
 
 REQUIRED_KEYS = [
     "SECRET_KEY",
+    "KYII_YUUI",
     "KYII_YUUI_ORIGIN",
     "HOST",
     "UPLOAD_PATH",
