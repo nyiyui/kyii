@@ -47,28 +47,19 @@
 	}
 
 	function delAf(n: number, uuid: string) {
-		console.log('delAf', n, uuid)
 		if (uuid !== '') {
 			delAfs.push(uuid)
 			delAfs = delAfs
 		}
-		console.log('delAf2', afs)
 		afs.splice(n, 1)
 		afs = afs
 	}
 
-	$: {
-		afs
-		console.log('afs reload')
-	}
-
 	function reload() {
-		console.log('afs explicit reload')
 		afs = afs
 	}
 
 	$: {
-		console.log('prepare', aps)
 		preparedAx = {
 			aps,
 			afs: Array.from(afs.entries()).map(([n, af]) => ({
@@ -98,7 +89,6 @@
 	onMount(async () => {
 		await client.clearTafs()
 		const ax = await client.getAx()
-		console.log('getAx2', ax.aps)
 		;({ aps, afs } = ax)
 		tafids = {}
 		regens = new Map()
