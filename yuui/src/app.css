@@ -31,6 +31,28 @@
 	}
 }
 
+.selectContainer {
+	--background: var(--color-bg);
+	--color: var(--color-fg);
+	--itemIsActiveBG: var(--color-bg);
+	--borderRadius: 8px;
+	--padding: 6px;
+	--margin: 2px;
+
+	--itemIsActiveBG: var(--color-bg);
+	--itemIsActiveColor: var(--color-fg);
+	--itemHoverBG: var(--color-bg);
+	--itemHoverColor: var(--color-1);
+}
+
+.item {
+	background-color: var(--color-bg);
+}
+
+.item.hover.active {
+	font-style: italic;
+}
+
 body {
 	background-color: var(--color-bg);
 	color: var(--color-fg);
@@ -226,13 +248,4 @@ h6 {
 
 .padded {
 	padding: 8px;
-}
-
-.selectContainer {
-	--background: var(--color-bg);
-	--color: var(--color-fg);
-	--border: 1px solid var(--color-2);
-	--borderRadius: 8px;
-	--padding: 6px;
-	--margin: 2px;
 }
