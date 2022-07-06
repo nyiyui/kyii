@@ -1,4 +1,5 @@
 <script lang="ts" context="module">
+	import { _ } from 'svelte-i18n'
 	import GlobalBar from '$lib/header/GlobalBar.svelte'
 	import Header from '$lib/header/Header.svelte'
 	import '../app.css'
@@ -17,6 +18,14 @@
 
 	start()
 </script>
+
+<svelte:head>
+	{#if $isLoading}
+		<title>Kyii Yuui / ゆうい</title>
+	{:else}
+		<title>{$_('header.home')}</title>
+	{/if}
+</svelte:head>
 
 {#if $isLoading}
 	<p>Loading… 読込中…</p>
