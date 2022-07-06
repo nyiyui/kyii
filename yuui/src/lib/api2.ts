@@ -363,6 +363,13 @@ class User {
 	slug: string
 }
 
+type LogEntry = {
+	id: string
+	created: Date
+	renderer: string
+	data: string
+}
+
 class BaseClient {
 	public baseUrl: URL
 	protected currentToken?: string
@@ -951,6 +958,21 @@ class Client extends BaseClient {
 
 	async oclientEdit(oclid: string | null, ocl: OClient2Input): Promise<void> {
 		await this.oclientAction('edit', oclid, ocl)
+	}
+
+	// ================================
+	// Logs
+	// ================================
+
+	async logList(): Promise<Array<LogEntry>> {
+		const r = await this.fetch<{ logs: Array<LogEntry> }>('logs', {
+			method: 'GET'
+		})
+		this.assertNoErrors(r)
+		return r.data.logs.map((log) => ({
+			...log,
+			created: new Date(log.created)
+		}))
 	}
 
 	// ================================

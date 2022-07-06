@@ -15,7 +15,8 @@
 		"grants": "Grants",
 		"login": "Login",
 		"signup": "Signup",
-		"iori": "Switch"
+		"iori": "Switch",
+		"les": "Log"
 	},
 	"config": {
 		"update": "Update",
@@ -264,5 +265,17 @@
 		"warn": "Allowing a token may grant access to your account (by solving an AF).",
 		"token_label": "Token",
 		"button_value": "Allow"
+	},
+	"le": {
+		"login": {
+			"desc": "New session {ulid} created."
+		},
+		"remote": {
+			"desc": "Token {token} authorized."
+		}
+	},
+	"les": {
+		"reload": "Reload",
+		"count": "{count, plural, =0 {No entries} one {# entry} other {# entries}}."
 	}
 }

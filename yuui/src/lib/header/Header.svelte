@@ -26,7 +26,7 @@
 			{/if}
 		</li>
 		{#if $debugMode}
-			<li class:active={$page.url.pathname === '/ui'}>
+			<li class:active={$page.url.pathname === '/ui/'}>
 				<a sveltekit:prefetch href="/ui">{$_('header.ui')}</a>
 			</li>
 			<li>
@@ -38,37 +38,46 @@
 				<span role="status">{$_('header.loading')}</span>
 			</li>
 		{:else if loggedIn}
-			<li class:active={$page.url.pathname === '/uls'}>
-				<a sveltekit:prefetch href="/uls"
-					><Icon icon="mdi:account-box-multiple" /> {$_('header.uls')}</a
-				>
+			<li class:active={$page.url.pathname === '/uls/'}>
+				<a sveltekit:prefetch href="/uls">
+					<Icon icon="mdi:account-box-multiple" />
+					{$_('header.uls')}
+				</a>
 			</li>
 			{#if $devOauth}
-				<li class:active={$page.url.pathname === '/oclients'}>
-					<a sveltekit:prefetch href="/oclients"><Icon icon="mdi:apps" /> {$_('header.oclients')}</a
-					>
+				<li class:active={$page.url.pathname === '/oclients/'}>
+					<a sveltekit:prefetch href="/oclients">
+						<Icon icon="mdi:apps" />
+						{$_('header.oclients')}
+					</a>
 				</li>
 			{/if}
-			<li class:active={$page.url.pathname === '/grants'}>
-				<a sveltekit:prefetch href="/grants"
-					><Icon icon="mdi:shield-check" /> {$_('header.grants')}</a
-				>
+			<li class:active={$page.url.pathname === '/grants/'}>
+				<a sveltekit:prefetch href="/grants">
+					<Icon icon="mdi:shield-check" />
+					{$_('header.grants')}
+				</a>
 			</li>
-			<li class:active={$page.url.pathname === '/remote-decide'}>
+			<li class:active={$page.url.pathname === '/remote-decide/'}>
 				<a sveltekit:prefetch href="/remote-decide">
 					<Icon icon="mdi:devices" />
 					{$_('remote-decide.title')}
 				</a>
 			</li>
+			<li class:active={$page.url.pathname === '/les/'}>
+				<a sveltekit:prefetch href="/les">
+					{$_('header.les')}
+				</a>
+			</li>
 		{:else}
-			<li class:active={$page.url.pathname === '/signup'}>
+			<li class:active={$page.url.pathname === '/signup/'}>
 				<a sveltekit:prefetch href="/signup">{$_('header.signup')}</a>
 			</li>
 		{/if}
-		<li class:active={$page.url.pathname === '/config'}>
+		<li class:active={$page.url.pathname === '/config/'}>
 			<a sveltekit:prefetch href="/config"><Icon icon="mdi:cog" /> {$_('header.config')}</a>
 		</li>
-		<li class="iori" class:active={$page.url.pathname === '/iori'}>
+		<li class="iori" class:active={$page.url.pathname === '/iori/'}>
 			<a sveltekit:prefetch href="/iori">
 				<User />
 			</a>
@@ -84,5 +93,9 @@
 
 	.iori {
 		float: right;
+	}
+
+	.active a {
+		color: var(--color-fg);
 	}
 </style>

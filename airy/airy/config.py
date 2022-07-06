@@ -27,6 +27,7 @@ class Config:
         "api_v2.oauth.grants",
         "api_v2.config.ax",
         "api_v2.ul",
+        "api_v2.logs",
     }
 
     # Airy Rika

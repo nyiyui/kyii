@@ -39,6 +39,7 @@ from ..db import (
     OAuth2Client,
     User,
     UserLogin,
+    LogEntry,
     db,
 )
 from ..etc import login_ul, mail, limiter
@@ -217,7 +218,7 @@ def login_stop():
 
 
 @bp.route("/login/start", methods=("POST",))
-@limiter.limit("1 per minute")
+@limiter.limit("60 per minute")
 def login_start():
     slug = request.form["slug"]
     try:
@@ -263,7 +264,7 @@ def get_login_uid():
 
 
 @bp.route("/login/attempt", methods=("POST",))
-@limiter.limit("1 per second", key_func=get_login_uid)
+@limiter.limit("2 per second", key_func=get_login_uid)
 def login_attempt():
     afid = str(UUID(request.form["afid"]))
     if afid in session[API_V1_SOLVED]:
@@ -303,6 +304,7 @@ def login_attempt():
         ul, token = login_user(u, session[API_V1_APID])
         # login_clear()  # TODO: clear and disable further submissions by Yuui
         data.update(dict(uid=u.id, ulid=ul.id, slug=u.slug, name=u.name, token=token))
+        ul.user.add_le(LogEntry(renderer="login", data=dict(ul=ul.id)))
     db.session.commit()
     return make_resp(data=data)
 
@@ -320,6 +322,8 @@ def logout():
 def remote_decide():
     token = request.form["token"]
     verifiers.remote._remote_decide(token, target_id=current_user.id)
+    current_user.add_le(LogEntry(renderer="remote", data=dict(token=token)))
+    db.session.commit()
     return make_resp()
 
 
@@ -1134,6 +1138,20 @@ def oauth_az_step():
             )
         )
     )
+
+
+########################################################################################
+# Logs
+########################################################################################
+
+
+@bp.route("/logs", methods=("GET",))
+@login_required
+@req_perms(("api_v2.logs",))
+def logs():
+    logs = LogEntry.query.filter_by(user=current_user)
+    logs = list(le.for_api_v2_trusted for le in logs)
+    return make_resp(data=dict(logs=logs))
 
 
 ########################################################################################

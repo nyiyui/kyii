@@ -68,6 +68,10 @@ class User(db.Model):
     def perms(self) -> Set[str]:
         return set(perm for g in self.groups for perm in g.perms)
 
+    def add_le(self, log_entry: "LogEntry") -> None:
+        log_entry.user = self
+        db.session.add(log_entry)
+
 
 class UserGroups(db.Model):
     __tablename__ = "user_groups"
@@ -425,6 +429,26 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
             ),
             issued_at=self.issued_at,
             expires_in=self.expires_in,
+        )
+
+
+class LogEntry(db.Model):
+    __tablename__ = "log_entry"
+    id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
+    created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    renderer = db.Column(db.String(32))
+    data = db.Column(JSONType)
+
+    user_id = db.Column(db.String(32), db.ForeignKey("user.id"))
+    user = db.relationship("User", foreign_keys=[user_id])
+
+    @property
+    def for_api_v2_trusted(self):
+        return dict(
+            id=self.id,
+            created=self.created.isoformat(),
+            renderer=self.renderer,
+            data=self.data,
         )
 
 
