@@ -1,7 +1,6 @@
 <script lang="ts" type="module">
 	// TODO: callback → event dispatch
 	import { _ } from 'svelte-i18n'
-	import { onDestroy } from 'svelte'
 	import qrCode from 'qrcode'
 	import Icon from '@iconify/svelte'
 	import Loading from '$lib/Loading.svelte'
@@ -22,7 +21,6 @@
 	let solved: boolean
 	$: solved = result && result.status === AttemptResultStatus.Success
 
-	let remoteInterval: number
 	let remoteToken: string | null
 	let remoteTokenExpiresAt: Date | undefined
 	let remoteTokenExpiresIn: number | undefined
@@ -84,17 +82,8 @@
 		}
 		if (af.verifier === 'remote' && !remoteToken) {
 			remoteResend()
-			if (!remoteInterval) {
-				//remoteInterval = setInterval(remoteSubmit, 3000)
-			}
 		}
 	}
-
-	onDestroy(() => {
-		if (remoteInterval) {
-			clearInterval(remoteInterval)
-		}
-	})
 </script>
 
 <div class="af-challenge">
