@@ -53,8 +53,6 @@ def public_params(params: dict, **kwargs) -> dict:
 def _remote_decide(token: str, target_id: str) -> None:
     key = f"{PREFIX}{target_id}_{token}"
     if cache.get(key) is None:
-        print("send1")
         return
     cache.set(key, True, timeout=TIMEOUT)
-    print("send2", key)
     decided.send((target_id, token))

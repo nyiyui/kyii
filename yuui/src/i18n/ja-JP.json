@@ -101,6 +101,9 @@
 	"ap_select": {
 		"placeholder": "認証パスを選択して下さい。"
 	},
+	"af_select": {
+		"placeholder": "認証方法を選択して下さい。"
+	},
 	"af": {
 		"submit": "送信",
 		"pw": {

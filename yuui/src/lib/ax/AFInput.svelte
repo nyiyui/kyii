@@ -6,6 +6,7 @@
 	import Icon from '@iconify/svelte'
 	import AF from '$lib/ax/AF.svelte'
 	import AFChallenge from '$lib/ax/AFChallenge.svelte'
+	import AFSelect from '$lib/ax/AFSelect.svelte'
 	import type { AfInput } from '$lib/api2'
 	import { client, ulos, currentUlid, Af, encodeBase64, decodeBase64 } from '$lib/api2'
 	import { AttemptResultStatus } from '$lib/util'
@@ -22,7 +23,6 @@
 	export let n: number
 	export let af: AfInput
 	let feedback
-	let verifier: string = af.verifier
 	export let regen = false
 	export let tafid: string | null
 	let attempt: string
@@ -214,20 +214,19 @@
 	}
 
 	function updateVerifier() {
-		if (verifier === 'pw') {
+		if (af.verifier === 'pw') {
 			af.params = { password: '' }
-		} else if (verifier === 'otp_totp') {
+		} else if (af.verifier === 'otp_totp') {
 			af.params = { digits: 6, period: 30, algorithm: 'SHA1' }
-		} else if (verifier === 'limited') {
+		} else if (af.verifier === 'limited') {
 			af.params = { times: 0 }
 		} else {
 			//throw new Error(`unknown verifier ${verifier}`);
 		}
-		af.verifier = verifier
 	}
 
 	$: {
-		verifier
+		af.verifier
 		try {
 			updateVerifier()
 		} catch (e) {
@@ -278,11 +277,7 @@
 	<div class="non-top">
 		<div class="meta">
 			<h5>{$_('config.ax.meta')}</h5>
-			<label>
-				Verifier
-				<!-- (below)TODO: make this like a dropdown or sth -->
-				<input type="text" bind:value={verifier} />
-			</label>
+			<AFSelect bind:chosen={af.verifier} />
 			<AF verifier={af.verifier} />
 			<Box level="debug">
 				N: {n}; AFID: {af.uuid}; TAFID: {tafid}
@@ -420,6 +415,7 @@
 
 	.meta {
 		margin-right: 16px;
+		flex-grow: 1;
 	}
 
 	.top {

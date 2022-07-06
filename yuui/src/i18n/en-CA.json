@@ -101,6 +101,9 @@
 	"ap_select": {
 		"placeholder": "Choose an AP…"
 	},
+	"af_select": {
+		"placeholder": "Choose an AF…"
+	},
 	"af": {
 		"submit": "Submit",
 		"pw": {

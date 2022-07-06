@@ -325,7 +325,6 @@ def remote_decide():
 
 def remote_stream(target_id: str, token: str):
     # TODO: fix this sad code
-    print("start")
 
     class Proxy:
         def __init__(self):
