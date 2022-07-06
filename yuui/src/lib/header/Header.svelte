@@ -25,9 +25,6 @@
 				<a href="/config#debug">(debug mode)</a>
 			{/if}
 		</li>
-		<li class:active={$page.url.pathname === '/about'}>
-			<a sveltekit:prefetch href="/about"><Icon icon="mdi:about" /> {$_('header.about')}</a>
-		</li>
 		{#if $debugMode}
 			<li class:active={$page.url.pathname === '/ui'}>
 				<a sveltekit:prefetch href="/ui">{$_('header.ui')}</a>
