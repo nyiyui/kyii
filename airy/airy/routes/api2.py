@@ -26,6 +26,7 @@ from authlib.oauth2 import OAuth2Error
 from flask_mail import Message
 from sqlalchemy.exc import NoResultFound
 from ..oauth2 import authorization
+from flask_limiter import RateLimitExceeded
 
 from .. import verifiers
 from ..verifiers import remote
@@ -40,7 +41,7 @@ from ..db import (
     UserLogin,
     db,
 )
-from ..etc import login_ul, mail
+from ..etc import login_ul, mail, limiter
 from ..session import API_V1_APID, API_V1_SOLVED, API_V1_UID
 from ..ul import current_ul, current_user, login_required, login_user, logout_user
 from ..util2 import all_perms, gen_token, has_perms
@@ -52,6 +53,21 @@ from .util import conv_to_webp
 
 
 bp = Blueprint("api_v2", __name__, url_prefix="/api/v2")
+
+
+@bp.errorhandler(429)
+def limiter_handler(error: RateLimitExceeded):
+    return (
+        dict(
+            errors=[
+                dict(
+                    code="too_many_requests",
+                    message=f"too many requests: {error.description}",
+                )
+            ]
+        ),
+        429,
+    )
 
 
 def init_app(app):
@@ -200,6 +216,7 @@ def login_stop():
 
 
 @bp.route("/login/start", methods=("POST",))
+@limiter.limit("1 per minute")
 def login_start():
     slug = request.form["slug"]
     try:
@@ -219,6 +236,7 @@ def login_start():
 
 
 @bp.route("/login/choose", methods=("POST",))
+@limiter.limit("1 per minute")
 def login_choose():
     apid = str(UUID(request.form["apid"]))
     session[API_V1_APID] = apid
@@ -236,7 +254,15 @@ def login_choose():
     )
 
 
+def get_login_uid():
+    """
+    Returns the UID for a login session.
+    """
+    return session[API_V1_UID]
+
+
 @bp.route("/login/attempt", methods=("POST",))
+@limiter.limit("1 per second", key_func=get_login_uid)
 def login_attempt():
     afid = str(UUID(request.form["afid"]))
     if afid in session[API_V1_SOLVED]:
@@ -347,6 +373,7 @@ def remote_wait():
 
 
 @bp.route("/signup", methods=("POST",))
+@limiter.limit("1 per hour")
 @req_perms(("api_v2.signup",))
 def api_signup():
     u = User()
@@ -477,8 +504,8 @@ CONFIG_AX_SCHEMA = {  # TODO: move this to separate file?
     "/config/ax",
     methods=("GET", "POST"),
 )
-@req_perms(("api_v2.config.ax",), cond=lambda: request.method == "POST")
 @login_required
+@req_perms(("api_v2.config.ax",), cond=lambda: request.method == "POST")
 def api_config_ax():
     if request.method == "GET":
         afs = AF.query.filter_by(user=current_user)
