@@ -79,6 +79,16 @@ class MissingPermsError extends TypeError {
 	}
 }
 
+class EnhanceYourCalmError extends TypeError {
+	limit: string
+
+	constructor(limit: string) {
+		super(`Enhance your calm: ${limit}`)
+		this.name = 'EnhanceYourCalm'
+		this.limit = limit
+	}
+}
+
 class UnauthenticatedError extends TypeError {
 	constructor() {
 		super('Unauthenticated')
@@ -476,6 +486,10 @@ class BaseClient {
 		})
 		if (r.status === 401) {
 			throw new UnauthenticatedError()
+		}
+		if (r.status === 429) {
+			const limit = (await r.json()).errors[0].data
+			throw new EnhanceYourCalmError(limit)
 		}
 		if (r.status !== 200) {
 			throw new TypeError(`unexpected status ${r.status}`)

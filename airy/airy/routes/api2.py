@@ -61,8 +61,9 @@ def limiter_handler(error: RateLimitExceeded):
         dict(
             errors=[
                 dict(
-                    code="too_many_requests",
-                    message=f"too many requests: {error.description}",
+                    code="enhance_your_calm",
+                    message=f"Enhance your calm: {error.description}",
+                    data=error.description,
                 )
             ]
         ),
