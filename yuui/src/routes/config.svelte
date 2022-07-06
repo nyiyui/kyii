@@ -49,7 +49,7 @@
 				{#if axUC}<UnsavedChanges />{/if}
 			</Tab>
 			<Tab>
-				<Icon icon="mdi:airplane" />
+				<Icon icon="mdi:cellphone" />
 				{$_('config.client.title')}
 				<Autosaved />
 			</Tab>
