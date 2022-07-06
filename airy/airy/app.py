@@ -28,3 +28,8 @@ def __setup_app(app):
     upload_path = app.config["UPLOAD_PATH"]
     Path(os.path.join(upload_path, "img-tmp")).mkdir(parents=True, exist_ok=True)
     Path(os.path.join(upload_path, "img")).mkdir(parents=True, exist_ok=True)
+
+
+if __name__ == "__main__":
+    app = create_app()
+    app.run(threaded=True)

@@ -7,12 +7,15 @@
 	import AF from '$lib/ax/AF.svelte'
 	import AFChallenge from '$lib/ax/AFChallenge.svelte'
 	import type { AfInput } from '$lib/api2'
-	import { client, Af, encodeBase64, decodeBase64 } from '$lib/api2'
+	import { client, ulos, currentUlid, Af, encodeBase64, decodeBase64 } from '$lib/api2'
 	import { AttemptResultStatus } from '$lib/util'
 	import Box from '$lib/Box.svelte'
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte'
 	import VerifiedChanges from '$lib/VerifiedChanges.svelte'
 	import { createEventDispatcher } from 'svelte'
+
+	let uid: string
+	$: uid = $ulos.get($currentUlid).uid
 
 	const dispatch = createEventDispatcher()
 
@@ -373,7 +376,7 @@
 				<Box level="debug">
 					TAFID: <code>{tafid}</code>
 				</Box>
-				<AFChallenge af={new Af({ ...af, uuid: tafid })} bind:attempt {callback} {result} />
+				<AFChallenge {uid} af={new Af({ ...af, uuid: tafid })} bind:attempt {callback} {result} />
 			</div>
 			{#if feedback}
 				<div class="feedback">

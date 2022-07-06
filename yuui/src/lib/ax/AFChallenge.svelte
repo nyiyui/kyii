@@ -8,10 +8,12 @@
 	import AF from '$lib/ax/AF.svelte'
 	import Box from '$lib/Box.svelte'
 	import BoxError from '$lib/BoxError.svelte'
+	import { client } from '$lib/api2'
 	import type { AfPublic } from '$lib/api2'
 	import { AttemptResultStatus } from '$lib/util'
 	import { autoSubmitVerifiers } from '$lib/api2'
 
+	export let uid: string
 	export let af: AfPublic
 	export let attempt: string
 	export let callback: (afid: string, attempt: string) => Promise<any> // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -45,6 +47,8 @@
 		remoteTokenExpiresAt.setSeconds(remoteTokenExpiresAt.getSeconds() + af.public_params.timeout)
 		result = undefined
 
+		client.remoteWait(uid, remoteToken).then(remoteSubmit).catch(console.warn)
+
 		const url = new URL(`https://${window.location.host}/remote-decide?token=${remoteToken}`)
 		qrCode.toCanvas(canvas, url.toString(), (error) => {
 			if (error) console.error(error)
@@ -52,7 +56,10 @@
 	}
 
 	async function remoteSubmit() {
-		await callback(af.uuid, JSON.stringify({ state: '2_verify', token: remoteToken }))
+		if (Math.round(remoteTokenExpiresIn) !== 0) {
+			// prevent spamming Airy
+			await callback(af.uuid, JSON.stringify({ state: '2_verify', token: remoteToken }))
+		}
 	}
 
 	async function autoAttempt() {
@@ -78,7 +85,7 @@
 		if (af.verifier === 'remote' && !remoteToken) {
 			remoteResend()
 			if (!remoteInterval) {
-				remoteInterval = setInterval(remoteSubmit, 1000)
+				//remoteInterval = setInterval(remoteSubmit, 3000)
 			}
 		}
 	}

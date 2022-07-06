@@ -26,6 +26,8 @@ blake3 = "*"
 pillow = "*"
 webauthn = "*"
 flask-caching = "*"
+flask-limiter = "*"
+gunicorn = "*"
 
 [dev-packages]
 pytest = "*"

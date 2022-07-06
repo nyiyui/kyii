@@ -17,6 +17,7 @@
 
 	let slug: string
 	let slugFound: boolean | 'mulpu' | undefined = undefined
+	let uid: string
 	let autosel: boolean
 	let chosen = false
 	let apUuid: string
@@ -63,7 +64,7 @@
 			return
 		}
 		slugFound = true
-		;({ aps } = resp)
+		;({ uid, aps } = resp)
 		autosel = aps.length == 1
 		if (autosel) {
 			const ap = aps[0]
@@ -164,6 +165,7 @@
 						{#if afs}
 							{#each afs as af}
 								<AFChallenge
+									{uid}
 									bind:af
 									bind:attempt={attempts[af.uuid]}
 									callback={attempt}

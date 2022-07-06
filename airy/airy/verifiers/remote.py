@@ -2,7 +2,7 @@ import json
 import secrets
 from typing import Tuple, Optional
 from .errors import GenerationError, VerificationError
-from ..etc import cache
+from ..etc import cache, signals
 
 
 # TODO: ignoring backend errors for now
@@ -10,6 +10,7 @@ from ..etc import cache
 
 PREFIX = "verifier_remote_"
 TIMEOUT = 30
+decided = signals.signal("verifier_remote_decided")
 
 
 def gen(
@@ -52,5 +53,8 @@ def public_params(params: dict, **kwargs) -> dict:
 def _remote_decide(token: str, target_id: str) -> None:
     key = f"{PREFIX}{target_id}_{token}"
     if cache.get(key) is None:
+        print("send1")
         return
     cache.set(key, True, timeout=TIMEOUT)
+    print("send2", key)
+    decided.send((target_id, token))

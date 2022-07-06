@@ -561,8 +561,8 @@ class Client extends BaseClient {
 		this.assertNoErrors(r)
 	}
 
-	async loginStart(slug: string): Promise<{ aps: Array<Ap> }> {
-		const r = await this.fetch<{ aps: Array<Ap> }>(`login/start`, {
+	async loginStart(slug: string): Promise<{ uid: string; aps: Array<Ap> }> {
+		const r = await this.fetch<{ uid: string; aps: Array<Ap> }>(`login/start`, {
 			method: 'POST',
 			body: new URLSearchParams({ slug })
 		})
@@ -645,11 +645,28 @@ class Client extends BaseClient {
 	}
 
 	async remoteDecide(token: string): Promise<void> {
-		const r = await this.fetch<null>(`remote_decide`, {
+		const r = await this.fetch<null>(`remote/decide`, {
 			method: 'POST',
 			body: new URLSearchParams({ token })
 		})
 		this.assertNoErrors(r)
+	}
+
+	remoteWait(uid: string, token: string): Promise<null> {
+		return new Promise((resolve, reject) => {
+			const prefix2 = new URL(prefix, this.baseUrl)
+			const es = new EventSource(
+				new URL(`remote/wait?uid=${uid}&token=${token}`, prefix2.href).href
+			)
+			es.addEventListener('decided', () => {
+				es.close()
+				resolve(null)
+			})
+			es.addEventListener('timeout', () => {
+				es.close()
+				reject(new TypeError('timeout'))
+			})
+		})
 	}
 
 	// ================================

@@ -1,5 +1,6 @@
 from typing import Optional
 
+from blinker import Namespace
 from flask import session, current_app, request, redirect
 from urllib.parse import urlencode, urljoin
 from flask_login import LoginManager
@@ -7,9 +8,14 @@ from flask_login import login_user as login_user2
 from flask_mail import Mail
 from flask_wtf.csrf import CSRFProtect
 from flask_caching import Cache
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 from .db import User, UserLogin
 from .ul import ULManager
+
+
+signals = Namespace()
 
 csrf = CSRFProtect()
 
@@ -56,9 +62,16 @@ mail = Mail()
 cache = Cache()
 
 
+limiter = Limiter(
+    key_func=get_remote_address,
+    default_limits=["2000 per hour"],
+)
+
+
 def init_app(app):
     csrf.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
     ulm.init_app(app)
     cache.init_app(app)
+    limiter.init_app(app)

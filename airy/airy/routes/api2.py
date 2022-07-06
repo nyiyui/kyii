@@ -3,6 +3,8 @@ from pathlib import Path
 from typing import List
 from urllib.parse import urlencode, urljoin
 from uuid import UUID, uuid4
+from functools import wraps
+import time
 
 import jsonschema
 from flask import (
@@ -26,6 +28,7 @@ from sqlalchemy.exc import NoResultFound
 from ..oauth2 import authorization
 
 from .. import verifiers
+from ..verifiers import remote
 from ..db import (
     AF,
     AP,
@@ -209,6 +212,7 @@ def login_start():
     aps = AP.query.filter_by(user=u)
     return make_resp(
         data=dict(
+            uid=u.id,
             aps=list(ap.for_api_v1 for ap in aps),
         )
     )
@@ -284,12 +288,57 @@ def logout():
     return make_resp()
 
 
-@bp.route("/remote_decide", methods=("POST",))
+@bp.route("/remote/decide", methods=("POST",))
 @login_required
 def remote_decide():
     token = request.form["token"]
     verifiers.remote._remote_decide(token, target_id=current_user.id)
     return make_resp()
+
+
+def remote_stream(target_id: str, token: str):
+    # TODO: fix this sad code
+    print("start")
+
+    class Proxy:
+        def __init__(self):
+            self.send = False
+
+    p = Proxy()
+
+    def insert_this(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            return f(f, *args, **kwargs)
+
+        return wrapper
+
+    @insert_this
+    def handler(this, *args, **kwargs):
+        p.send = True
+        remote.decided.disconnect(this)
+
+    remote.decided.connect(handler)
+    counter = 0
+    limit = remote.TIMEOUT
+    interval = 1
+    while 1:
+        time.sleep(interval)
+        if counter > limit / interval:
+            yield "event: timeout\ndata: null\n\n"
+            return
+        if p.send:
+            yield "event: decided\ndata: null\n\n"
+            return
+        counter += 1
+
+
+@bp.route("/remote/wait", methods=("GET",))
+def remote_wait():
+    # SECURITY: leaking when and if tokens are verified or not should be fine
+    target_id = request.args["uid"]
+    token = request.args["token"]
+    return Response(remote_stream(target_id, token), mimetype="text/event-stream")
 
 
 ########################################################################################
