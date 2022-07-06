@@ -4,7 +4,9 @@
 	import { client, ulos, currentUlid } from '$lib/api2'
 	import type { Id } from '$lib/api2'
 	import Icon from '@iconify/svelte'
+	import Loading from '$lib/Loading.svelte'
 	import BoxError from '$lib/BoxError.svelte'
+	import Box from '$lib/Box.svelte'
 	import { debugMode } from '$lib/store'
 	import { onMount } from 'svelte'
 	import UnsavedChanges from '$lib/UnsavedChanges.svelte'
@@ -124,12 +126,15 @@
 				{/if}
 			</div>
 			<label>
-				<span class="label">User ID</span>
+				<span class="label">{$_('config.id.uid')}</span>
 				<input type="text" value={id ? id.uid : ''} disabled />
 			</label>
+			<span class="status" role="status">
+				<Box level="info">{$_('config.id.uid_help')}</Box>
+			</span>
 			<br />
 			<label>
-				<span class="label">Slug</span>
+				<span class="label">{$_('config.id.slug')}</span>
 				<input
 					id="slug"
 					type="text"
@@ -144,20 +149,20 @@
 					Taken
 				{:else if slug === '' || slug === null}
 					<Icon icon="mdi:cancel" style="color: var(--color-error);" />
-					Cannot be blank
+					{$_('config.id.blank')}
 				{:else if slugTaken === null}
 					<Icon icon="mdi:check" style="color: var(--color-info);" />
-					Current
+					{$_('config.id.current')}
 				{:else if slugTaken === false}
 					<Icon icon="mdi:check" style="color: var(--color-ok);" />
-					Available
+					{$_('config.id.available')}
 				{:else}
-					Loading
+					<Loading />
 				{/if}
 			</span>
 			<br />
 			<label>
-				<span class="label">Name</span>
+				<span class="label">{$_('config.id.name')}</span>
 				<input
 					id="name"
 					type="name"
@@ -169,11 +174,11 @@
 			<span class="status" role="status">
 				{#if name === '' || name === null}
 					<Icon icon="mdi:cancel" style="color: var(--color-error);" />
-					Cannot be blank
+					{$_('config.id.blank')}
 				{:else if name !== ''}
 					<Icon icon="mdi:check" style="color: var(--color-ok);" />
 				{:else}
-					Loading
+					<Loading />
 				{/if}
 			</span>
 			<br />

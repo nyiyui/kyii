@@ -28,7 +28,14 @@
 				"preview": {
 					"title": "Preview"
 				}
-			}
+			},
+			"uid": "User ID",
+			"uid_help": "This is permanent.",
+			"slug": "Username / slug",
+			"name": "Name",
+			"blank": "Cannot be blank",
+			"current": "Current",
+			"available": "Available"
 		},
 		"ax": {
 			"title": "Authentication",
