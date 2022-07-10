@@ -37,3 +37,14 @@ function getNext(sp: URLSearchParams): string | null {
 }
 
 export { permCheck, AttemptResultStatus, getNext }
+
+export const timeOpts = {
+	weekday: 'long',
+	month: 'long',
+	day: 'numeric',
+	year: 'numeric',
+	hour: 'numeric',
+	minute: 'numeric',
+	second: 'numeric',
+	timeZoneName: 'short'
+}

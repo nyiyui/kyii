@@ -1,11 +1,11 @@
 import base64
-from typing import Optional, Tuple, Dict, Any
+from typing import Any, Dict, Optional, Tuple
 
 import nacl.pwhash
 from nacl.exceptions import InvalidkeyError
 from passlib.hash import django_pbkdf2_sha256
 
-from . import webauthn, remote, totp
+from . import remote, totp, webauthn
 from .errors import GenerationError, VerificationError
 
 # TODO: convert to modules

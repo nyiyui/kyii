@@ -47,7 +47,7 @@
 		return false
 	}
 
-	async function usernameFind() {
+	async function usernameSync() {
 		const url = new URL(window.location.toString())
 		url.searchParams.set('slug', encodeURIComponent(slug))
 		window.history.replaceState({}, '', url)
@@ -55,9 +55,12 @@
 		// NOTE: DNC about slugs changing (too much effort (for now))
 		if (!$allowMULPU && isMULPUBySlug(slug)) {
 			slugFound = 'mulpu'
-			return
+		} else {
+			slugFound = null
 		}
+	}
 
+	async function usernameFind() {
 		const resp = await client.loginStart(slug)
 		if (!resp) {
 			slugFound = false
@@ -129,20 +132,23 @@
 	<form id="login">
 		<div id="login-top">
 			<div id="login-u">
-				<label for="username">{$_('login.username')}</label>
-				<input
-					id="username"
-					type="username"
-					autocomplete="username"
-					bind:value={slug}
-					on:input={usernameFind}
-				/>
+				<label>
+					{$_('login.username')}
+					<input
+						id="username"
+						type="username"
+						autocomplete="username"
+						bind:value={slug}
+						on:input={usernameSync}
+					/>
+				</label>
+				<input type="button" value={$_('login.next')} on:click={usernameFind} />
 				{#if slugFound === true}
 					<Icon icon="mdi:account-check" style="color: var(--color-ok);" />
 				{:else if slugFound === 'mulpu'}
 					<Icon icon="mdi:account-cancel" style="color: var(--color-warn);" />
 					{$_('login.user_mulpu')}
-				{:else}
+				{:else if slugFound === false}
 					<Icon icon="mdi:account-cancel" style="color: var(--color-error);" />
 					{$_('login.user_not_found')}
 				{/if}

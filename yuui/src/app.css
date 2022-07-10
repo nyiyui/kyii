@@ -28,6 +28,19 @@
 		--color-warn: #550;
 		--color-error: #a00;
 		--color-debug: #540;
+
+		--colors-0: hsl(0deg 100% 50%);
+		--colors-1: hsl(30deg 100% 50%);
+		--colors-2: hsl(60deg 100% 50%);
+		--colors-3: hsl(90deg 100% 50%);
+		--colors-4: hsl(120deg 100% 50%);
+		--colors-5: hsl(150deg 100% 50%);
+		--colors-6: hsl(180deg 100% 50%);
+		--colors-7: hsl(210deg 100% 50%);
+		--colors-8: hsl(240deg 100% 50%);
+		--colors-9: hsl(270deg 100% 50%);
+		--colors-a: hsl(300deg 100% 50%);
+		--colors-b: hsl(330deg 100% 50%);
 	}
 }
 

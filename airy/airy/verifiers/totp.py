@@ -1,8 +1,9 @@
-import pyotp
 import hashlib
 from typing import Optional, Tuple
-from .errors import GenerationError, VerificationError
 
+import pyotp
+
+from .errors import GenerationError, VerificationError
 
 FUNCTIONS = {
     "SHA1": hashlib.sha1,

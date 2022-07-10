@@ -1,12 +1,14 @@
+import json
 import os
+import time
+from functools import wraps
 from pathlib import Path
 from typing import List
 from urllib.parse import urlencode, urljoin
 from uuid import UUID, uuid4
-from functools import wraps
-import time
 
 import jsonschema
+from authlib.oauth2 import OAuth2Error
 from flask import (
     Blueprint,
     Response,
@@ -21,33 +23,38 @@ from flask import (
     url_for,
 )
 from flask_cors import CORS
-from flask_login import current_user as current_user2
-from authlib.oauth2 import OAuth2Error
-from flask_mail import Message
-from sqlalchemy.exc import NoResultFound
-from ..oauth2 import authorization
 from flask_limiter import RateLimitExceeded
+from flask_login import current_user as current_user2
+from flask_mail import Message
+from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 from .. import verifiers
-from ..verifiers import remote
 from ..db import (
     AF,
     AP,
     Email,
     Group,
-    OAuth2Token,
+    LogEntry,
     OAuth2Client,
+    OAuth2Token,
     User,
     UserLogin,
-    LogEntry,
     db,
 )
-from ..etc import login_ul, mail, limiter
+from ..etc import limiter, login_ul, mail
+from ..oauth2 import authorization
 from ..session import API_V1_APID, API_V1_SOLVED, API_V1_UID
-from ..ul import current_ul, current_user, login_required, login_user, logout_user
+from ..ul import (
+    current_ul,
+    current_user,
+    get_extra,
+    login_required,
+    login_user,
+    logout_user,
+)
 from ..util2 import all_perms, gen_token, has_perms
 from ..util2 import req_perms as _req_perms
-from ..verifiers import GenerationError, VerificationError
+from ..verifiers import GenerationError, VerificationError, remote
 from .util import conv_to_webp
 
 # TODO: decide if adding per-UL sessions
@@ -229,6 +236,7 @@ def login_start():
     session[API_V1_APID] = None
     session[API_V1_SOLVED] = set()
     aps = AP.query.filter_by(user=u)
+    u.add_le(LogEntry(renderer="login_start", data=dict(extra=get_extra())))
     return make_resp(
         data=dict(
             uid=u.id,
@@ -238,7 +246,7 @@ def login_start():
 
 
 @bp.route("/login/choose", methods=("POST",))
-@limiter.limit("1 per minute")
+@limiter.limit("60 per minute")
 def login_choose():
     apid = str(UUID(request.form["apid"]))
     session[API_V1_APID] = apid
@@ -249,6 +257,8 @@ def login_choose():
     if ap.user_id != uid:
         return make_resp(error=dict(code="ap_not_owned", message="ap not owned"))
     afs = ap.afs(user_id=uid)
+    u = User.query.filter_by(id=uid).one()
+    u.add_le(LogEntry(renderer="login_choose", data=dict(apid=apid)))
     return make_resp(
         data=dict(
             afs=[af.for_api_v1 for af in afs],
@@ -300,11 +310,13 @@ def login_attempt():
         all_done=all_done,
         cur_done=cur_done,
     )
+    le_data = dict(afid=afid, cur_done=cur_done)
+    u.add_le(LogEntry(renderer="login_attempt", data=le_data))
     if all_done:
         ul, token = login_user(u, session[API_V1_APID])
         # login_clear()  # TODO: clear and disable further submissions by Yuui
         data.update(dict(uid=u.id, ulid=ul.id, slug=u.slug, name=u.name, token=token))
-        ul.user.add_le(LogEntry(renderer="login", data=dict(ul=ul.id)))
+        u.add_le(LogEntry(renderer="login", data=dict(ul=ul.id)))
     db.session.commit()
     return make_resp(data=data)
 
@@ -553,6 +565,7 @@ def api_config_ax():
                 if key in session:
                     del session[key]
             del session["tafs"]
+        current_user.add_le(LogEntry(renderer="config_ax", data=dict()))
         db.session.commit()
         return make_resp(data=dict(warnings=warnings))
 
@@ -896,7 +909,7 @@ def api_config_id():
         pg = current_user.primary_group
         pg.slug = data["slug"]
         pg.name = data["name"]
-        if "emai;s" in data:
+        if "emails" in data:
             for email_data in data["emails"]["add"]:
                 e = Email(email=email_data, is_verified=False, group=pg)
                 db.session.add(e)
@@ -921,6 +934,7 @@ def api_config_id():
                         data=dict(email_id=email_data),
                     )
         db.session.commit()
+        current_user.add_le(LogEntry(renderer="config_id", data=dict()))
         return make_resp()
 
 
@@ -962,6 +976,7 @@ def api_config_id_img():
                 )
         finally:
             os.remove(tmp_path)
+        current_user.add_le(LogEntry(renderer="config_id_img", data=dict()))
         return make_resp()
 
 
@@ -1138,6 +1153,92 @@ def oauth_az_step():
             )
         )
     )
+
+
+########################################################################################
+# Generic
+########################################################################################
+
+
+def generic_get_model(name: str):
+    if name == "log":
+        return LogEntry
+
+
+@bp.route("/generic/assign/<name>", methods=("POST",))
+@login_required
+def generic_assign(name: str):
+    ok, reason, missing = has_perms((f"api_v2.generic.assign.{name}",))
+    if not ok:
+        return perm_handler(list(missing), reason)
+    Model = generic_get_model(name)
+    ref = request.args["ref"]
+    data = json.loads(request.body)
+    try:
+        single = Model.query.filter_by(user=current_user, id=ref).one()
+        single.generic_deserialize(data)
+    except NoResultFound:
+        return make_resp(error=dict(code="not_found"))
+    except MultipleResultsFound:
+        return make_resp(error=dict(code="multiple")), 500
+    db.session.commit()
+    return ""
+
+
+@bp.route("/generic/del/<name>", methods=("POST",))
+@login_required
+def generic_del(name: str):
+    ok, reason, missing = has_perms((f"api_v2.generic.del.{name}",))
+    if not ok:
+        return perm_handler(list(missing), reason)
+    Model = generic_get_model(name)
+    ref = request.args["ref"]
+    try:
+        Model.query.filter_by(user=current_user, id=ref).delete()
+    except NoResultFound:
+        return make_resp(error=dict(code="not_found"))
+    except MultipleResultsFound:
+        return make_resp(error=dict(code="multiple")), 500
+    db.session.commit()
+    return ""
+
+
+@bp.route("/generic/deref/<name>", methods=("GET",))
+@login_required
+def generic_deref(name: str):
+    ok, reason, missing = has_perms((f"api_v2.generic.deref.{name}",))
+    if not ok:
+        return perm_handler(list(missing), reason)
+    Model = generic_get_model(name)
+    ref = request.args["ref"]
+    try:
+        single = Model.query.filter_by(user=current_user, id=ref).one()
+    except NoResultFound:
+        return make_resp(error=dict(code="not_found"))
+    except MultipleResultsFound:
+        return make_resp(error=dict(code="multiple")), 500
+    return make_resp(data=dict(single=single.generic_serialize))
+
+
+@bp.route("/generic/list/<name>", methods=("GET",))
+@login_required
+def generic_list(name: str):
+    ok, reason, missing = has_perms((f"api_v2.generic.list.{name}",))
+    if not ok:
+        return perm_handler(list(missing), reason)
+    Model = generic_get_model(name)
+    ref = request.args["ref"]
+    page = request.args["page"]
+    per_page = request.args["per_page"]
+    values = Model.query.filter_by(user=current_user, id=ref).paginate(
+        page, per_page, error_out=False
+    )
+    if name == "log":
+        values = values.order_by(Model.created.desc())
+    else:
+        raise TypeError("invalid name")
+    values = list(le.generic_serialize for le in values)
+    return make_resp(data=dict(values=values))
 
 
 ########################################################################################

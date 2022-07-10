@@ -270,6 +270,16 @@
 		"login": {
 			"desc": "New session {ulid} created."
 		},
+		"login_start": {
+			"desc": "Login attempt started from {remote}"
+		},
+		"login_choose": {
+			"desc": "AP {apid} was chosen to be authenticated against."
+		},
+		"login_attempt": {
+			"true": "Authentication against AF {afid} succeeded.",
+			"false": "Authentication against AF {afid} failed."
+		},
 		"remote": {
 			"desc": "Token {token} authorized."
 		}

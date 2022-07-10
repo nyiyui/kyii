@@ -5,6 +5,7 @@
 	import { client } from '$lib/api2'
 	import type { UserLogin } from '$lib/api2'
 	import { createEventDispatcher } from 'svelte'
+	import { timeOpts } from '$lib/util'
 
 	const dispatch = createEventDispatcher()
 
@@ -36,17 +37,6 @@
 		await client.editUl(ul.uuid, newName)
 		console.log(`edit UL ${ul.uuid}`)
 		ul.name = newName
-	}
-
-	const timeOpts = {
-		weekday: 'long',
-		month: 'long',
-		day: 'numeric',
-		year: 'numeric',
-		hour: 'numeric',
-		minute: 'numeric',
-		second: 'numeric',
-		timeZoneName: 'short'
 	}
 </script>
 

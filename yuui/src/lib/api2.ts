@@ -367,7 +367,91 @@ type LogEntry = {
 	id: string
 	created: Date
 	renderer: string
+	ssid2: string
 	data: string
+}
+
+class Handler<R, V> {
+	private client: BaseClient
+	private name: string
+	private cache: Map<R, { time: Date; v: V }>
+
+	constructor(client: BaseClient, name: string) {
+		this.client = client
+		this.name = encodeURI(name)
+	}
+
+	private assertNoErrors<T>(res: Response<T>) {
+		this.client._assertNoErrors(res)
+	}
+
+	async deref(ref: R): Promise<V> {
+		const r = await this.client._fetch<{ single: V }>(
+			`generic/deref/${this.name}?ref=${encodeURIComponent(ref.toString())}`,
+			{
+				method: 'GET'
+			}
+		)
+		this.assertNoErrors(r)
+		return r.data.single
+	}
+
+	async assign(ref: R, v: V): Promise<void> {
+		const r = await this.client._fetch<null>(
+			`generic/assign/${this.name}?ref=${encodeURIComponent(ref.toString())}`,
+			{
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ v })
+			}
+		)
+		this.assertNoErrors(r)
+		this.cache.set(ref, { time: new Date(), v })
+	}
+
+	async del(ref: R): Promise<void> {
+		const r = await this.client._fetch<null>(
+			`generic/assign/${this.name}?ref=${encodeURIComponent(ref.toString())}`,
+			{
+				method: 'DELETE'
+			}
+		)
+		this.assertNoErrors(r)
+		this.cache.set(ref, { time: new Date(), v })
+	}
+
+	private get cached(): Map<R, Date> {
+		const r = new Map()
+		for (const [k, v] of this.cache.entries()) {
+			r.set(k, v.time)
+		}
+		return r
+	}
+
+	async list(page: number, perPage: number): Promise<Map<R, V>> {
+		const r = await this.client._fetch<{ refs: R[]; values: [R, V][] }>(
+			`generic/list/${this.name}?page=${page}&per=${perPage}`,
+			{
+				method: 'GET',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ cached: this.cached })
+			}
+		)
+		this.assertNoErrors(r)
+		const m = new Map<R, V>()
+		for (const r of r.data.refs) {
+			m.set(r, this.cache.get(r).v)
+		}
+		for (const [r, v] of r.data.values) {
+			this.cache.set(r, v)
+			m.set(r, v)
+		}
+		return m
+	}
 }
 
 class BaseClient {
@@ -375,12 +459,14 @@ class BaseClient {
 	protected currentToken?: string
 	public currentUid?: UUID
 	private disabled: boolean
+	public log: Handler<string, LogEntry>
 
 	constructor(baseUrl: string) {
 		//if (!browser) throw new TypeError("can only use in a browser");
 		this.disabled = !browser
 		this.baseUrl = new URL(baseUrl)
 		if (browser) this.loadCurrent()
+		this.log = new Handler(this, 'log')
 	}
 
 	get currentUlo(): LooseULO {
@@ -472,6 +558,10 @@ class BaseClient {
 		}
 	}
 
+	public _assertNoErrors<T>(res: Response<T>) {
+		this.assertNoErrors(res)
+	}
+
 	protected assertNoErrors<T>(res: Response<T>) {
 		if (res.hasErrors()) {
 			if (res.errors.length === 1) {
@@ -481,6 +571,10 @@ class BaseClient {
 				throw new ManyErrors(errors)
 			}
 		}
+	}
+
+	public _fetch<T>(url: string, opts): Promise<Response<T>> {
+		return this.fetch(url, opts)
 	}
 
 	protected async fetch<T>(url: string, opts): Promise<Response<T>> {

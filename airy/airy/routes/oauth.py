@@ -2,23 +2,14 @@ import uuid
 from pathlib import Path
 from urllib.parse import urlencode, urljoin
 
-from flask_cors import CORS
 from authlib.integrations.flask_oauth2 import current_token
 from authlib.jose import JsonWebKey, KeySet
-from flask import (
-    Blueprint,
-    current_app,
-    jsonify,
-    redirect,
-    request,
-    session,
-    url_for,
-)
-from ..ul import current_user, login_required
+from flask import Blueprint, current_app, jsonify, redirect, request, session, url_for
+from flask_cors import CORS
 
 from ..etc import csrf
 from ..oauth2 import authorization, generate_user_info, require_oauth
-
+from ..ul import current_user, login_required
 
 bp = Blueprint("oauth", __name__)
 

@@ -1,6 +1,7 @@
-from flask import Flask
 import os
 from pathlib import Path
+
+from flask import Flask
 from flask_migrate import Migrate
 
 from . import admin, config, db, etc, routes, seed

@@ -2,30 +2,32 @@
 oauth2.py implements OAuth 2- and OpenID Connect-related functionality.
 """
 
-from flask import current_app
 from pathlib import Path
+
 from authlib.integrations.flask_oauth2 import AuthorizationServer, ResourceProtector
 from authlib.integrations.sqla_oauth2 import (
     create_bearer_token_validator,
     create_query_client_func,
     create_save_token_func,
 )
-from authlib.oauth2.rfc7636 import CodeChallenge
+from authlib.jose import JsonWebKey
 from authlib.oauth2.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
-    RefreshTokenGrant as _RefreshTokenGrant,
+)
+from authlib.oauth2.rfc6749.grants import (
     ClientCredentialsGrant as _ClientCredentialsGrant,
 )
+from authlib.oauth2.rfc6749.grants import RefreshTokenGrant as _RefreshTokenGrant
+from authlib.oauth2.rfc7636 import CodeChallenge
 from authlib.oidc.core import UserInfo
 from authlib.oidc.core.grants import OpenIDCode as _OpenIDCode
 from authlib.oidc.core.grants import OpenIDHybridGrant as _OpenIDHybridGrant
 from authlib.oidc.core.grants import OpenIDImplicitGrant as _OpenIDImplicitGrant
-
-from authlib.jose import JsonWebKey
-from .ul import current_user
+from flask import current_app
 from werkzeug.security import gen_salt
 
 from .db import OAuth2AuthorizationCode, OAuth2Client, OAuth2Token, User, db
+from .ul import current_user
 
 JWT_CONFIG = None
 

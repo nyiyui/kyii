@@ -1,5 +1,5 @@
-from pathlib import Path
 import urllib.parse
+from pathlib import Path
 
 SECRET_KEY = (
     "876e1d975ea1cc9e3851ada3e992c3ba745101e902616189254ff9f8eaee5e2f"

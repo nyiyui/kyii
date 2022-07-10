@@ -1,6 +1,7 @@
 import secrets
 import uuid
 from datetime import datetime
+from hashlib import sha256
 from typing import Optional, Set, Tuple
 
 from authlib.integrations.sqla_oauth2 import (
@@ -9,10 +10,10 @@ from authlib.integrations.sqla_oauth2 import (
     OAuth2TokenMixin,
 )
 from blake3 import blake3
+from flask import session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_utils import EmailType  # TODO: use UUIDType
 from sqlalchemy_utils import JSONType
-
 
 db = SQLAlchemy()
 
@@ -70,7 +71,9 @@ class User(db.Model):
 
     def add_le(self, log_entry: "LogEntry") -> None:
         log_entry.user = self
+        log_entry.sid2 = LogEntry.get_sid2()
         db.session.add(log_entry)
+        db.session.commit()
 
 
 class UserGroups(db.Model):
@@ -437,6 +440,7 @@ class LogEntry(db.Model):
     id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
     created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     renderer = db.Column(db.String(32))
+    sid2 = db.Column(db.String(64))
     data = db.Column(JSONType)
 
     user_id = db.Column(db.String(32), db.ForeignKey("user.id"))
@@ -448,8 +452,17 @@ class LogEntry(db.Model):
             id=self.id,
             created=self.created.isoformat(),
             renderer=self.renderer,
+            sid2=self.sid2,
             data=self.data,
         )
+
+    @property
+    def generic_serialize(self):
+        return self.for_api_v2_trusted
+
+    @classmethod
+    def get_sid2(cls) -> str:
+        return sha256(str(session.sid).encode("ascii")).hexdigest()
 
 
 def init_app(app):

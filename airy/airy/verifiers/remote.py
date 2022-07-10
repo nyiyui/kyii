@@ -1,9 +1,9 @@
 import json
 import secrets
-from typing import Tuple, Optional
-from .errors import GenerationError, VerificationError
-from ..etc import cache, signals
+from typing import Optional, Tuple
 
+from ..etc import cache, signals
+from .errors import GenerationError, VerificationError
 
 # TODO: ignoring backend errors for now
 

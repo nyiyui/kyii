@@ -270,8 +270,18 @@
 		"login": {
 			"desc": "新しいセッション{ulid}が作られました。"
 		},
+		"login_start": {
+			"desc": "{remote}からログインアテンプトが作られました。"
+		},
+		"login_choose": {
+			"desc": "認証パス{apid}が認証の対象に選ばれました。"
+		},
+		"login_attempt": {
+			"true": "認証方法{afid}への認証が成功しました。",
+			"false": "認証方法{afid}への認証が失敗しました。"
+		},
 		"remote": {
-			"desc": "トークン「{token}」を認証されました。"
+			"desc": "トークン「{token}」 が認証されました。"
 		}
 	},
 	"les": {

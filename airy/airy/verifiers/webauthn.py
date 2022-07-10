@@ -1,5 +1,6 @@
-from typing import Optional, Tuple
 import json
+import secrets
+from typing import Optional, Tuple
 
 from flask import current_app
 from webauthn import (
@@ -18,7 +19,6 @@ from webauthn.helpers.structs import (
 
 from ..ul import current_user
 from .errors import GenerationError, VerificationError
-import secrets
 
 
 def gen(
