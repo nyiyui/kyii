@@ -2,7 +2,7 @@ import secrets
 import uuid
 from datetime import datetime
 from hashlib import sha256
-from typing import Optional, Set, Tuple, Union, Literal
+from typing import Optional, Set, Tuple
 
 from authlib.integrations.sqla_oauth2 import (
     OAuth2AuthorizationCodeMixin,
