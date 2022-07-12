@@ -1161,7 +1161,7 @@ def oauth_az_step():
 
 
 def generic_get_model(name: str):
-    if name == "log":
+    if name == "le":
         return LogEntry
 
 
@@ -1217,28 +1217,62 @@ def generic_deref(name: str):
         return make_resp(error=dict(code="not_found"))
     except MultipleResultsFound:
         return make_resp(error=dict(code="multiple")), 500
-    return make_resp(data=dict(single=single.generic_serialize))
+    return make_resp(data=dict(single=single.generic_serialize()))
 
 
-@bp.route("/generic/list/<name>", methods=("GET",))
+# @bp.route("/generic/list/<name>", methods=("GET",))
+# @login_required
+# def generic_list(name: str):
+#     ok, reason, missing = has_perms((f"api_v2.generic.list.{name}",))
+#     if not ok:
+#         return perm_handler(list(missing), reason)
+#     Model = generic_get_model(name)
+#     ref = request.args["ref"]
+#     page = request.args["page"]
+#     per_page = request.args["per_page"]
+#     values = Model.query.filter_by(user=current_user, id=ref).paginate(
+#         page, per_page, error_out=False
+#     )
+#     if name == "log":
+#         values = values.order_by(Model.created.desc())
+#     else:
+#         raise TypeError("invalid name")
+#     values = list(le.generic_serialize for le in values)
+#     return make_resp(data=dict(values=values))
+
+
+@bp.route("/generic/seek/<name>", methods=("GET",))
 @login_required
-def generic_list(name: str):
-    ok, reason, missing = has_perms((f"api_v2.generic.list.{name}",))
+def generic_seek(name: str):
+    ok, reason, missing = has_perms((f"api_v2.generic.seek.{name}",))
     if not ok:
         return perm_handler(list(missing), reason)
     Model = generic_get_model(name)
-    ref = request.args["ref"]
-    page = request.args["page"]
-    per_page = request.args["per_page"]
-    values = Model.query.filter_by(user=current_user, id=ref).paginate(
-        page, per_page, error_out=False
-    )
-    if name == "log":
-        values = values.order_by(Model.created.desc())
+    direction = request.args["direction"]
+    offset = int(request.args["offset"])
+    length = int(request.args["length"])
+    q = Model.q(user=current_user)
+    if direction == "n":
+        pass
+    elif direction == "p":
+        q = q.order_by(Model.id.desc())
     else:
-        raise TypeError("invalid name")
-    values = list(le.generic_serialize for le in values)
-    return make_resp(data=dict(values=values))
+        return make_resp(error=dict(code="not_p_nor_n")), 400
+    q = q.offset(offset).limit(
+        min(length, current_app.config["AIRY_GENERIC_LIMIT_MAX"])
+    )
+    q = q.with_entities(Model.id)
+    return make_resp(data=dict(refs=list(a[0] for a in q.all())))
+
+
+@bp.route("/generic/total/<name>", methods=("GET",))
+@login_required
+def generic_total(name: str):
+    ok, reason, missing = has_perms((f"api_v2.generic.total.{name}",))
+    if not ok:
+        return perm_handler(list(missing), reason)
+    Model = generic_get_model(name)
+    return make_resp(data=dict(total=Model.q(user=current_user).count()))
 
 
 ########################################################################################

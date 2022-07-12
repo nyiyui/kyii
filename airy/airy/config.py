@@ -1,3 +1,10 @@
+def generic_all(name: str):
+    ops = {"assign", "del", "deref", "seek", "total"}
+    return set(
+        [f"api_v2.generic.{op}.{name}" for op in ops],
+    )
+
+
 class Config:
     # Flask-Session
     SESSION_TYPE = "filesystem"
@@ -7,6 +14,7 @@ class Config:
     # Yuui
     KYII_YUUI = True
     KYII_YUUI_ORIGIN = "https://yuui.kyii.nyiyui.ca"
+    AIRY_GENERIC_LIMIT_MAX = 30
 
     # Flask-Admin
     FLASK_ADMIN_SWATCH = "paper"
@@ -28,6 +36,7 @@ class Config:
         "api_v2.config.ax",
         "api_v2.ul",
         "api_v2.logs",
+        *generic_all("le"),
     }
 
     # Airy Rika

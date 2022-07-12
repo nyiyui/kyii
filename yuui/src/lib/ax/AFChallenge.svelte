@@ -138,6 +138,12 @@
 								})}
 							</span>
 						</Box>
+					{:else}
+						<Box level="error">
+							<span role="status">
+								{$_('af.remote.too_late')}
+							</span>
+						</Box>
 					{/if}
 					<div>
 						<ol>

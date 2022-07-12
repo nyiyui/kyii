@@ -2,7 +2,7 @@ import secrets
 import uuid
 from datetime import datetime
 from hashlib import sha256
-from typing import Optional, Set, Tuple
+from typing import Optional, Set, Tuple, Union, Literal
 
 from authlib.integrations.sqla_oauth2 import (
     OAuth2AuthorizationCodeMixin,
@@ -456,13 +456,16 @@ class LogEntry(db.Model):
             data=self.data,
         )
 
-    @property
     def generic_serialize(self):
         return self.for_api_v2_trusted
 
     @classmethod
     def get_sid2(cls) -> str:
         return sha256(str(session.sid).encode("ascii")).hexdigest()
+
+    @classmethod
+    def q(cls, user: User):
+        return cls.query.filter_by(user=user)
 
 
 def init_app(app):

@@ -8,6 +8,8 @@ from .ul import current_user
 
 
 def has_perms(want: Set[str]) -> Tuple[bool, str, Set[str]]:
+    if isinstance(want, list) or isinstance(want, tuple):
+        want = set(want)
     missing = want - current_app.config.get("AIRY_DEFAULT_PERMS", set())
     if len(missing) == 0:
         return True, "", set()

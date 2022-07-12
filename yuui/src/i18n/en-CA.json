@@ -140,6 +140,7 @@
 			"submit": "Refresh",
 			"generating": "Generting token…",
 			"wait": "Approve it within {timeout, plural, one {# second} other {# seconds}}.",
+			"too_late": "Request expired. Regenerate to continue.",
 			"do": "Token: {remoteToken}",
 			"steps": [
 				"From an already-logged-in device, go to \"Remote Authorization\".",
@@ -287,5 +288,16 @@
 	"les": {
 		"reload": "Reload",
 		"count": "{count, plural, =0 {No entries} one {# entry} other {# entries}}."
+	},
+	"generic": {
+		"page": "Page {page}",
+		"prev": "Next",
+		"next": "Previous",
+		"reload": "Reload"
+	},
+	"generics": {
+		"le": {
+			"seeked": "{seekLength} of {total, plural, =0 {0 entries} one {# entry} other {# entries}}."
+		}
 	}
 }

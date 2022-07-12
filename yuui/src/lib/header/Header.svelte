@@ -66,6 +66,7 @@
 			</li>
 			<li class:active={$page.url.pathname === '/les/'}>
 				<a sveltekit:prefetch href="/les">
+					<Icon icon="mdi:script-outline" />
 					{$_('header.les')}
 				</a>
 			</li>

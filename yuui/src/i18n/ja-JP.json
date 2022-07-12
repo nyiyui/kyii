@@ -140,6 +140,7 @@
 			"submit": "再確認",
 			"generating": "トークンを生成中…",
 			"wait": "{timeout}秒以内に許可して下さい。",
+			"too_late": "許可の有効期限が切れました。再生成して下さい。",
 			"do": "トークン：{remoteToken}",
 			"steps": [
 				"既にログインしている端末から「遠隔認証」ページを行って下さい",
@@ -287,5 +288,16 @@
 	"les": {
 		"reload": "再読込",
 		"count": "{count, plural, =0 {無し} one {#行} other {#行}}:"
+	},
+	"generic": {
+		"page": "{page}ページ目",
+		"prev": "前",
+		"next": "次",
+		"reload": "再読込"
+	},
+	"generics": {
+		"le": {
+			"seeked": "{total}行から{seekLength}行："
+		}
 	}
 }

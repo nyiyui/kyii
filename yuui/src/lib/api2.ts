@@ -363,7 +363,7 @@ class User {
 	slug: string
 }
 
-type LogEntry = {
+export type LogEntry = {
 	id: string
 	created: Date
 	renderer: string
@@ -371,21 +371,51 @@ type LogEntry = {
 	data: string
 }
 
-class Handler<R, V> {
+export enum Direction {
+	Prev = 'p',
+	Next = 'n'
+}
+
+export class Handler<R, V> {
 	private client: BaseClient
-	private name: string
-	private cache: Map<R, { time: Date; v: V }>
+	private name_: string
+	// private cache: Map<R, { time: Date; v: V }>
+
+	get name() {
+		return this.name_
+	}
 
 	constructor(client: BaseClient, name: string) {
 		this.client = client
-		this.name = encodeURI(name)
+		this.name_ = encodeURI(name)
 	}
 
 	private assertNoErrors<T>(res: Response<T>) {
 		this.client._assertNoErrors(res)
 	}
 
+	private key(ref: R): string {
+		return `generic_handler_${this.name_}_${ref.toString()}`
+	}
+
+	private cGet(ref: R): { time: Date; v: V } {
+		return JSON.parse(window.localStorage.getItem(this.key(ref)))
+	}
+
+	private cSet(ref: R, v: V) {
+		window.localStorage.setItem(this.key(ref), JSON.stringify({ time: new Date(), v }))
+	}
+
+	private cDel(ref: R) {
+		window.localStorage.setItem(this.key(ref), undefined)
+	}
+
 	async deref(ref: R): Promise<V> {
+		const cached = this.cGet(ref)
+		if (cached) {
+			// TODO: check expiry
+			return cached.v
+		}
 		const r = await this.client._fetch<{ single: V }>(
 			`generic/deref/${this.name}?ref=${encodeURIComponent(ref.toString())}`,
 			{
@@ -393,7 +423,9 @@ class Handler<R, V> {
 			}
 		)
 		this.assertNoErrors(r)
-		return r.data.single
+		const v = r.data.single
+		this.cSet(ref, v)
+		return v
 	}
 
 	async assign(ref: R, v: V): Promise<void> {
@@ -408,7 +440,8 @@ class Handler<R, V> {
 			}
 		)
 		this.assertNoErrors(r)
-		this.cache.set(ref, { time: new Date(), v })
+		// this.cache.set(ref, { time: new Date(), v })
+		this.cSet(ref, v)
 	}
 
 	async del(ref: R): Promise<void> {
@@ -419,38 +452,74 @@ class Handler<R, V> {
 			}
 		)
 		this.assertNoErrors(r)
-		this.cache.set(ref, { time: new Date(), v })
+		// this.cache.set(ref, { time: new Date(), v })
+		this.cDel(ref)
 	}
 
-	private get cached(): Map<R, Date> {
-		const r = new Map()
-		for (const [k, v] of this.cache.entries()) {
-			r.set(k, v.time)
-		}
-		return r
-	}
+	// private get cached(): Map<R, Date> {
+	// 	const r = new Map()
+	// 	for (const [k, v] of this.cache.entries()) {
+	// 		r.set(k, v.time)
+	// 	}
+	// 	return r
+	// }
 
-	async list(page: number, perPage: number): Promise<Map<R, V>> {
-		const r = await this.client._fetch<{ refs: R[]; values: [R, V][] }>(
-			`generic/list/${this.name}?page=${page}&per=${perPage}`,
+	// async list(page: number, perPage: number): Promise<Map<R, V>> {
+	// 	const r = await this.client._fetch<{ refs: R[]; values: [R, V][] }>(
+	// 		`generic/list/${this.name}?page=${page}&per=${perPage}`,
+	// 		{
+	// 			method: 'GET',
+	// 			headers: {
+	// 				'Content-Type': 'application/json'
+	// 			},
+	// 			body: JSON.stringify({ cached: this.cached })
+	// 		}
+	// 	)
+	// 	this.assertNoErrors(r)
+	// 	const m = new Map<R, V>()
+	// 	for (const r of r.data.refs) {
+	// 		m.set(r, this.cache.get(r).v)
+	// 	}
+	// 	for (const [r, v] of r.data.values) {
+	// 		this.cache.set(r, v)
+	// 		m.set(r, v)
+	// 	}
+	// 	return m
+	// }
+
+	async seek(direction: Direction, offset: number, length: number): Promise<R[]> {
+		offset = offset === null ? 0 : offset
+		const r = await this.client._fetch<{ refs: R[] }>(
+			`generic/seek/${this.name}?${new URLSearchParams({
+				direction,
+				offset,
+				length: length.toString()
+			})}`,
 			{
-				method: 'GET',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({ cached: this.cached })
+				method: 'GET'
 			}
 		)
 		this.assertNoErrors(r)
-		const m = new Map<R, V>()
-		for (const r of r.data.refs) {
-			m.set(r, this.cache.get(r).v)
-		}
-		for (const [r, v] of r.data.values) {
-			this.cache.set(r, v)
-			m.set(r, v)
-		}
-		return m
+		return r.data.refs
+	}
+
+	async anchor(direction: Direction): Promise<R> {
+		const r = await this.client._fetch<{ anchor: R }>(
+			`generic/anchor/${this.name}?${new URLSearchParams({ direction })}`,
+			{
+				method: 'GET'
+			}
+		)
+		this.assertNoErrors(r)
+		return r.data.anchor
+	}
+
+	async total(): Promise<number> {
+		const r = await this.client._fetch<{ total: number }>(`generic/total/${this.name}`, {
+			method: 'GET'
+		})
+		this.assertNoErrors(r)
+		return r.data.total
 	}
 }
 
