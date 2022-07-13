@@ -179,6 +179,7 @@
 	},
 	"oclient": {
 		"title": "アプリ 「{name}」",
+		"public_link": "公開リンク",
 		"public_preview": "公開情報を見る",
 		"links": "リンク",
 		"meta": "メタデータ",

@@ -179,6 +179,7 @@
 	},
 	"oclient": {
 		"title": "App {name}",
+		"public_link": "Public link",
 		"public_preview": "Preview of public info",
 		"links": "Links",
 		"meta": "Metadata",

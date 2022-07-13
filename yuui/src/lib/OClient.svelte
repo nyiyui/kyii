@@ -244,6 +244,7 @@
 		</div>
 		<div class="oclpp padded flex-in">
 			<h3>{$_('oclient.public_preview')}</h3>
+			<a href="/oclient?oclid={oclient.client_id}">{$_('oclient.public_link')}</a>
 			<OClientView ocl={oclient} name={newName} userId={ulo.uid} userName={ulo.name} />
 		</div>
 	</section>
