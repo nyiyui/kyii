@@ -1,6 +1,7 @@
 /local_config.py
 /flask_session
 /jwt.pem
+/jwt.pem.pub
 /airy/local_config.py
 /test.db
 .mypy-cache
