@@ -13,12 +13,9 @@
 
 	$: anonymous = uid === 'anonymous' || uid === null
 
-	onMount(async () => {
-		const url = new URL(`api/v2/user/${uid}/img`, client.baseUrl)
-		const r = await fetch(url.toString())
-		iconFound = r.status !== 404
-		console.log(`iconFound`, iconFound)
-	})
+	function fallback() {
+		iconFound = false
+	}
 
 	// TODO: optimize to only one fetch
 </script>
@@ -29,6 +26,7 @@
 			alt={$_('iori.user.profile')}
 			class="user-img"
 			src={new URL(`api/v2/user/${uid}/img`, client.baseUrl).toString()}
+			on:error={fallback}
 		/>
 	{:else}
 		<Icon icon={anonymous ? 'mdi-incognito-circle' : 'mdi:account-circle'} class="user-img" />
