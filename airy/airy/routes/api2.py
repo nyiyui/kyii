@@ -1163,6 +1163,8 @@ def oauth_az_step():
 def generic_get_model(name: str):
     if name == "le":
         return LogEntry
+    if name == "grant":
+        return OAuth2Token
 
 
 @bp.route("/generic/assign/<name>", methods=("POST",))
@@ -1175,7 +1177,7 @@ def generic_assign(name: str):
     ref = request.args["ref"]
     data = json.loads(request.body)
     try:
-        single = Model.query.filter_by(user=current_user, id=ref).one()
+        single = Model.q(user=current_user).filter_by(id=ref).one()
         single.generic_deserialize(data)
     except NoResultFound:
         return make_resp(error=dict(code="not_found"))
@@ -1194,7 +1196,7 @@ def generic_del(name: str):
     Model = generic_get_model(name)
     ref = request.args["ref"]
     try:
-        Model.query.filter_by(user=current_user, id=ref).delete()
+        Model.q(user=current_user).filter_by(id=ref).delete()
     except NoResultFound:
         return make_resp(error=dict(code="not_found"))
     except MultipleResultsFound:
@@ -1212,7 +1214,7 @@ def generic_deref(name: str):
     Model = generic_get_model(name)
     ref = request.args["ref"]
     try:
-        single = Model.query.filter_by(user=current_user, id=ref).one()
+        single = Model.q(user=current_user).filter_by(id=ref).one()
     except NoResultFound:
         return make_resp(error=dict(code="not_found"))
     except MultipleResultsFound:
@@ -1251,12 +1253,8 @@ def generic_seek(name: str):
     direction = request.args["direction"]
     offset = int(request.args["offset"])
     length = int(request.args["length"])
-    q = Model.q(user=current_user)
-    if direction == "n":
-        pass
-    elif direction == "p":
-        q = q.order_by(Model.id.desc())
-    else:
+    q = Model.q(user=current_user, direction=direction)
+    if direction not in ("n", "p"):
         return make_resp(error=dict(code="not_p_nor_n")), 400
     q = q.offset(offset).limit(
         min(length, current_app.config["AIRY_GENERIC_LIMIT_MAX"])

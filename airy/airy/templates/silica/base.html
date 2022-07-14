@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>{% block title %}{% endblock %}</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="description" content="{% block head_description %}{% endblock %}">
+      <meta name="author" content="{% block head_author %}{% endblock %}">
+      {% block etc_head %}{% endblock %}
+    </head>
+  <body>
+    <nav id="nav-global">
+    </nav>
+    <nav id="nav-header">
+    </nav>
+    <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+      <div id="messages">                                                       
+        {% for category, message in messages %}                                           
+        <div class="alert alert-{{ category }}">                            
+          <a class="close" data-dismiss="alert">&times;</a>                     
+          <strong>{{ message }}</strong>                                        
+        </div>                                                                  
+        {% endfor %}                                                            
+      </div>
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </div>
+    {% block etc_js %}{% endblock %}
+  </body>
+</html>

@@ -359,6 +359,7 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
 
     def as_dict(self):
         return dict(
+            client_id=self.client_id,
             user_id=self.user_id,
             user_name=self.user.name,
             name=self.client_name,
@@ -434,6 +435,10 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
             expires_in=self.expires_in,
         )
 
+    @classmethod
+    def q(cls, user: User, direction: str="n"):
+        return cls.query.filter_by(user=user).order_by(cls.created if direction == "p" else cls.created.desc())
+
 
 class LogEntry(db.Model):
     __tablename__ = "log_entry"
@@ -464,8 +469,8 @@ class LogEntry(db.Model):
         return sha256(str(session.sid).encode("ascii")).hexdigest()
 
     @classmethod
-    def q(cls, user: User):
-        return cls.query.filter_by(user=user)
+    def q(cls, user: User, direction: str="n"):
+        return cls.query.filter_by(user=user).order_by(cls.created if direction == "p" else cls.issued_at.desc())
 
 
 def init_app(app):

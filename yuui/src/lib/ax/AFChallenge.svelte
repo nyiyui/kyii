@@ -11,6 +11,7 @@
 	import type { AfPublic } from '$lib/api2'
 	import { AttemptResultStatus } from '$lib/util'
 	import { autoSubmitVerifiers } from '$lib/api2'
+	import { onDestroy } from 'svelte'
 
 	export let uid: string
 	export let af: AfPublic
@@ -28,7 +29,10 @@
 	function remoteTokenExpiresInRecalculate() {
 		remoteTokenExpiresIn = Math.max(0, remoteTokenExpiresAt - new Date())
 	}
-	setInterval(remoteTokenExpiresInRecalculate, 1000)
+	const remoteNumber = setInterval(remoteTokenExpiresInRecalculate, 1000)
+	onDestroy(() => {
+		clearInterval(remoteNumber)
+	})
 	remoteTokenExpiresInRecalculate()
 
 	let canvas: HTMLCanvasElement
