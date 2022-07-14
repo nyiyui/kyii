@@ -13,6 +13,7 @@ from .db import (
     OAuth2Token,
     User,
     UserLogin,
+    LogEntry,
     db,
 )
 
@@ -41,6 +42,7 @@ admin.add_view(AiryModelView(AF, db.session))
 admin.add_view(AiryModelView(OAuth2Client, db.session))
 admin.add_view(AiryModelView(OAuth2AuthorizationCode, db.session))
 admin.add_view(AiryModelView(OAuth2Token, db.session))
+admin.add_view(AiryModelView(LogEntry, db.session))
 
 
 def init_app(app):
