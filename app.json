@@ -1,0 +1,9 @@
+{
+	"name": "Kyii",
+	"repository": "https://github.com/nyiyui/kyii",
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]`
+}
