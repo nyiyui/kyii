@@ -2,7 +2,6 @@
 	import { _ } from 'svelte-i18n'
 	import { client } from '$lib/api2'
 	import Icon from '@iconify/svelte'
-	import { onMount } from 'svelte'
 
 	export let uid: string
 	export let name: string
