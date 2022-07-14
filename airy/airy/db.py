@@ -436,8 +436,10 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
         )
 
     @classmethod
-    def q(cls, user: User, direction: str="n"):
-        return cls.query.filter_by(user=user).order_by(cls.created if direction == "p" else cls.created.desc())
+    def q(cls, user: User, direction: str = "n"):
+        return cls.query.filter_by(user=user).order_by(
+            cls.created if direction == "p" else cls.created.desc()
+        )
 
 
 class LogEntry(db.Model):
@@ -469,8 +471,10 @@ class LogEntry(db.Model):
         return sha256(str(session.sid).encode("ascii")).hexdigest()
 
     @classmethod
-    def q(cls, user: User, direction: str="n"):
-        return cls.query.filter_by(user=user).order_by(cls.created if direction == "p" else cls.issued_at.desc())
+    def q(cls, user: User, direction: str = "n"):
+        return cls.query.filter_by(user=user).order_by(
+            cls.created if direction == "p" else cls.issued_at.desc()
+        )
 
 
 def init_app(app):

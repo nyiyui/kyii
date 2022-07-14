@@ -10,4 +10,4 @@ def init_app(app):
 
 @bp.route("/", methods=("GET",))
 def index():
-    return render_template('silica/index.html')
+    return render_template("silica/index.html")
