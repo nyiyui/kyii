@@ -1,2 +1,2 @@
-release: cd ./airy && pipenv install --system
-web: cd ./airy && pipenv run bash -c "gunicorn --bind :$PORT airy.wsgi:app"
+release: cd ./airy && ./heroku/release.sh
+web: cd ./airy && ./heroku/web.sh
