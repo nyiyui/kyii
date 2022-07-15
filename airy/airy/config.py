@@ -55,7 +55,7 @@ def init_app(app):
     try:
         from . import local_config
     except ImportError:
-        pass
+        raise RuntimeError('local_config required')
     else:
         local_config.init_app(app)
     check(app)
