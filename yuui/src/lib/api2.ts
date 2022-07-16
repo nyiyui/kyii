@@ -650,25 +650,30 @@ class BaseClient {
 		if (this.disabled) throw new TypeError('can only fetch in a browser')
 		const prefix2 = new URL(prefix, this.baseUrl)
 		console.log(`fetch ${url} with token ${this.currentToken}`)
-		const r = await fetch(new URL(url, prefix2.href).href, {
-			...opts,
-			...(await this.commonOpts(opts.method, opts.headers))
-		})
-		if (r.status === 401) {
-			throw new UnauthenticatedError()
+		try {
+			const r = await fetch(new URL(url, prefix2.href).href, {
+				...opts,
+				...(await this.commonOpts(opts.method, opts.headers))
+			})
+			if (r.status === 401) {
+				throw new UnauthenticatedError()
+			}
+			if (r.status === 429) {
+				const limit = (await r.json()).errors[0].data
+				throw new EnhanceYourCalmError(limit)
+			}
+			if (r.status !== 200) {
+				throw new TypeError(`unexpected status ${r.status}`)
+			}
+			const raw = await r.json()
+			console.log('raw', raw)
+			const r2 = new Response<T>(raw)
+			console.log('r2', r2)
+			return r2
+		} catch (e) {
+			console.error(e)
+			throw e
 		}
-		if (r.status === 429) {
-			const limit = (await r.json()).errors[0].data
-			throw new EnhanceYourCalmError(limit)
-		}
-		if (r.status !== 200) {
-			throw new TypeError(`unexpected status ${r.status}`)
-		}
-		const raw = await r.json()
-		console.log('raw', raw)
-		const r2 = new Response<T>(raw)
-		console.log('r2', r2)
-		return r2
 	}
 }
 
