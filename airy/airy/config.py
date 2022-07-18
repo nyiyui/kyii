@@ -41,6 +41,7 @@ class Config:
         "api_v2.logs",
         *generic_all("le"),
     }
+    AIRY_TIMING = True
 
     # Airy Rika
     AIRY_RIKA_COLOUR_PRIMARY = "indigo"

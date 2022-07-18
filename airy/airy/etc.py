@@ -53,7 +53,11 @@ def unauthorized_callback():
 
 
 def login_ul(ul: UserLogin, **kwargs):
-    if current_user2.is_authenticated and current_user2.id == ul.user.id and session["ulid"] == ul.id:
+    if (
+        current_user2.is_authenticated
+        and current_user2.id == ul.user.id
+        and session["ulid"] == ul.id
+    ):
         return
     session["ulid"] = ul.id
     login_user2(ul.user, **kwargs)
@@ -78,13 +82,13 @@ def init_app(app):
     ulm.init_app(app)
     cache.init_app(app)
     limiter.init_app(app)
-    Timing(app)
+    Timing(app, force_debug=app.config["AIRY_TIMING"])
 
     @app.before_request
     def before_request():
-        Timing.start('request')
+        Timing.start("request")
 
     @app.after_request
     def before_request(resp):
-        Timing.stop('request')
+        Timing.stop("request")
         return resp
