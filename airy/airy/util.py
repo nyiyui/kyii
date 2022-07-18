@@ -4,6 +4,7 @@ from typing import Set, Tuple
 
 from flask import current_app
 from flask_login import current_user
+from server_timing import Timing as t
 
 
 def has_perms(want: Set[str]) -> Tuple[bool, str, Set[str]]:
@@ -39,10 +40,11 @@ def req_perms(perms: Set[str], handler, cond=lambda: True):
     def ret(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            if cond():
-                ok, reason, missing = has_perms(perms)
-                if not ok:
-                    return handler(list(missing), reason)
+            with t.time('req_perms'):
+                if cond():
+                    ok, reason, missing = has_perms(perms)
+                    if not ok:
+                        return handler(list(missing), reason)
             return f(*args, **kwargs)
 
         return decorated_function

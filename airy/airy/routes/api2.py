@@ -27,6 +27,7 @@ from flask_limiter import RateLimitExceeded
 from flask_login import current_user as current_user2
 from flask_mail import Message
 from flask_wtf.csrf import CSRFError
+from server_timing import Timing as t
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 from .. import verifiers
@@ -98,12 +99,6 @@ def limiter_handler(error: RateLimitExceeded):
 
 
 def init_app(app):
-    @app.before_request
-    def update_ul_last():
-        if not current_ul.is_anonymous:
-            current_ul.see()
-            db.session.commit()
-
     if app.config["KYII_YUUI"]:
         cors.init_app(
             app=bp,
@@ -203,7 +198,8 @@ def api_login_sync():
             )
         )
     elif request.method == "POST":
-        login_ul(current_ul, remember=True)
+        with t.time("login_ul"):
+            login_ul(current_ul, remember=True)
         session.modified = True
         return make_resp()
 
@@ -247,14 +243,16 @@ def login_stop():
 def login_start():
     slug = request.form["slug"]
     try:
-        u = User.query.filter_by(slug=slug).one()
+        with t.time('db'):
+            u = User.query.filter_by(slug=slug).one()
     except NoResultFound:
         return make_resp(error=dict(code="user_not_found", message="user not found"))
     session[API_V1_UID] = u.id
     session[API_V1_APID] = None
     session[API_V1_SOLVED] = set()
-    aps = AP.query.filter_by(user=u)
-    u.add_le(LogEntry(renderer="login_start", data=dict(extra=get_extra())))
+    with t.time('db'):
+        aps = AP.query.filter_by(user=u)
+        u.add_le(LogEntry(renderer="login_start", data=dict(extra=get_extra())))
     return make_resp(
         data=dict(
             uid=u.id,
@@ -269,14 +267,15 @@ def login_choose():
     apid = str(UUID(request.form["apid"]))
     session[API_V1_APID] = apid
     uid = session[API_V1_UID]
-    ap = AP.query.get(apid)
-    if ap is None:
-        return make_resp(error=dict(code="ap_not_found", message="ap not found"))
-    if ap.user_id != uid:
-        return make_resp(error=dict(code="ap_not_owned", message="ap not owned"))
-    afs = ap.afs(user_id=uid)
-    u = User.query.filter_by(id=uid).one()
-    u.add_le(LogEntry(renderer="login_choose", data=dict(apid=apid)))
+    with t.time('db'):
+        ap = AP.query.get(apid)
+        if ap is None:
+            return make_resp(error=dict(code="ap_not_found", message="ap not found"))
+        if ap.user_id != uid:
+            return make_resp(error=dict(code="ap_not_owned", message="ap not owned"))
+        afs = ap.afs(user_id=uid)
+        u = User.query.filter_by(id=uid).one()
+        u.add_le(LogEntry(renderer="login_choose", data=dict(apid=apid)))
     return make_resp(
         data=dict(
             afs=[af.for_api_v1 for af in afs],
@@ -308,7 +307,8 @@ def login_attempt():
 
     uid = session[API_V1_UID]
     try:
-        feedback, cur_done = af.verify(attempt, target_id=uid)
+        with t.time('verify'):
+            feedback, cur_done = af.verify(attempt, target_id=uid)
     except VerificationError as e:
         return make_resp(
             error=dict(code="verification_failed", message=str(e), data=str(e))
@@ -542,50 +542,53 @@ CONFIG_AX_SCHEMA = {  # TODO: move this to separate file?
 @req_perms(("api_v2.config.ax",), cond=lambda: request.method == "POST")
 def api_config_ax():
     if request.method == "GET":
-        afs = AF.query.filter_by(user=current_user)
-        aps = AP.query.filter_by(user=current_user)
-        return make_resp(
-            data=dict(
-                afs=list(af.for_api_v1_trusted for af in afs),
-                aps=list(ap.for_api_v1_trusted for ap in aps),
+        with t.time('db'):
+            afs = AF.query.filter_by(user=current_user)
+            aps = AP.query.filter_by(user=current_user)
+            return make_resp(
+                data=dict(
+                    afs=list(af.for_api_v1_trusted for af in afs),
+                    aps=list(ap.for_api_v1_trusted for ap in aps),
+                )
             )
-        )
     elif request.method == "POST":
-        jsonschema.validate(request.json, CONFIG_AX_SCHEMA)
-        # TODO: require solving all AFs?
-        warnings = []
-        if "tafs" in session:
-            for tafid in session["tafs"]:
-                taf = session[f"taf-{tafid}"]
-                if taf == {}:
-                    warnings += f"taf {tafid} is only allocated"
-                    continue
-                if not taf["gen_done"]:
-                    warnings += f"taf {tafid} is not done generating"
-                    continue
-                if not taf["solved"]:
-                    warnings += dict(
-                        code="unsolved_taf",
-                        message=f"taf {tafid} not solved",
-                        data=dict(tafid=tafid),
-                    )
+        with t.time('validate'):
+            jsonschema.validate(request.json, CONFIG_AX_SCHEMA)
+            # TODO: require solving all AFs?
+            warnings = []
+            if "tafs" in session:
+                for tafid in session["tafs"]:
+                    taf = session[f"taf-{tafid}"]
+                    if taf == {}:
+                        warnings += f"taf {tafid} is only allocated"
+                        continue
+                    if not taf["gen_done"]:
+                        warnings += f"taf {tafid} is not done generating"
+                        continue
+                    if not taf["solved"]:
+                        warnings += dict(
+                            code="unsolved_taf",
+                            message=f"taf {tafid} not solved",
+                            data=dict(tafid=tafid),
+                        )
 
-        resp = dbify_ax(request.json).json
-        if resp["errors"] and len(resp["errors"]) > 0:
-            return resp
-        if "afs" in request.json:
-            for af in request.json["afs"]:
-                af2 = AF.query.filter_by(id=af["uuid"], user=current_user).one()
-                af2.name = af["name"]
-        if "tafs" in session:
-            for tafid in session["tafs"]:
-                key = f"taf-{tafid}"
-                if key in session:
-                    del session[key]
-            del session["tafs"]
-        current_user.add_le(LogEntry(renderer="config_ax", data=dict()))
-        db.session.commit()
-        return make_resp(data=dict(warnings=warnings))
+        with t.time('db'):
+            resp = dbify_ax(request.json).json
+            if resp["errors"] and len(resp["errors"]) > 0:
+                return resp
+            if "afs" in request.json:
+                for af in request.json["afs"]:
+                    af2 = AF.query.filter_by(id=af["uuid"], user=current_user).one()
+                    af2.name = af["name"]
+            if "tafs" in session:
+                for tafid in session["tafs"]:
+                    key = f"taf-{tafid}"
+                    if key in session:
+                        del session[key]
+                del session["tafs"]
+            current_user.add_le(LogEntry(renderer="config_ax", data=dict()))
+            db.session.commit()
+            return make_resp(data=dict(warnings=warnings))
 
 
 ############################################
@@ -985,9 +988,11 @@ def api_config_id_img():
         tmp_path = os.path.join(upload_path, f"img-tmp/{current_user.id}{ext}")
         dst = os.path.join(upload_path, f"img/{current_user.id}.webp")
         try:
-            file.save(tmp_path)
+            with t.time('save'):
+                file.save(tmp_path)
             try:
-                conv_to_webp(tmp_path, dst)
+                with t.time('conv_to_webp'):
+                    conv_to_webp(tmp_path, dst)
             except Exception:
                 return make_resp(
                     error=dict(code="conversion_failed", message="conversion failed")
@@ -1030,6 +1035,7 @@ def oauth_grants_revoke():
     try:
         OAuth2Token.query.filter_by(id=grant_id, user=current_user).delete()
     except NoResultFound:
+        db.session.rollback()
         return make_resp(error=dict(code="grant_not_found", message="grant not found"))
     else:
         db.session.commit()
@@ -1188,9 +1194,10 @@ def generic_get_model(name: str):
 @bp.route("/generic/assign/<name>", methods=("POST",))
 @login_required
 def generic_assign(name: str):
-    ok, reason, missing = has_perms((f"api_v2.generic.assign.{name}",))
-    if not ok:
-        return perm_handler(list(missing), reason)
+    with t.time('generic.req_perms'):
+        ok, reason, missing = has_perms((f"api_v2.generic.seek.{name}",))
+        if not ok:
+            return perm_handler(list(missing), reason)
     Model = generic_get_model(name)
     ref = request.args["ref"]
     data = json.loads(request.body)
@@ -1208,9 +1215,10 @@ def generic_assign(name: str):
 @bp.route("/generic/del/<name>", methods=("POST",))
 @login_required
 def generic_del(name: str):
-    ok, reason, missing = has_perms((f"api_v2.generic.del.{name}",))
-    if not ok:
-        return perm_handler(list(missing), reason)
+    with t.time('generic.req_perms'):
+        ok, reason, missing = has_perms((f"api_v2.generic.seek.{name}",))
+        if not ok:
+            return perm_handler(list(missing), reason)
     Model = generic_get_model(name)
     ref = request.args["ref"]
     try:
@@ -1226,13 +1234,15 @@ def generic_del(name: str):
 @bp.route("/generic/deref/<name>", methods=("GET",))
 @login_required
 def generic_deref(name: str):
-    ok, reason, missing = has_perms((f"api_v2.generic.deref.{name}",))
-    if not ok:
-        return perm_handler(list(missing), reason)
+    with t.time('generic.req_perms'):
+        ok, reason, missing = has_perms((f"api_v2.generic.seek.{name}",))
+        if not ok:
+            return perm_handler(list(missing), reason)
     Model = generic_get_model(name)
     ref = request.args["ref"]
     try:
-        single = Model.q(user=current_user).filter_by(id=ref).one()
+        with t.time('generic.db'):
+            single = Model.q(user=current_user).filter_by(id=ref).one()
     except NoResultFound:
         return make_resp(error=dict(code="not_found"))
     except MultipleResultsFound:
@@ -1240,53 +1250,35 @@ def generic_deref(name: str):
     return make_resp(data=dict(single=single.generic_serialize()))
 
 
-# @bp.route("/generic/list/<name>", methods=("GET",))
-# @login_required
-# def generic_list(name: str):
-#     ok, reason, missing = has_perms((f"api_v2.generic.list.{name}",))
-#     if not ok:
-#         return perm_handler(list(missing), reason)
-#     Model = generic_get_model(name)
-#     ref = request.args["ref"]
-#     page = request.args["page"]
-#     per_page = request.args["per_page"]
-#     values = Model.query.filter_by(user=current_user, id=ref).paginate(
-#         page, per_page, error_out=False
-#     )
-#     if name == "log":
-#         values = values.order_by(Model.created.desc())
-#     else:
-#         raise TypeError("invalid name")
-#     values = list(le.generic_serialize for le in values)
-#     return make_resp(data=dict(values=values))
-
-
 @bp.route("/generic/seek/<name>", methods=("GET",))
 @login_required
 def generic_seek(name: str):
-    ok, reason, missing = has_perms((f"api_v2.generic.seek.{name}",))
-    if not ok:
-        return perm_handler(list(missing), reason)
+    with t.time('generic.req_perms'):
+        ok, reason, missing = has_perms((f"api_v2.generic.seek.{name}",))
+        if not ok:
+            return perm_handler(list(missing), reason)
     Model = generic_get_model(name)
     direction = request.args["direction"]
     offset = int(request.args["offset"])
     length = int(request.args["length"])
-    q = Model.q(user=current_user, direction=direction)
-    if direction not in ("n", "p"):
-        return make_resp(error=dict(code="not_p_nor_n")), 400
-    q = q.offset(offset).limit(
-        min(length, current_app.config["AIRY_GENERIC_LIMIT_MAX"])
-    )
-    q = q.with_entities(Model.id)
+    with t.time('generic.db'):
+        q = Model.q(user=current_user, direction=direction)
+        if direction not in ("n", "p"):
+            return make_resp(error=dict(code="not_p_nor_n")), 400
+        q = q.offset(offset).limit(
+            min(length, current_app.config["AIRY_GENERIC_LIMIT_MAX"])
+        )
+        q = q.with_entities(Model.id)
     return make_resp(data=dict(refs=list(a[0] for a in q.all())))
 
 
 @bp.route("/generic/total/<name>", methods=("GET",))
 @login_required
 def generic_total(name: str):
-    ok, reason, missing = has_perms((f"api_v2.generic.total.{name}",))
-    if not ok:
-        return perm_handler(list(missing), reason)
+    with t.time('generic.req_perms'):
+        ok, reason, missing = has_perms((f"api_v2.generic.seek.{name}",))
+        if not ok:
+            return perm_handler(list(missing), reason)
     Model = generic_get_model(name)
     return make_resp(data=dict(total=Model.q(user=current_user).count()))
 

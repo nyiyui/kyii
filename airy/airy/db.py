@@ -1,6 +1,6 @@
 import secrets
 import uuid
-from datetime import datetime
+from datetime import datetime, timedelta
 from hashlib import sha256
 from typing import Optional, Set, Tuple
 
@@ -189,7 +189,11 @@ class UserLogin(db.Model):
         self.reason_end = reason
 
     def see(self):
-        self.last = datetime.utcnow()
+        now = datetime.utcnow()
+        if self.last is not None and now - self.last < timedelta(seconds=60):
+            self.last = now
+            return True
+        return False
 
     @property
     def revoked(self):
@@ -473,7 +477,7 @@ class LogEntry(db.Model):
     @classmethod
     def q(cls, user: User, direction: str = "n"):
         return cls.query.filter_by(user=user).order_by(
-            cls.created if direction == "p" else cls.issued_at.desc()
+            cls.created if direction == "p" else cls.created.desc()
         )
 
 

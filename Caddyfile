@@ -1,0 +1,9 @@
+localhost:5001
+
+reverse_proxy localhost:5000
+
+@yuui {
+	method GET
+	path /yuui/*
+}
+reverse_proxy @yuui localhost:3000

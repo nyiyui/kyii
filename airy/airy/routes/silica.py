@@ -5,7 +5,7 @@ bp = Blueprint("silica", __name__)
 
 
 def init_app(app):
-    app.register_blueprint(bp)
+    app.register_blueprint(bp, url_prefix="/silica")
 
 
 @bp.route("/", methods=("GET",))

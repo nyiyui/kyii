@@ -9,6 +9,7 @@ from flask import (
     jsonify,
     request,
 )
+from server_timing import Timing as t
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.local import LocalProxy
 
@@ -136,22 +137,28 @@ class ULManager:
         return UserLogin.query.filter_by(token=token).first()
 
     def _load_ul(self):
-        token = request.headers.get(TOKEN_HEADER)
-        if token is None:
-            token = request.form.get(TOKEN_NAME)
-        if token is not None:
-            ulid, token_secret = token.split(":", 1)
-            ulid = ulid.split("ul", 1)[1]
-            try:
-                ul = UserLogin.query.filter_by(id=ulid).one()
-            except NoResultFound:
-                abort(self.unauthenticated())
-                return
-            if ul.verify_token(token_secret):
-                if ul.revoked:
+        with t.time("load_ul"):
+            token = request.headers.get(TOKEN_HEADER)
+            if token is None:
+                token = request.form.get(TOKEN_NAME)
+            if token is not None:
+                ulid, token_secret = token.split(":", 1)
+                ulid = ulid.split("ul", 1)[1]
+                try:
+                    ul = UserLogin.query.filter_by(id=ulid).one()
+                except NoResultFound:
                     abort(self.unauthenticated())
                     return
-                _request_ctx_stack.top.airy_ul = ul
-                return
-        ul = AnonymousUserLogin()
-        _request_ctx_stack.top.airy_ul = ul
+                with t.time("load_ul.check_token"):
+                    ok = ul.verify_token(token_secret)
+                if ok:
+                    if ul.revoked:
+                        abort(self.unauthenticated())
+                        return
+                    _request_ctx_stack.top.airy_ul = ul
+                    with t.time("load_ul.see"):
+                        if ul.see():
+                            db.session.commit()
+                    return
+            ul = AnonymousUserLogin()
+            _request_ctx_stack.top.airy_ul = ul

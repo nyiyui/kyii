@@ -8,8 +8,10 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login import LoginManager
 from flask_login import login_user as login_user2
+from flask_login import current_user as current_user2
 from flask_mail import Mail
 from flask_wtf.csrf import CSRFProtect
+from server_timing import Timing
 
 from .db import User, UserLogin
 from .ul import ULManager
@@ -51,6 +53,8 @@ def unauthorized_callback():
 
 
 def login_ul(ul: UserLogin, **kwargs):
+    if current_user2.is_authenticated and current_user2.id == ul.user.id and session["ulid"] == ul.id:
+        return
     session["ulid"] = ul.id
     login_user2(ul.user, **kwargs)
 
@@ -74,3 +78,13 @@ def init_app(app):
     ulm.init_app(app)
     cache.init_app(app)
     limiter.init_app(app)
+    Timing(app)
+
+    @app.before_request
+    def before_request():
+        Timing.start('request')
+
+    @app.after_request
+    def before_request(resp):
+        Timing.stop('request')
+        return resp

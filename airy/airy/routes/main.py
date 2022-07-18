@@ -11,5 +11,5 @@ def init_app(app):
 @bp.route("/", methods=("GET",))
 def home():
     if current_app.config["KYII_YUUI"]:
-        return redirect(current_app.config["KYII_YUUI_ORIGIN"], code=303)
-    return silica.index()
+        return redirect("/yuui", code=303)
+    return redirect("/silica", code=303)
