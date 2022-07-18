@@ -657,19 +657,19 @@ class BaseClient {
 			})
 			switch (r.status) {
 				case 200:
-					break;
+					break
 				case 401:
 					throw new UnauthenticatedError()
-					return;
+					return
 				case 429:
 					{
 						const limit = (await r.json()).errors[0].data
 						throw new EnhanceYourCalmError(limit)
 					}
-					return;
+					return
 				case 430:
 					throw new TypeError('CSRF token not found')
-					return;
+					return
 				default:
 					throw new TypeError(`unexpected status ${r.status}`)
 			}
