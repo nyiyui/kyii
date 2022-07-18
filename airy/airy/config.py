@@ -52,10 +52,11 @@ class Config:
 
 def init_app(app):
     app.config.from_object(Config)
+    app.config["SESSION_COOKIE_SECURE"] = not app.debug
     try:
         from . import local_config
     except ImportError:
-        raise RuntimeError('local_config required')
+        raise RuntimeError("local_config required")
     else:
         local_config.init_app(app)
     check(app)
