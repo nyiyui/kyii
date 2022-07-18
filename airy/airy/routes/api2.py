@@ -73,7 +73,7 @@ def handle_csrf_error(error: CSRFError):
             errors=[
                 dict(
                     code="csrf_token_not_found",
-                    message=f"CSRF token not found.",
+                    message=str(error), # NOTE: very very secure
                 )
             ]
         ),
