@@ -10,7 +10,9 @@ class Config:
     SESSION_TYPE = "filesystem"
     SESSION_PERMANENT = True
     SESSION_USE_SIGNER = True
-    SESSION_COOKIE_SAMESITE = "None"
+
+    # Flask-WTF CSRF Protection
+    WTF_CSRF_HEADERS = ["X-CSRFToken"]
 
     # Yuui
     KYII_YUUI = True
@@ -53,7 +55,9 @@ class Config:
 
 def init_app(app):
     app.config.from_object(Config)
-    app.config["SESSION_COOKIE_SECURE"] = not app.debug
+    if not app.debug:
+        app.config["SESSION_COOKIE_SECURE"] = True
+        app.config["SESSION_COOKIE_SAMESITE"] = "None"
     try:
         from . import local_config
     except ImportError:

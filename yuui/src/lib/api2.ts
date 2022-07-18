@@ -655,15 +655,23 @@ class BaseClient {
 				...opts,
 				...(await this.commonOpts(opts.method, opts.headers))
 			})
-			if (r.status === 401) {
-				throw new UnauthenticatedError()
-			}
-			if (r.status === 429) {
-				const limit = (await r.json()).errors[0].data
-				throw new EnhanceYourCalmError(limit)
-			}
-			if (r.status !== 200) {
-				throw new TypeError(`unexpected status ${r.status}`)
+			switch (r.status) {
+				case 200:
+					break;
+				case 401:
+					throw new UnauthenticatedError()
+					return;
+				case 429:
+					{
+						const limit = (await r.json()).errors[0].data
+						throw new EnhanceYourCalmError(limit)
+					}
+					return;
+				case 430:
+					throw new TypeError('CSRF token not found')
+					return;
+				default:
+					throw new TypeError(`unexpected status ${r.status}`)
 			}
 			const raw = await r.json()
 			console.log('raw', raw)

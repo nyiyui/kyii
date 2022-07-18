@@ -26,6 +26,7 @@ from flask_cors import CORS
 from flask_limiter import RateLimitExceeded
 from flask_login import current_user as current_user2
 from flask_mail import Message
+from flask_wtf.csrf import CSRFError
 from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 
 from .. import verifiers
@@ -62,8 +63,25 @@ from .util import conv_to_webp
 
 bp = Blueprint("api_v2", __name__, url_prefix="/api/v2")
 
+cors = CORS()
 
-@bp.errorhandler(429)
+
+@bp.errorhandler(CSRFError)
+def handle_csrf_error(error: CSRFError):
+    return (
+        dict(
+            errors=[
+                dict(
+                    code="csrf_token_not_found",
+                    message=f"CSRF token not found.",
+                )
+            ]
+        ),
+        430,
+    )
+
+
+@bp.errorhandler(RateLimitExceeded)
 def limiter_handler(error: RateLimitExceeded):
     return (
         dict(
@@ -87,13 +105,13 @@ def init_app(app):
             db.session.commit()
 
     if app.config["KYII_YUUI"]:
-        CORS(
-            bp,
+        cors.init_app(
+            app=bp,
             resources={
                 "/api/v2/*": dict(
                     origins=[app.config["KYII_YUUI_ORIGIN"]],
                     supports_credentials=True,
-                )
+                ),
             },
         )
         app.register_blueprint(bp)
