@@ -90,10 +90,8 @@
 			Start: {$time(ul.start * 1000, timeOpts)}<br />
 			{#if ul.end !== null}
 				End: {$time(ul.end * 1000, timeOpts)}<br />
-			{:else}
-				{#if ul.last !== null}
-					Last Seen: {$time(ul.last * 1000, timeOpts)}<br />
-				{/if}
+			{:else if ul.last !== null}
+				Last Seen: {$time(ul.last * 1000, timeOpts)}<br />
 			{/if}
 			{#if ul.reason}
 				Reason of revocation: {$_(`ul.reason.${ul.reason}`, { default: ul.reason })}
