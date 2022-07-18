@@ -238,6 +238,7 @@
 	"langs": {
 		"label": "表示言語",
 		"user_agent": "ユーザーエージェントの設定：{label}",
+		"fallback": "フォールバック言語",
 		"help": "設定してからリロードして下さい。",
 		"en": "英語 / English",
 		"ja": "日本語"

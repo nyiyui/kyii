@@ -30,7 +30,7 @@
 				})
 			}
 		}
-		return { value: l, label: $_(`langs.${l}`) }
+		return { value: l, label: $_({ id: `langs.${l}`, default: "" }) || $_('langs.fallback') }
 	}
 </script>
 

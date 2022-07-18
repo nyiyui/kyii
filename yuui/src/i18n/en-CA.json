@@ -238,6 +238,7 @@
 	"langs": {
 		"label": "UI Language",
 		"user_agent": "Per User Agent: {label}",
+		"fallback": "Fallback",
 		"help": "Please reload to propagate changes.",
 		"en": "English",
 		"ja": "Japanese / 日本語"
