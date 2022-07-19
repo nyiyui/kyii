@@ -7,9 +7,6 @@ server {
     server_name ${NGINX_HOST};
 
     location / {
-        include uwsgi_params;
-        uwsgi_read_timeout 600;
-        uwsgi_pass airy:8080;
-        uwsgi_param SERVER_SOFTWARE nginx/$nginx_version;
+        root /opt/kyii-yuui;
     }
 }
