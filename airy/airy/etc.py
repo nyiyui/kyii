@@ -1,8 +1,10 @@
 from typing import Optional
 from urllib.parse import urlencode, urljoin
 
+from flask_qrcode import QRcode
 from blinker import Namespace
-from flask import current_app, redirect, request, session
+from flask import current_app, redirect, request, session, g
+from flask_babel import Babel
 from flask_caching import Cache
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -14,13 +16,21 @@ from flask_wtf.csrf import CSRFProtect
 from server_timing import Timing
 
 from .db import User, UserLogin
-from .ul import ULManager
+from .ul import ULManager, current_user, current_ul
 
 signals = Namespace()
 
 csrf = CSRFProtect()
 
 ulm = ULManager()
+
+babel = Babel()
+
+
+@babel.localeselector
+def get_locale():
+    lang = g.lang = request.accept_languages.best_match(current_app.config['LANGUAGES'])
+    return lang
 
 
 def current_user_login() -> Optional[UserLogin]:
@@ -79,9 +89,23 @@ def init_app(app):
     csrf.init_app(app)
     login_manager.init_app(app)
     mail.init_app(app)
+    babel.init_app(app)
+    @app.context_processor
+    def utility_processor():
+        # this ensures  g.lang is injected before any _ etc call (needed for <html lang="{{ g.lang }}">)
+        babel.locale_selector_func()
+        return {}
     ulm.init_app(app)
+    @app.context_processor
+    def utility_processor():
+        # this ensures  g.lang is injected before any _ etc call (needed for <html lang="{{ g.lang }}">)
+        return dict(
+            current_user=current_user,
+            current_ul=current_ul,
+        )
     cache.init_app(app)
     limiter.init_app(app)
+    QRcode(app)
     Timing(app, force_debug=app.config["AIRY_TIMING"])
 
     @app.before_request

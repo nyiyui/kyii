@@ -8,15 +8,21 @@ from flask import (
     has_request_context,
     jsonify,
     request,
+    session,
+    flash,
 )
 from server_timing import Timing as t
 from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.local import LocalProxy
+from flask_babel import _
 
 from .db import User, UserLogin, db, gen_uuid
+from .session import SILICA_ULIDS, SILICA_CURRENT_ULID, SILICA_UL_MAP
 
 TOKEN_HEADER = "X-Airy-Token"
 TOKEN_NAME = "_airy_token"
+ARG_NAME = "ul"
+SHORT_NAME = "u"
 
 current_ul = LocalProxy(lambda: _get_current_ul())
 current_user = LocalProxy(lambda: _get_current_ul().user)
@@ -54,6 +60,7 @@ def login_user(u: User, apid: Optional[str]) -> Tuple[UserLogin, str]:
     ul = UserLogin(
         id=gen_uuid(),
         user=u,
+        sid2=UserLogin.get_sid2(),
         extra=get_extra(),
         against_id=apid,
     )
@@ -137,11 +144,13 @@ class ULManager:
         return UserLogin.query.filter_by(token=token).first()
 
     def _load_ul(self):
+        print(session[SILICA_UL_MAP])
         with t.time("load_ul"):
             token = request.headers.get(TOKEN_HEADER)
             if token is None:
                 token = request.form.get(TOKEN_NAME)
             if token is not None:
+                # For APIs
                 ulid, token_secret = token.split(":", 1)
                 ulid = ulid.split("ul", 1)[1]
                 try:
@@ -151,14 +160,43 @@ class ULManager:
                     return
                 with t.time("load_ul.check_token"):
                     ok = ul.verify_token(token_secret)
-                if ok:
-                    if ul.revoked:
-                        abort(self.unauthenticated())
-                        return
-                    _request_ctx_stack.top.airy_ul = ul
-                    with t.time("load_ul.see"):
-                        if ul.see():
-                            db.session.commit()
+                if not ok:
+                    abort(self.unauthenticated())
                     return
-            ul = AnonymousUserLogin()
+            elif (ulids := session.get(SILICA_ULIDS)) is not None:
+                # For Silica
+                ulid = session.get(SILICA_CURRENT_ULID) or request.args.get(ARG_NAME) or session.get(SILICA_UL_MAP, {}).get(request.args.get(SHORT_NAME))
+                if not ulid:
+                    ul = AnonymousUserLogin()
+                    _request_ctx_stack.top.airy_ul = ul
+                else:
+                    print('ulid', ulid)
+                    if ulid not in ulids:
+                        if SILICA_CURRENT_ULID in session:
+                            session[SILICA_CURRENT_ULID] = None
+                        flash(_("不正（セッションデータに無い）なログインIDが指定されたので、初期化しました。"), "error")
+                        abort(403)
+                        return
+                    try:
+                        ul = UserLogin.query.filter_by(id=ulid).one()
+                    except NoResultFound:
+                        if SILICA_CURRENT_ULID in session:
+                            session[SILICA_CURRENT_ULID] = None
+                        flash(_("不正（データベースに無い）なログインIDが指定されたので、初期化しました。"), "error")
+                        abort(403)
+                        return
+            else:
+                ul = AnonymousUserLogin()
+                _request_ctx_stack.top.airy_ul = ul
+            if ul.revoked:
+                is_api = print(request.path).startswith("/api")
+                if is_api:
+                    abort(self.unauthenticated())
+                    return
+                else:
+                    abort(403)
+                    return
             _request_ctx_stack.top.airy_ul = ul
+            with t.time("load_ul.see"):
+                if ul.see():
+                    db.session.commit()

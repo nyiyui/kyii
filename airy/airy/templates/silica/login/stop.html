@@ -1,0 +1,20 @@
+{% extends "silica/base.html" %}
+
+{% block content %}
+{% if ap %}
+    {{ _('「%(user)s」に認証パス「%(ap_name)s」でログインしようとしています。', user=u.name, ap_name=ap.name) }}
+{% else %}
+    {{ _('「%(user)s」にログインしようとしています。', user=u.name) }}
+{% endif %}
+<form method="POST" action="{{ url_for("silica.login_stop") }}">
+	{{ form.hidden_tag() }}
+	<input type="submit" value="{{ _("ログインを止める") }}">
+	<div class="errors">
+		<ul>
+			{% for error in form.errors.slug %}
+				<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+	</div>
+</form>
+{% endblock %}

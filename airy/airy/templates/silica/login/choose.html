@@ -1,0 +1,17 @@
+{% extends "silica/base.html" %}
+
+{% block content %}
+{{ _('「%(user)s」にログインしようとしています。', user=u.name) }}
+<form method="POST" action="{{ url_for("silica.login_choose") }}">
+	{{ form.hidden_tag() }}
+	{{ form.apid.label }} {{ form.apid }}
+	<div class="errors">
+		<ul>
+			{% for error in form.errors.apid %}
+				<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+	</div>
+	<input type="submit" value="{{ _("認証パスを選ぶ") }}">
+</form>
+{% endblock %}

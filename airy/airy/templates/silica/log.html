@@ -1,0 +1,46 @@
+{% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block content %}
+<form method="GET" action="?">
+	{{ form.sid2.label }} {{ form.sid2 }}
+	<div class="errors">
+		<ul>
+			{% for error in form.errors.sid2 %}
+				<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+	</div>
+	<input type="submit" value="{{ _("検索") }}">
+</form>
+
+<ul>
+  {% for le in les.items %}
+    <li>
+      <div class="le">
+        {{ le.id }}
+        {{ macros.sid2_with_query(le.sid2) }}
+        <code>{{ le.renderer }}</code>
+        <code>{{ le.data | tojson }}</code>
+      </div>
+    </li>
+  {% endfor %}
+</ul>
+
+{{ _('ページ') }}
+{% if les.prev_num %}
+  <a href="?page={{ les.prev_num }}">{{ _('前') }}</a>
+{% endif %}
+{% for page in les.iter_pages() %}
+  {% if page == les.page %}
+    <span>{{ page }}</span>
+  {% elif page == None %}
+    …
+  {% else %}
+    <a href="?page={{ page }}">{{ page }}</a>
+  {% endif %}
+{% endfor %}
+{% if les.next_num %}
+  <a href="?page={{ les.next_num }}">{{ _('次') }}</a>
+{% endif %}
+{% endblock %}

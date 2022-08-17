@@ -54,3 +54,11 @@ def req_perms(perms: Set[str], handler, cond=lambda: True):
 
 def gen_token() -> str:
     return secrets.token_hex(32)
+
+
+
+def flip(d: dict) -> dict:
+    return {v: k for k, v in d.items()}
+
+class BidirectionalDict(dict):
+    pass

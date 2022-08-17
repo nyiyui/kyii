@@ -150,6 +150,7 @@ class UserLogin(db.Model):
     name = db.Column(db.Unicode(256))
     user_id = db.Column(db.String(32), db.ForeignKey("user.id"), nullable=False)
     user = db.relationship("User", backref="logins", foreign_keys=[user_id])
+    sid2 = db.Column(db.String(64))
     extra = db.Column(JSONType)
     against_id = db.Column(db.String(32), db.ForeignKey("ap.id"), nullable=True)
     against = db.relationship("AP", backref="logins", foreign_keys=[against_id])
@@ -161,6 +162,14 @@ class UserLogin(db.Model):
 
     def __str__(self):
         return f"<UserLogin {self.id} for {self.user_id} against {self.against_id}>"
+
+    @classmethod
+    def get_sid2(cls) -> str:
+        return sha256(str(session.sid).encode("ascii")).hexdigest()
+
+    @classmethod
+    def get_usable(cls) -> "UserLogin":
+        return cls.query.filter_by(end=None, reason_end=None)
 
     @property
     def is_active(self):
@@ -233,6 +242,10 @@ class UserLogin(db.Model):
             end=self.end.timestamp() if self.end else None,
             reason=self.reason_end,
         )
+
+    @classmethod
+    def q(cls, user: User):
+        return cls.query.filter_by(user=user).order_by(cls.start)
 
 
 ap_reqs = db.Table(

@@ -1,0 +1,24 @@
+{% extends "silica/base.html" %}
+
+{% block content %}
+{{ _('「%(user)s」に認証パス「%(ap_name)s」でログインしようとしています。', user=u.name, ap_name=ap.name) }}
+{{ _('認証要素を選んで下さい。') }}
+<ul>
+	{% for af in afs %}
+		<li>
+			{% with solved = af.id in solved_afs %}
+				{% if solved %}
+					<span class="material-symbols-outlined">task_alt</span>
+					{{ _('解決') }}
+					{{ af.name }}
+				{% else %}
+					<span class="material-symbols-outlined">pending</span>
+					{{ _('未解決') }}
+					{{ af.name }}
+					<a href="{{ url_for("silica.login_attempt", afid=af.id) }}">{{ _('解く') }}</a>
+				{% endif %}
+			{% endwith %}
+		</li>
+	{% endfor %}
+</ul>
+{% endblock %}

@@ -1,1 +1,11 @@
 {% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block content %}
+	{% if current_user %}
+		<div class="alert Asuccess">
+			{{ _('以下のユーザーとしてログインしています。') }}
+			{{ macros.user(current_user) }}
+		</div>
+	{% endif %}
+{% endblock %}

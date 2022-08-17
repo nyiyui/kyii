@@ -53,6 +53,9 @@ class Config:
         rp_name="Airy",
     )
 
+    # Flask-Babel
+    LANGUAGES = ["en", "ja"]
+
 
 def init_app(app):
     app.config.from_object(Config)

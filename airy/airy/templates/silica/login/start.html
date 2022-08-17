@@ -1,0 +1,16 @@
+{% extends "silica/base.html" %}
+
+{% block content %}
+<form method="POST" action="{{ url_for("silica.login") }}">
+	{{ form.hidden_tag() }}
+	{{ form.slug.label }} {{ form.slug }}
+	<div class="errors">
+		<ul>
+			{% for error in form.errors.slug %}
+				<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+	</div>
+	<input type="submit" value="{{ _("アカウントを選ぶ") }}">
+</form>
+{% endblock %}

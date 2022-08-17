@@ -1,0 +1,27 @@
+{% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block content %}
+  <form method="GET" action="?">
+  	{{ form.sid2.label }} {{ form.sid2 }}
+  	<div class="errors">
+  		<ul>
+  			{% for error in form.errors.sid2 %}
+  				<li>{{ error }}</li>
+  			{% endfor %}
+  		</ul>
+  	</div>
+  	<input type="submit" value="{{ _("検索") }}">
+  </form>
+  
+  <ul>
+    {% for item in query.items %}
+      <li>
+        <div class="item">
+          {{ macros.ul_detail(item) }}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+  {{ macros.pages(query) }}
+{% endblock %}

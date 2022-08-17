@@ -1,0 +1,16 @@
+{% extends "silica/base.html" %}
+
+{% block content %}
+<form method="POST" action="">
+	{{ form.hidden_tag() }}
+  {{ form.token.label }} {{ form.token }}
+	<input type="submit" value="{{ _("承認") }}">
+	<div class="errors">
+		<ul>
+			{% for error in form.errors.slug %}
+				<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+	</div>
+</form>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% macro form_csrf() %}
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+{% endmacro %}
+
+{% macro user(user) %}
+  <span class="user">
+    <a href="{{ url_for('silica.user', uid=user.id) }}">
+      {{ user.name }}
+      <code class="user-slug">{{ user.slug }}</code>
+      {{ _('（ユーザーID：%(id)s）', id=user.id) }}
+    </a>
+  </span>
+{% endmacro %}
+
+{% macro user_short(user) %}
+  <span class="user">
+    <a href="{{ url_for('silica.user', uid=user.id) }}">
+      {{ user.name }}
+    </a>
+  </span>
+{% endmacro %}
+
+{% macro sid2_with_query(sid2) %}
+  <span class="sid2">
+    <code>{{ sid2 }}</code>
+    （<a href="{{ url_for('silica.uls', sid2=sid2) }}">{{ _('ログイン') }}</a>）
+    （<a href="{{ url_for('silica.log', sid2=sid2) }}">{{ _('ログ') }}</a>）
+  </span>
+{% endmacro %}
+
+{% macro ap(ap) %}
+  <span class="ap">
+    {{ ap.name }}
+    <code>{{ ap.id }}</code>
+  </span>
+{% endmacro %}
+
+{% macro af(af) %}
+  <span class="af">
+    {{ af.name }}
+    <code>{{ af.id }}</code>
+  </span>
+{% endmacro %}
+
+{% macro ul_short(ul) %}
+  <span class="ul">
+    <a href="{{ url_for('silica.ul', ulid=ul.id, l=ul.id) }}">
+      {{ ul.name or ul.id }}
+    </a>
+  </span>
+{% endmacro %}
+
+{% macro ul2(ul, current) %}
+  <span class="ul">
+    <form method="post" action="{{ url_for('silica.iori_rename') }}">
+      {{ form_csrf() }}
+      <input type="hidden" name="ulid" value="{{ ul.id }}"/>
+      <input type="text" name="name" value="{{ ul.name }}" required />
+      <input type="submit" value="{{ _('保存') }}" />
+    </form>
+    {{ user(ul.user) }}
+    {{ _('（ログインID：%(id)s）', id=ul.id) }}
+    {{ _('使用した認証パス：') }}
+    {{ ap(ul.against) }}
+    <form method="post" action="{{ url_for('silica.iori_logout') }}">
+      {{ form_csrf() }}
+      <input type="hidden" name="ulid" value="{{ ul.id }}"/>
+      <input type="submit" value="{{ _('終了') }}" />
+    </form>
+    {% if current == ul.id %}
+      {{ _('（使用中）') }}
+    {% endif %}
+  </span>
+{% endmacro %}
+
+{% macro ul(ul, current, ul_map_flipped) %}
+  <span class="flex Fcol ul box">
+    <div class="flex">
+      <h2>
+        {% if ul.name %}
+          {{ ul.name }}
+        {% else %}
+          <em>{{ _('名前未設定') }}</em>
+        {% endif %}
+      </h2>
+      <form class="spacer" method="post" action="{{ url_for('silica.iori_choose') }}">
+        {{ form_csrf() }}
+        <input type="hidden" name="ulid" value="{{ ul.id }}"/>
+        <input type="submit" value="{{ _('使用') }}"{% if current == ul.id %} disabled{% endif %} />
+      </form>
+      <form method="post" action="{{ url_for('silica.iori_logout') }}">
+        {{ form_csrf() }}
+        <input type="hidden" name="ulid" value="{{ ul.id }}"/>
+        <input class="Bcaution" type="submit" value="{{ _('ログアウト') }}" />
+      </form>
+    </div>
+    <div>
+      {{ _('ログインID：') }} {{ ul_short(ul) }}
+    </div>
+    <div>
+      {{ _('アカウント：') }} {{ user_short(ul.user) }}
+    </div>
+    <div>
+      {{ _('省略：') }} {{ ul_map_flipped[ul.id] }}
+  </span>
+{% endmacro %}
+
+{% macro ul_detail(ul, current) %}
+  <span class="flex ul">
+    <span>
+      {% if ul.name %}
+        {{ ul.name }}
+      {% endif %}
+    </span>
+    {{ _('（ログインID：%(id)s）', id=ul.id) }}
+    <span>
+      {{ _('開始時刻：%(start)s', start=ul.start) }}
+      {{ _('最後にアクセス：%(last)s', last=ul.last) }}
+      {{ _('終了時刻：%(end)s', end=ul.end) }}
+    </span>
+    <span>
+      {{ _('使用した認証パス：') }}
+      {{ ap(ul.against) }}
+    </span>
+    {% if ul.sid2 %}
+      <span>
+        {{ _('セッション：') }}
+        {{ sid2_with_query(ul.sid2) }}
+      </span>
+    {% endif %}
+  </span>
+{% endmacro %}
+
+{% macro pages(query) %}
+  {{ _('ページ') }}
+  {% if query.prev_num %}
+    <a href="?page={{ query.prev_num }}">{{ _('前') }}</a>
+  {% endif %}
+  {% for page in query.iter_pages() %}
+    {% if page == query.page %}
+      <span>{{ page }}</span>
+    {% elif page == None %}
+      …
+    {% else %}
+      <a href="?page={{ page }}">{{ page }}</a>
+    {% endif %}
+  {% endfor %}
+  {% if query.next_num %}
+    <a href="?page={{ query.next_num }}">{{ _('次') }}</a>
+  {% endif %}
+{% endmacro %}
+
+{% macro alert(category, message) %}
+   <div class="alert A{{ category }}">
+     {% if category == 'message' %}
+       <span class="material-symbols-outlined">info</span>
+       {{ _("メッセージ") }}
+     {% elif category == 'success' %}
+       <span class="material-symbols-outlined">check</span>
+       {{ _("成功") }}
+     {% elif category == 'caution' %}
+       <span class="material-symbols-outlined">warning</span>
+       {{ _("注意") }}
+     {% elif category == 'warning' %}
+       <span class="material-symbols-outlined">dangerous</span>
+       {{ _("警告") }}
+     {% elif category == 'error' %}
+       <span class="material-symbols-outlined">error</span>
+       {{ _("エラー") }}
+     {% endif %}
+     {{ message }}
+   </div>                                                                  
+{% endmacro %}

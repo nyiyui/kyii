@@ -1,0 +1,23 @@
+{% extends "silica/base.html" %}
+
+{% block etc_js %}
+<script src="{{ asset('silica/webauthn.js') }}" type="module"></script>
+{% endblock %}
+
+{% block content %}
+{{ _('「%(user)s」に認証パス「%(ap_name)s」でログインしようとしています。', user=u.name, ap_name=ap.name) }}
+{{ _('認証要素「%(af_name)s」を解いて下さい。', af_name=af.name) }}
+<span id="webauthn-data" data-csrf-token="{{ csrf_token }}"></span>
+<form method="POST" action="{{ url_for("silica.login_attempt", afid=af.id) }}">
+	{{ form.hidden_tag() }}
+	<!-- TODO: add hidden username field for autocomplete -->
+	<input type="submit" value="{{ _("認証要素を解く") }}">
+	<div class="errors">
+		<ul>
+			{% for error in form.errors.slug %}
+				<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+	</div>
+</form>
+{% endblock %}

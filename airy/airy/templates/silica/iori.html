@@ -1,0 +1,13 @@
+{% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block content %}
+<ul class="nodeco">
+  {% for ul in uls %}
+    <li>
+      {{ macros.ul(ul, current, ul_map_flipped) }}
+    </li>
+  {% endfor %}
+</ul>
+<a href="{{ url_for('silica.login') }}">{{ _('新たにログインする') }}</a>
+{% endblock %}
