@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  version="1.0"
+  viewBox="0 0 50 50"
+>
+  <defs>
+    <linearGradient id="grad1" gradientTransform="rotate(45)">
+      <stop offset="0%" stop-color="#fcc" />
+      <stop offset="50%" stop-color="#cfc" />
+      <stop offset="100%" stop-color="#ccf" />
+    </linearGradient>
+    <linearGradient id="grad2" gradientTransform="rotate(-45)">
+      <stop offset="0%" stop-color="#fcc" />
+      <stop offset="100%" stop-color="#faf" />
+    </linearGradient>
+    <linearGradient id="grad3" gradientTransform="rotate(-225)">
+      <stop offset="0%" stop-color="#fcc" />
+      <stop offset="100%" stop-color="#faf" />
+    </linearGradient>
+  </defs>
+  <circle cx="25" cy="25" r="20" fill="url(#grad1)" />
+  <path
+    d="M10 25 a15 15 0 0 0 15 15 l0 -5 a10 10 0 0 1 -10 -10"
+    fill="#0002"
+  />
+  <path
+    d="M5 25 a20 20 0 0 1 20 -20"
+    fill="none"
+    stroke="url(#grad2)"
+    stroke-width="2"
+  />
+  <path
+    d="M40 25 a15 15 0 0 0 -15 -15 l0 5 a10 10 0 0 1 10 10"
+    fill="#0002"
+  />
+  <path
+    d="M45 25 a20 20 0 0 1 -20 20"
+    fill="none"
+    stroke="url(#grad3)"
+    stroke-width="2"
+  />
+  <path
+    d="M25 10 l2 15 l-4 0 l2 -15"
+    fill="#faaa"
+  />
+  <path
+    d="M25 40 l2 -15 l-4 0 l2 15"
+    fill="#aafa"
+  />
+</svg>
