@@ -2,7 +2,8 @@
 
 (cd ./airy && pipenv run bash -c 'FLASK_DEBUG=true FLASK_APP=airy.app flask run') &
 #(cd ./airy && pipenv run bash -c 'gunicorn --bind :5000 airy.wsgi:app ') &
+#(cd ./yutsu && npm run dev) &
 (cd ./yuui && VITE_BUILD_COMMIT=dev npm run dev) &
-(cd ./paimon && mdbook serve -p 1314) &
+#(cd ./paimon && mdbook serve -p 1314) &
 
 wait

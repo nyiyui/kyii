@@ -144,7 +144,7 @@ class ULManager:
         return UserLogin.query.filter_by(token=token).first()
 
     def _load_ul(self):
-        print(session[SILICA_UL_MAP])
+        print(session.get(SILICA_UL_MAP))
         with t.time("load_ul"):
             token = request.headers.get(TOKEN_HEADER)
             if token is None:

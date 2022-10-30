@@ -1055,12 +1055,14 @@ def oauth_oclient():
 @login_required
 @req_perms(("api_v2.oauth.oclients",))
 def oauth_oclients():
-    print(OAuth2Client.query.all(), current_user)
-    print(OAuth2Client.query.filter_by(user=current_user).all())
+    print('u', current_user)
+    print('a', OAuth2Client.query.all(), current_user)
+    print('b', OAuth2Client.query.filter_by(user=current_user).all())
     oclients = list(
         oclient.for_api_v2
         for oclient in OAuth2Client.query.filter_by(user=current_user)
     )
+    print('oclients', oclients)
     return make_resp(data=dict(oclients=oclients))
 
 

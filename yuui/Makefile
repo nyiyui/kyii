@@ -4,12 +4,16 @@ prefix = /usr/local
 .suffixes:
 
 all:
+
+build:
 	npm install
 	npm run build
 
-install:
+install: build
+	$(PRE_INSTALL)
 	useradd -m -c "Kyii Airy" -d "/opt/kyii/airy-home" kyii-airy
-	cp -r $(srcdir)/airy /opt/kyii/airy-home/airy
+	$(NORMAL_INSTALL)
+	cp -r $(srcdir)/build /var/www/yuui
 
 .PHONY: fmt
 

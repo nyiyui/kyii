@@ -1,0 +1,10 @@
+[Unit]
+Description=main process for Kyii Airy
+
+[Service]
+ExecStart=/opt/kyii-airy-home/start.sh
+User=kyii-airy
+WorkingDirectory=/opt/kyii-airy-home
+
+[Install]
+WantedBy=network.target

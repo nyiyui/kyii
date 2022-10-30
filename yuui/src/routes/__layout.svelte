@@ -1,6 +1,5 @@
 <script lang="ts" context="module">
 	import { _ } from 'svelte-i18n'
-	import GlobalBar from '$lib/header/GlobalBar.svelte'
 	import Header from '$lib/header/Header.svelte'
 	import '../app.css'
 </script>
@@ -31,7 +30,6 @@
 	<p>Loading… 読込中…</p>
 {:else}
 	<header>
-		<GlobalBar />
 		<Header />
 	</header>
 

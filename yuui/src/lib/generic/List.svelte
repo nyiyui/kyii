@@ -13,8 +13,8 @@
 	export let handler: Handler<R, V>
 	export let renderer: SvelteComponent
 	export let offset = 0
-	export let seekLength = 10
-	export let seekInterval = 10
+	export let seekLength = 32
+	export let seekInterval = seekLength
 	export let total: number
 
 	let rCache: R[]

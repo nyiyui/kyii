@@ -116,7 +116,7 @@
 			} else {
 				attemptResults.set(afUuid, { status: AttemptResultStatus.Fail, msg: resp.msg, ...common })
 			}
-			return resp.feedback
+			return await new Promise((resolve) => setTimeout(() => resolve(resp.feedback), 1000));
 		} catch (e) {
 			attemptResults.set(afUuid, { status: AttemptResultStatus.Error, msg: e.toString() })
 		}
