@@ -9,6 +9,4 @@
 	fi
 ) &
 
-(cd ./yuui && npm run lint) &
-
 wait

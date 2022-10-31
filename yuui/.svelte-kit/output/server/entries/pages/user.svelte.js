@@ -1,0 +1,20 @@
+import { c as create_ssr_component, a as subscribe, v as validate_component } from "../../chunks/index-f5dba6f6.js";
+import { Y } from "../../chunks/api2-d3db0bec.js";
+import "../../chunks/functions-60a079cb.js";
+/* empty css                                                        */import { L as Loading } from "../../chunks/Loading-959b154e.js";
+import { p as page } from "../../chunks/stores-c7a7782c.js";
+import "../../chunks/store-875eeb2f.js";
+import "tslib";
+import "bops";
+import "../../chunks/Box-abf00c5f.js";
+import "../../chunks/Icon-7665d048.js";
+const User_1 = create_ssr_component(($$result, $$props, $$bindings, slots) => {
+  let $$unsubscribe_page;
+  let $$unsubscribe__;
+  $$unsubscribe_page = subscribe(page, (value) => value);
+  $$unsubscribe__ = subscribe(Y, (value) => value);
+  $$unsubscribe_page();
+  $$unsubscribe__();
+  return `${`${validate_component(Loading, "Loading").$$render($$result, {}, {}, {})}`}`;
+});
+export { User_1 as default };
