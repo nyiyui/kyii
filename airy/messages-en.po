@@ -96,11 +96,11 @@ msgstr ""
 
 #: airy/templates/silica/base.html:13
 msgid "シリカ"
-msgstr ""
+msgstr "Silica"
 
 #: airy/templates/silica/base.html:24
 msgid "きぃい シリカ"
-msgstr ""
+msgstr "Kyii"
 
 #: airy/templates/silica/base.html:25 airy/templates/silica/macros.html:27
 msgid "ログ"

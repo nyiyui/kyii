@@ -1,0 +1,106 @@
+{% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block content %}
+	<h2>認証設定</h2>
+	<form action="/config/ax" method="post">
+		<h3>認証パス</h3>
+		<table id="ap">
+			<tr>
+				<th rowspan="2">ID</th>
+				<th rowspan="2">名前</th>
+				<th>認証方法</th>
+			</tr>
+			<tr>
+				{% for af in current_user.af %}
+					<td>
+						{{ af.name }}
+					</td>
+				{% endfor %}
+			</tr>
+			{% for ap in current_user.ap %}
+				<tr>
+					<td>{{ ap.id }}</td>
+					<td>
+						<input type="text" name="{{ ap.id }}-name" value="{{ ap.name }}" />
+					</td>
+					{% for af in current_user.af %}
+						<td>
+							<input
+								type="checkbox"
+								name="{{ ap.id }}-{{ af.id }}"
+								{% if af in ap.reqs %}checked{% endif %}
+								value="{{ af.id }}"
+							/>
+						</td>
+					{% endfor %}
+				</tr>
+			{% endfor %}
+		</table>
+		<h3>認証方法</h3>
+		<table id="af">
+			<tr>
+				<th>ID</th>
+				<th>名前</th>
+				<th>型</th>
+				<th>設定</th>
+				<th>状態</th>
+			</tr>
+			{% for af in current_user.af %}
+				{% if af.gen_done %}
+					<tr>
+						<td>{{ af.id }}</td>
+						<td>
+							<input type="text" name="{{ af.id }}-name" value="{{ af.name }}" />
+						</td>
+						<td>
+							{% if af.verifier == "pw" %}
+								パスワード
+							{% elif af.verifier == "otp_totp" %}
+								TOTP
+							{% elif af.verifier == "webauthn" %}
+								WebAuthn
+							{% elif af.verifier == "limited" %}
+								回数制限
+							{% elif af.verifier == "remote" %}
+								遠隔認証
+							{% endif %}
+						</td>
+						<td>
+							{% if af.verifier == "pw" %}
+								{% if af.params.compat == 'django_pbkdf2_sha256' %}
+									Django PBKDF2/SHA256対応
+								{% endif %}
+							{% elif af.verifier == "limited" %}
+								{{ af.params.limit }}まで
+							{% endif %}
+						</td>
+						<td>
+							{% if af.verifier == "limited" %}
+								{{ af.params.used }}回使用
+							{% endif %}
+						</td>
+					</tr>
+				{% endif %}
+			{% endfor %}
+		</table>
+		<input type="submit" value="保存" class="Bsuccess" />
+	</form>
+	<hr />
+	<h2>プロフィール</h2>
+	<form action="/config/ax" method="post">
+		<label>
+			ID
+			<input type="text" disabled value="{{ current_user.id }}" />
+		</label>
+		<label>
+			名前
+			<input type="text" name="name" value="{{ current_user.name }}" />
+		</label>
+		<label>
+			ハンドル
+			<input type="text" name="slug" value="{{ current_user.slug }}" />
+		</label>
+		<input type="submit" value="保存" class="Bsuccess" />
+	</form>
+{% endblock %}

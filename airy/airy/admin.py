@@ -1,6 +1,6 @@
-from urllib.parse import urlencode, urljoin
+from urllib.parse import urlencode
 
-from flask import current_app, redirect, request
+from flask import current_app, redirect, request, url_for
 from flask_admin import Admin, AdminIndexView, expose
 from flask_admin.contrib import sqla
 from flask_login import current_user
@@ -29,9 +29,7 @@ class AiryModelView(sqla.ModelView):
         return current_user.is_authenticated
 
     def inaccessible_callback(self, name, **kwargs):
-        base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/closet")
-        query = urlencode({"next": request.path, "args": urlencode(request.args)})
-        return redirect(f"{base}?{query}")
+        return redirect(url_for('silica.login', next=request.path, args=urlencode(request.args)))
 
 
 admin = Admin(name="Kyii Airy", index_view=IndexView(), template_mode="bootstrap3")

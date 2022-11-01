@@ -9,4 +9,4 @@ def login_doing_processor():
     return dict(login_doing=API_V1_UID in session)
 
 def init_app(app):
-    app.register_blueprint(bp, url_prefix="/silica")
+    app.register_blueprint(bp)

@@ -9,9 +9,9 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, RadioField, PasswordField
 from wtforms.validators import InputRequired, Length, ValidationError
 from ...db import User, AF, AP, LogEntry, UserLogin, db
-from ...session import API_V1_UID, API_V1_APID, API_V1_SOLVED, SILICA_ULIDS, SILICA_CURRENT_ULID, SILICA_UL_MAP
+from ...session import API_V1_UID, API_V1_APID, API_V1_SOLVED, SILICA_ULIDS, SILICA_CURRENT_ULID, SILICA_UL_MAP, SILICA_NEXT
 from ...util import flip
-from ...ul import get_extra, login_user, current_user
+from ...ul import get_extra, login_user, current_user, login_required
 from ...verifiers import VerificationError, remote
 from .bp import bp
 
@@ -25,6 +25,7 @@ def unauthorized(error):
 def login():
     if API_V1_UID in session:
         return redirect(url_for('silica.login_choose'))
+    session[SILICA_NEXT] = request.args.get('next')
     form = LoginStartForm()
     if form.validate_on_submit():
         target = User.query.filter_by(slug=form.slug.data, is_active=True).one()
@@ -44,11 +45,13 @@ class LoginStartForm(FlaskForm):
 @bp.route("/login/choose", methods=("GET", "POST"))
 def login_choose():
     form = LoginChooseForm()
+    if API_V1_UID not in session:
+        raise RuntimeError("start login first") # TODO: nicer UX
     with t.time('db'):
         u = User.query.get(session[API_V1_UID])
         aps = AP.query.filter_by(user=u)
         u.add_le(LogEntry(renderer="login_start", data=dict(extra=get_extra())))
-    if API_V1_APID in session and API_V1_APID:
+    if API_V1_APID in session and API_V1_APID not in session:
         return redirect(url_for('silica.login_list'))
     form.apid.choices = [(ap.id, ap.name) for ap in aps]
     if form.validate_on_submit():
@@ -65,6 +68,8 @@ class LoginChooseForm(FlaskForm):
 
 @bp.route("/login/list", methods=("GET",))
 def login_list():
+    if API_V1_UID not in session or API_V1_APID not in session or API_V1_SOLVED not in session:
+        return redirect(url_for('silica.login'))
     with t.time('db'):
         u = User.query.get(session[API_V1_UID])
         ap = AP.query.get(session[API_V1_APID])
@@ -76,6 +81,7 @@ def login_list():
         if afid not in session[API_V1_SOLVED]:
             return redirect(url_for('silica.login_attempt', afid=afid))
     if len(missing) == 0:
+        print('NEXT', session[SILICA_NEXT], session)
         flash(_('全ての認証が完了しました。%(name)sとしてログインしました。', name=u.name), 'success')
         ul, _token = login_user(u, ap.id)
         session.pop(API_V1_UID)
@@ -86,6 +92,9 @@ def login_list():
         session[SILICA_UL_MAP] = session.get(SILICA_UL_MAP, {})
         i = max([0] + list(session[SILICA_UL_MAP].keys())) + 1
         session[SILICA_UL_MAP][i] = ul.id
+        print('NEXT', session[SILICA_NEXT], session)
+        if (next_ := session.get(SILICA_NEXT, None)) is not None:
+            return redirect(next_)
         return redirect(url_for('silica.index'))
     return render_template(
         "silica/login/list.html",
@@ -126,6 +135,8 @@ AUTOMATIC_VERIFIERS = {"limited"}
 
 @bp.route("/login/attempt", methods=("GET", "POST"))
 def login_attempt():
+    if API_V1_UID not in session or API_V1_APID not in session or API_V1_SOLVED not in session:
+        return redirect(url_for('silica.login'))
     with t.time('db'):
         u = User.query.get(session[API_V1_UID])
         af = AF.query.get(request.args['afid'])
@@ -180,7 +191,7 @@ class LoginStopForm(FlaskForm):
     pass
 @bp.route("/login/stop", methods=("GET", "POST"))
 def login_stop():
-    if API_V1_UID not in session:
+    if API_V1_UID not in session or API_V1_APID not in session or API_V1_SOLVED not in session:
         return redirect(url_for('silica.login'))
     form = LoginStopForm()
     ap = AP.query.get(session[API_V1_APID])
@@ -200,8 +211,11 @@ def signup():
 
 
 @bp.route("/iori", methods=("GET",))
+@login_required
 def iori():
-    ulids = session.get(SILICA_ULIDS, set())
+    if SILICA_ULIDS not in session or SILICA_UL_MAP not in session or SILICA_CURRENT_ULID not in session:
+        return redirect(url_for('silica.login'))
+    ulids = session[SILICA_ULIDS]
     uls = UserLogin.get_usable().filter(UserLogin.id.in_(ulids)).all()
     session[SILICA_ULIDS] = set(ul.id for ul in uls)
     current = session.get(SILICA_CURRENT_ULID)
@@ -209,8 +223,11 @@ def iori():
 
 
 @bp.route("/iori/logout", methods=("POST",))
+@login_required
 def iori_logout():
     ulid = request.form['ulid']
+    if SILICA_ULIDS not in session:
+        return redirect(url_for('silica.login'))
     if ulid not in session[SILICA_ULIDS]:
         abort(403)
         return
@@ -226,6 +243,7 @@ def iori_logout():
     return redirect(url_for('silica.iori'))
 
 @bp.route("/iori/rename", methods=("POST",))
+@login_required
 def iori_rename():
     ulid = request.form['ulid']
     name = request.form['name']
@@ -238,9 +256,10 @@ def iori_rename():
     return redirect(url_for('silica.iori'))
 
 @bp.route("/iori/choose", methods=("POST",))
+@login_required
 def iori_choose():
     ulid = request.form['ulid']
-    if ulid not in session[SILICA_ULIDS]:
+    if ulid not in session.get(SILICA_ULIDS, set()):
         abort(403)
         return
     session[SILICA_CURRENT_ULID] = ulid
@@ -249,10 +268,12 @@ def iori_choose():
 
 
 @bp.route("/self", methods=("GET",))
+@login_required
 def self():
     return render_template("silica/self.html")
 
 @bp.route("/user", methods=("GET",))
+@login_required
 def user():
     uid = request.args['uid']
     u = User.query.get_or_404(uid)
@@ -262,6 +283,7 @@ class RemoteDecideFrom(FlaskForm):
     token = StringField(_l('トークン'), validators=[InputRequired(), Length(min=6, max=6)])
 
 @bp.route("/remote_decide", methods=('GET', 'POST'))
+@login_required
 def remote_decide():
     form = RemoteDecideFrom(token=request.args.get('token'))
     if form.validate_on_submit():
@@ -270,3 +292,9 @@ def remote_decide():
         flash(_('トークン%(token)sを承認しました。', token=token))
         return redirect(url_for('silica.remote_decide'))
     return render_template('silica/remote_decide.html', form=form)
+
+@bp.route("/config", methods=('GET',))
+@login_required
+def config():
+    with t.time('render'):
+        return render_template("silica/config.html")

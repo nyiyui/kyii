@@ -10,6 +10,8 @@ from flask import (
     request,
     session,
     flash,
+    url_for,
+    redirect,
 )
 from server_timing import Timing as t
 from sqlalchemy.orm.exc import NoResultFound
@@ -127,18 +129,8 @@ class ULManager:
         app.ul_manager = self
 
     def unauthenticated(self):
-        resp = jsonify(
-            dict(
-                errors=[
-                    dict(
-                        code="unauthenticated",
-                        message="Unauthorized",
-                    )
-                ]
-            )
-        )
-        resp.status_code = 401
-        return resp
+        flash(_("ログインが必要です。"), "warning")
+        return redirect(url_for('silica.login'))
 
     def __get_ul(self, token):
         return UserLogin.query.filter_by(token=token).first()
@@ -188,7 +180,7 @@ class ULManager:
             else:
                 ul = AnonymousUserLogin()
                 _request_ctx_stack.top.airy_ul = ul
-            if ul.revoked:
+            if ul.is_authenticated and ul.revoked:
                 is_api = print(request.path).startswith("/api")
                 if is_api:
                     abort(self.unauthenticated())
@@ -198,5 +190,5 @@ class ULManager:
                     return
             _request_ctx_stack.top.airy_ul = ul
             with t.time("load_ul.see"):
-                if ul.see():
+                if ul.is_authenticated and ul.see():
                     db.session.commit()

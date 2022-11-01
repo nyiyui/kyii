@@ -1,13 +1,15 @@
 :root {
-	--c-bg: #000;
-	--c-fg: #fff;
-	--c-msg: #eee;
-	--c-suc: #cfc;
-	--c-ctn: #ffc;
-	--c-warn: #fac;
-	--c-err: #f4c;
-	--c-1a: #ccf;
-	--c-1b: #fcf;
+	/* colour scheme from https://ethanschoonover.com/solarized/#the-values */
+	--c-bg: #fdf6e3;
+	--c-fg: #586e75;
+	--c-msg: #93a1a1;
+	--c-suc: #859900;
+	--c-ctn: #b58900;
+	--c-warn: #cb4b16;
+	--c-err: #dc322f;
+	--c-1a: #268bd2;
+	--c-1b: #6c71c4;
+	--c-accent: #002b36;
 }
 
 body {
@@ -29,11 +31,11 @@ a:visited {
 	color: var(--c-1b);
 }
 
-.Bmessage { border-color: var(--c-msg) !important; }
-.Bsuccess { border-color: var(--c-suc) !important; }
-.Bcaution { border-color: var(--c-ctn) !important; }
-.Bwarning { border-color: var(--c-warn) !important; }
-.Berror { border-color: var(--c-err) !important; }
+.Bmessage { --c-accent: var(--c-msg) !important; }
+.Bsuccess { --c-accent: var(--c-suc) !important; }
+.Bcaution { --c-accent: var(--c-ctn) !important; }
+.Bwarning { --c-accent: var(--c-warn) !important; }
+.Berror { --c-accent: var(--c-err) !important; }
 
 .Amessage { color: var(--c-msg); }
 .Asuccess { color: var(--c-suc); }
@@ -79,15 +81,25 @@ ol.nodeco, ul.nodeco {
 	padding-left: 0;
 }
 
-input[type="submit"],
-input[type="button"],
+input,
 button {
 	background-color: inherit;
 	color: inherit;
-	border: 0.1rem solid #eee;
+	border: 0.1rem solid var(--c-accent);
 	border-radius: 0.5rem;
 	margin: 0.1rem;
 	padding: 0.1rem 0.3rem;
+	transition: 0.2s;
+}
+
+input[type="text"] {
+	box-shadow: inset 0 0 0.2rem var(--c-accent);
+}
+
+input[type="submit"],
+input[type="button"],
+button {
+	box-shadow: 0 0 0.2rem var(--c-accent);
 }
 
 input[type="submit"]:hover:not(:disabled),
@@ -95,10 +107,10 @@ input[type="button"]:hover:not(:disabled),
 button:hover:not(:disabled) {
 	border-width: 0.15rem;
 	margin: 0.05rem;
+	box-shadow: 0 0 0.3rem var(--c-accent);
 }
 
-input[type="submit"]:disabled,
-input[type="button"]:disabled,
+input:disabled,
 button:disabled {
 	border-style: dashed;
 }

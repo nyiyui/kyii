@@ -15,8 +15,6 @@ class Config:
     WTF_CSRF_HEADERS = ["X-CSRFToken"]
 
     # Yuui
-    KYII_YUUI = True
-    KYII_YUUI_ORIGIN = "https://yuui.kyii.nyiyui.ca"
     AIRY_GENERIC_LIMIT_MAX = 30
 
     # Flask-Admin
@@ -73,8 +71,6 @@ def init_app(app):
 
 REQUIRED_KEYS = [
     "SECRET_KEY",
-    "KYII_YUUI",
-    "KYII_YUUI_ORIGIN",
     "HOST",
     "UPLOAD_PATH",
     "VERIFIER_WEBAUTHN",

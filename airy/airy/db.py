@@ -297,7 +297,7 @@ class AF(db.Model):
     id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
     name = db.Column(db.Unicode(256))
     user_id = db.Column(db.String(32), db.ForeignKey("user.id"), nullable=False)
-    user = db.relationship("User", foreign_keys=[user_id])
+    user = db.relationship("User", backref="af", foreign_keys=[user_id])
     verifier = db.Column(db.String(64), nullable=False)
     params = db.Column(
         JSONType
