@@ -39,10 +39,10 @@
     </nav>
     <div class="container">
       {% with messages = get_flashed_messages(with_categories=true) %}
-      <div id="messages">                                                       
-        {% for category, message in messages %}                                           
+      <div id="messages">
+        {% for category, message in messages %}
           {{ macros.alert(category, message) }}
-        {% endfor %}                                                            
+        {% endfor %}
       </div>
       {% endwith %}
 

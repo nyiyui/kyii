@@ -30,17 +30,15 @@
 {% endmacro %}
 
 {% macro ap(ap) %}
-  <span class="ap">
+  <a href="{{ url_for('silica.config') }}#ap-{{ ap.id }}" class="ap">
     {{ ap.name }}
-    <code>{{ ap.id }}</code>
-  </span>
+  </a>
 {% endmacro %}
 
 {% macro af(af) %}
-  <span class="af">
+  <a href="{{ url_for('silica.config') }}#af-{{ af.id }}" class="af">
     {{ af.name }}
-    <code>{{ af.id }}</code>
-  </span>
+  </a>
 {% endmacro %}
 
 {% macro ul_short(ul) %}

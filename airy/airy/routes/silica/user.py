@@ -290,6 +290,7 @@ def remote_decide():
         token = form.token.data
         remote._remote_decide(token, current_user.id)
         flash(_('トークン%(token)sを承認しました。', token=token))
+        current_user.add_le(LogEntry(renderer="remote", data=dict(token=token)))
         return redirect(url_for('silica.remote_decide'))
     return render_template('silica/remote_decide.html', form=form)
 

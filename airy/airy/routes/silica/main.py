@@ -7,7 +7,7 @@ from flask_babel import lazy_gettext as _l
 from flask_wtf import FlaskForm
 from wtforms import StringField, RadioField
 from wtforms.validators import InputRequired, Length, ValidationError
-from ...db import User, AP, LogEntry, UserLogin
+from ...db import User, AP, AF, LogEntry, UserLogin
 from ...session import API_V1_UID, API_V1_APID, API_V1_SOLVED
 from ...ul import get_extra, current_user
 from .bp import bp
@@ -15,6 +15,13 @@ from .etc import int_or_abort, paginate
 from sqlalchemy.orm.exc import NoResultFound
 
 
+@bp.app_template_filter()
+def get_ap(apid):
+    return AP.query.filter_by(id=apid).first()
+
+@bp.app_template_filter()
+def get_af(afid):
+    return AF.query.filter_by(id=afid).first()
 
 @bp.route("/", methods=("GET",))
 def index():
@@ -50,6 +57,7 @@ class UserLoginFilterForm(FlaskForm):
     sid2 = StringField(_l('セッションID'))
     class Meta:
         csrf = False
+
 @bp.route("/uls", methods=("GET",))
 @paginate
 def uls():
@@ -60,6 +68,7 @@ def uls():
     if form.validate() and form.sid2.data:
         query = query.filter_by(sid2=form.sid2.data)
     return query, per_page, 'silica/uls.html', dict(form=form)
+
 @bp.route("/ul/<uuid:ulid>", methods=("GET",))
 def ul(ulid):
     try:

@@ -34,10 +34,17 @@
 			</td>
 			<td>
 				{% if le.renderer == "login_choose" %}
-					認証パス<code>{{ le.data.apid }}</code>を選びます。
+					認証パス{{ macros.ap(le.data.apid | get_ap) }}を選びます。
+				{% elif le.renderer == "login_attempt" %}
+					認証方法{{ macros.af(le.data.afid | get_af) }}を選びます。
+					{% if le.data.cur_done %}
+						このステップで<strong>ログインしました。</strong>
+					{% endif %}
 				{% elif le.renderer == "login_start" %}
 					{{ le.data.extra.remote }}からログインを開始します。<br />
 					ユーザーエージェント：{{ le.data.extra.headers.key[0] }}
+				{% elif le.renderer == "remote" %}
+					遠隔認証トークン<code>{{ le.data.token }}</code>を承認しました。
 				{% else %}
 					<code>{{ le.data | tojson }}</code>
 				{% endif %}

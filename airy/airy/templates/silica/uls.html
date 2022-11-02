@@ -2,26 +2,53 @@
 {% import "silica/macros.html" as macros %}
 
 {% block content %}
-  <form method="GET" action="?">
-  	{{ form.sid2.label }} {{ form.sid2 }}
-  	<div class="errors">
-  		<ul>
-  			{% for error in form.errors.sid2 %}
-  				<li>{{ error }}</li>
-  			{% endfor %}
-  		</ul>
-  	</div>
-  	<input type="submit" value="{{ _("検索") }}">
-  </form>
-  
-  <ul>
-    {% for item in query.items %}
-      <li>
-        <div class="item">
-          {{ macros.ul_detail(item) }}
-        </div>
-      </li>
-    {% endfor %}
-  </ul>
-  {{ macros.pages(query) }}
+	<form method="GET" action="?">
+		{{ form.sid2.label }} {{ form.sid2 }}
+		<div class="errors">
+			<ul>
+				{% for error in form.errors.sid2 %}
+					<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+		</div>
+		<input type="submit" value="{{ _("検索") }}">
+	</form>
+	<table>
+		<tr>
+			<th>ID</th>
+			<th>{{ _("名前") }}</th>
+			<th>{{ _("開始時刻") }}</th>
+			<th>{{ _("最新アクセス時刻") }}</th>
+			<th>{{ _("終了・持続中") }}</th>
+			<th>{{ _("使用パス") }}</th>
+		</tr>
+		{% for ul in query.items %}
+			<tr>
+				<td>
+					{{ ul.id }}
+				</td>
+				<td>
+					{{ ul.name if ul.name else '' }}
+				</td>
+				<td>
+					{{ ul.start }}
+				</td>
+				<td>
+					{{ ul.last }}
+				</td>
+				<td>
+					{{ _("終了") if ul.end else _("持続中") }}
+				</td>
+				<td>{{ macros.ap(ul.against) }}</td>
+				<td>
+					<form method="post" action="{{ url_for('silica.iori_logout') }}">
+						{{ macros.form_csrf() }}
+						<input type="hidden" name="ulid" value="{{ ul.id }}"/>
+						<input type="submit" value="{{ _('終了') }}" />
+					</form>
+				</td>
+			</tr>
+		{% endfor %}
+	</table>
+	{{ macros.pages(query) }}
 {% endblock %}

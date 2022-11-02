@@ -19,7 +19,7 @@
 				{% endfor %}
 			</tr>
 			{% for ap in current_user.ap %}
-				<tr>
+				<tr id="ap-{{ ap.id }}">
 					<td>{{ ap.id }}</td>
 					<td>
 						<input type="text" name="{{ ap.id }}-name" value="{{ ap.name }}" />
@@ -48,7 +48,7 @@
 			</tr>
 			{% for af in current_user.af %}
 				{% if af.gen_done %}
-					<tr>
+					<tr id="af-{{ af.id }}">
 						<td>{{ af.id }}</td>
 						<td>
 							<input type="text" name="{{ af.id }}-name" value="{{ af.name }}" />
