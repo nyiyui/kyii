@@ -25,6 +25,7 @@
       <a href="{{ url_for('silica.log') }}">{{ _('ログ') }}</a>
       <a href="{{ url_for('silica.uls') }}">{{ _('ログイン') }}</a>
       <a href="{{ url_for('silica.remote_decide') }}">{{ _('遠隔認証') }}</a>
+      <a href="{{ url_for('silica.config') }}">{{ _('設定') }}</a>
       {% if current_user.is_authenticated %}
       <span class="spacer">{{ current_user.name }}</span>
         <a href="{{ url_for('silica.iori') }}">別アカウントにログイン</a>
