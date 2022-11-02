@@ -18,6 +18,7 @@
 	<tr>
 		<th>ログID</th>
 		<th>セッションID</th>
+		<th>時刻</th>
 		<th>型</th>
 		<th>データ</th>
 	</tr>
@@ -28,6 +29,9 @@
 			</td>
 			<td>
 				{{ macros.sid2_with_query(le.sid2) }}
+			</td>
+			<td>
+				{{ le.created }}
 			</td>
 			<td>
 				<code>{{ le.renderer }}</code>

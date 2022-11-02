@@ -1,6 +1,7 @@
 import json
 from flask import redirect, render_template, url_for, session, flash, request, abort
 from flask_cors import CORS
+from collections import defaultdict
 
 from server_timing import Timing as t
 from flask_babel import lazy_gettext as _l
@@ -279,13 +280,13 @@ def user():
     u = User.query.get_or_404(uid)
     return render_template("silica/user.html", user=u)
 
-class RemoteDecideFrom(FlaskForm):
+class RemoteDecideForm(FlaskForm):
     token = StringField(_l('トークン'), validators=[InputRequired(), Length(min=6, max=6)])
 
 @bp.route("/remote_decide", methods=('GET', 'POST'))
 @login_required
 def remote_decide():
-    form = RemoteDecideFrom(token=request.args.get('token'))
+    form = RemoteDecideForm(token=request.args.get('token'))
     if form.validate_on_submit():
         token = form.token.data
         remote._remote_decide(token, current_user.id)
@@ -294,8 +295,75 @@ def remote_decide():
         return redirect(url_for('silica.remote_decide'))
     return render_template('silica/remote_decide.html', form=form)
 
+class ConfigProfileForm(FlaskForm):
+    name = StringField(_l('名前'), validators=[InputRequired(), Length(min=1)])
+    handle = StringField(_l('ハンドル'), validators=[InputRequired(), Length(min=1)])
+
 @bp.route("/config", methods=('GET',))
 @login_required
 def config():
-    with t.time('render'):
-        return render_template("silica/config.html")
+    form = ConfigProfileForm(name=current_user.name, handle=current_user.slug)
+    return render_template("silica/config.html", form=form)
+
+def check_freshness(ap, af):
+    # Check the form is up-to-date, as old form ambiguous as to what happens
+    # with AXs added after form made.
+    if set(ap.keys()) - set(ap.id for ap in current_user.ap) != set():
+        flash(_("フォームが入力中に無効になりました。再度保存してください。"), "error")
+        return redirect(url_for('silica.config'))
+    if set(af.keys()) - set(af.id for af in current_user.af) != set():
+        flash(_("フォームが入力中に無効になりました。再度保存してください。"), "error")
+        return redirect(url_for('silica.config'))
+
+def apply_changes(ap, af):
+    for afid, af in af.items():
+        a = AF.query.filter_by(id=afid)
+        if (b := a.first()) is not None:
+            b.name = af['name']
+        else:
+            db.session.add(AF(name=af['name']))
+    for apid, ap in ap.items():
+        a = AP.query.filter_by(id=apid)
+        reqs = [AF.query.filter_by(id=afid).first() for afid in ap['reqs']]
+        if (b := a.first()) is not None:
+            b.name = ap['name']
+            b.reqs = reqs
+        else:
+            db.session.add(AP(name=ap['name'], reqs=reqs))
+    db.session.commit()
+    flash(_("認証設定を保存しました。"))
+    return redirect(url_for('silica.config'))
+
+@bp.route("/config/ax", methods=('POST',))
+@login_required
+def config_ax():
+    ap = defaultdict(lambda: dict(name='', reqs=[]))
+    af = defaultdict(dict)
+    for key in request.form.keys():
+        tokens = key.split('_')
+        if tokens[0] == 'ap':
+            apid = tokens[1]
+            if tokens[2] == 'name':
+                ap[apid]['name'] = request.form[key]
+            elif tokens[2] == 'req':
+                ap[apid]['reqs'].append(request.form[key])
+        elif tokens[0] == 'af':
+            afid = tokens[1]
+            if tokens[2] == 'name':
+                af[afid]['name'] = request.form[key]
+    ap = dict(ap)
+    af = dict(af)
+    if (s := check_freshness(ap, af)) is not None:
+        return s
+    # NOTE: do AFs first as APs might have integrity issues with noexistent reqs
+    return apply_changes(ap, af)
+
+@bp.route("/config/profile", methods=('POST',))
+@login_required
+def config_profile():
+    form = ConfigProfileForm(name=current_user.name, handle=current_user.slug)
+    if form.validate_on_submit():
+        current_user.name = form.name.data
+        current_user.handle = form.handle.data
+        db.session.commit()
+        return redirect(url_for('silica.config'))

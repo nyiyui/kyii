@@ -85,32 +85,43 @@ input,
 button {
 	background-color: inherit;
 	color: inherit;
-	border: 0.1rem solid var(--c-accent);
+	border: 0.05rem solid var(--c-accent);
 	border-radius: 0.5rem;
-	margin: 0.1rem;
+	margin: 0.2rem;
 	padding: 0.1rem 0.3rem;
 	transition: 0.2s;
 }
 
 input[type="text"] {
 	box-shadow: inset 0 0 0.2rem var(--c-accent);
+	padding: 0.2rem 0.4rem;
 }
 
 input[type="submit"],
 input[type="button"],
 button {
+	border-width: 0.1rem;
 	box-shadow: 0 0 0.2rem var(--c-accent);
 }
 
 input[type="submit"]:hover:not(:disabled),
 input[type="button"]:hover:not(:disabled),
 button:hover:not(:disabled) {
-	border-width: 0.15rem;
-	margin: 0.05rem;
-	box-shadow: 0 0 0.3rem var(--c-accent);
+	box-shadow: 0 0 0.4rem var(--c-accent);
 }
 
 input:disabled,
 button:disabled {
 	border-style: dashed;
+}
+
+table {
+	table-layout: auto;
+	width: 100%;
+}
+
+td input,
+td select {
+	box-sizing: border-box;
+	width: 100%;
 }
