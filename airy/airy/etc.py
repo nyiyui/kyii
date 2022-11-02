@@ -29,7 +29,7 @@ babel = Babel()
 
 @babel.localeselector
 def get_locale():
-    lang = g.lang = request.accept_languages.best_match(current_app.config['LANGUAGES'])
+    lang = g.lang = request.accept_languages.best_match(current_app.config["LANGUAGES"])
     return lang
 
 
@@ -90,12 +90,15 @@ def init_app(app):
     login_manager.init_app(app)
     mail.init_app(app)
     babel.init_app(app)
+
     @app.context_processor
     def utility_processor():
         # this ensures  g.lang is injected before any _ etc call (needed for <html lang="{{ g.lang }}">)
         babel.locale_selector_func()
         return {}
+
     ulm.init_app(app)
+
     @app.context_processor
     def utility_processor():
         # this ensures  g.lang is injected before any _ etc call (needed for <html lang="{{ g.lang }}">)
@@ -103,6 +106,7 @@ def init_app(app):
             current_user=current_user,
             current_ul=current_ul,
         )
+
     cache.init_app(app)
     limiter.init_app(app)
     QRcode(app)

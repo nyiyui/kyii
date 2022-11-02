@@ -130,7 +130,7 @@ class ULManager:
 
     def unauthenticated(self):
         flash(_("ログインが必要です。"), "warning")
-        return redirect(url_for('silica.login'))
+        return redirect(url_for("silica.login"))
 
     def __get_ul(self, token):
         return UserLogin.query.filter_by(token=token).first()
@@ -157,12 +157,16 @@ class ULManager:
                     return
             elif (ulids := session.get(SILICA_ULIDS)) is not None:
                 # For Silica
-                ulid = session.get(SILICA_CURRENT_ULID) or request.args.get(ARG_NAME) or session.get(SILICA_UL_MAP, {}).get(request.args.get(SHORT_NAME))
+                ulid = (
+                    session.get(SILICA_CURRENT_ULID)
+                    or request.args.get(ARG_NAME)
+                    or session.get(SILICA_UL_MAP, {}).get(request.args.get(SHORT_NAME))
+                )
                 if not ulid:
                     ul = AnonymousUserLogin()
                     _request_ctx_stack.top.airy_ul = ul
                 else:
-                    print('ulid', ulid)
+                    print("ulid", ulid)
                     if ulid not in ulids:
                         if SILICA_CURRENT_ULID in session:
                             session[SILICA_CURRENT_ULID] = None

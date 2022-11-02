@@ -40,7 +40,7 @@ def req_perms(perms: Set[str], handler, cond=lambda: True):
     def ret(f):
         @wraps(f)
         def decorated_function(*args, **kwargs):
-            with t.time('req_perms'):
+            with t.time("req_perms"):
                 if cond():
                     ok, reason, missing = has_perms(perms)
                     if not ok:
@@ -56,9 +56,9 @@ def gen_token() -> str:
     return secrets.token_hex(32)
 
 
-
 def flip(d: dict) -> dict:
     return {v: k for k, v in d.items()}
+
 
 class BidirectionalDict(dict):
     pass

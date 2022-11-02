@@ -74,7 +74,7 @@ def handle_csrf_error(error: CSRFError):
             errors=[
                 dict(
                     code="csrf_token_not_found",
-                    message=str(error), # NOTE: very very secure
+                    message=str(error),  # NOTE: very very secure
                 )
             ]
         ),
@@ -243,14 +243,14 @@ def login_stop():
 def login_start():
     slug = request.form["slug"]
     try:
-        with t.time('db'):
+        with t.time("db"):
             u = User.query.filter_by(slug=slug).one()
     except NoResultFound:
         return make_resp(error=dict(code="user_not_found", message="user not found"))
     session[API_V1_UID] = u.id
     session[API_V1_APID] = None
     session[API_V1_SOLVED] = set()
-    with t.time('db'):
+    with t.time("db"):
         aps = AP.query.filter_by(user=u)
         u.add_le(LogEntry(renderer="login_start", data=dict(extra=get_extra())))
     return make_resp(
@@ -267,7 +267,7 @@ def login_choose():
     apid = str(UUID(request.form["apid"]))
     session[API_V1_APID] = apid
     uid = session[API_V1_UID]
-    with t.time('db'):
+    with t.time("db"):
         ap = AP.query.get(apid)
         if ap is None:
             return make_resp(error=dict(code="ap_not_found", message="ap not found"))
@@ -307,7 +307,7 @@ def login_attempt():
 
     uid = session[API_V1_UID]
     try:
-        with t.time('verify'):
+        with t.time("verify"):
             feedback, cur_done = af.verify(attempt, target_id=uid)
     except VerificationError as e:
         return make_resp(
@@ -542,7 +542,7 @@ CONFIG_AX_SCHEMA = {  # TODO: move this to separate file?
 @req_perms(("api_v2.config.ax",), cond=lambda: request.method == "POST")
 def api_config_ax():
     if request.method == "GET":
-        with t.time('db'):
+        with t.time("db"):
             afs = AF.query.filter_by(user=current_user)
             aps = AP.query.filter_by(user=current_user)
             return make_resp(
@@ -552,7 +552,7 @@ def api_config_ax():
                 )
             )
     elif request.method == "POST":
-        with t.time('validate'):
+        with t.time("validate"):
             jsonschema.validate(request.json, CONFIG_AX_SCHEMA)
             # TODO: require solving all AFs?
             warnings = []
@@ -572,7 +572,7 @@ def api_config_ax():
                             data=dict(tafid=tafid),
                         )
 
-        with t.time('db'):
+        with t.time("db"):
             resp = dbify_ax(request.json).json
             if resp["errors"] and len(resp["errors"]) > 0:
                 return resp
@@ -988,10 +988,10 @@ def api_config_id_img():
         tmp_path = os.path.join(upload_path, f"img-tmp/{current_user.id}{ext}")
         dst = os.path.join(upload_path, f"img/{current_user.id}.webp")
         try:
-            with t.time('save'):
+            with t.time("save"):
                 file.save(tmp_path)
             try:
-                with t.time('conv_to_webp'):
+                with t.time("conv_to_webp"):
                     conv_to_webp(tmp_path, dst)
             except Exception:
                 return make_resp(
@@ -1055,14 +1055,14 @@ def oauth_oclient():
 @login_required
 @req_perms(("api_v2.oauth.oclients",))
 def oauth_oclients():
-    print('u', current_user)
-    print('a', OAuth2Client.query.all(), current_user)
-    print('b', OAuth2Client.query.filter_by(user=current_user).all())
+    print("u", current_user)
+    print("a", OAuth2Client.query.all(), current_user)
+    print("b", OAuth2Client.query.filter_by(user=current_user).all())
     oclients = list(
         oclient.for_api_v2
         for oclient in OAuth2Client.query.filter_by(user=current_user)
     )
-    print('oclients', oclients)
+    print("oclients", oclients)
     return make_resp(data=dict(oclients=oclients))
 
 
@@ -1196,7 +1196,7 @@ def generic_get_model(name: str):
 @bp.route("/generic/assign/<name>", methods=("POST",))
 @login_required
 def generic_assign(name: str):
-    with t.time('generic.req_perms'):
+    with t.time("generic.req_perms"):
         ok, reason, missing = has_perms((f"api_v2.generic.seek.{name}",))
         if not ok:
             return perm_handler(list(missing), reason)
@@ -1217,7 +1217,7 @@ def generic_assign(name: str):
 @bp.route("/generic/del/<name>", methods=("POST",))
 @login_required
 def generic_del(name: str):
-    with t.time('generic.req_perms'):
+    with t.time("generic.req_perms"):
         ok, reason, missing = has_perms((f"api_v2.generic.seek.{name}",))
         if not ok:
             return perm_handler(list(missing), reason)
@@ -1236,14 +1236,14 @@ def generic_del(name: str):
 @bp.route("/generic/deref/<name>", methods=("GET",))
 @login_required
 def generic_deref(name: str):
-    with t.time('generic.req_perms'):
+    with t.time("generic.req_perms"):
         ok, reason, missing = has_perms((f"api_v2.generic.seek.{name}",))
         if not ok:
             return perm_handler(list(missing), reason)
     Model = generic_get_model(name)
     ref = request.args["ref"]
     try:
-        with t.time('generic.db'):
+        with t.time("generic.db"):
             single = Model.q(user=current_user).filter_by(id=ref).one()
     except NoResultFound:
         return make_resp(error=dict(code="not_found"))
@@ -1255,7 +1255,7 @@ def generic_deref(name: str):
 @bp.route("/generic/seek/<name>", methods=("GET",))
 @login_required
 def generic_seek(name: str):
-    with t.time('generic.req_perms'):
+    with t.time("generic.req_perms"):
         ok, reason, missing = has_perms((f"api_v2.generic.seek.{name}",))
         if not ok:
             return perm_handler(list(missing), reason)
@@ -1263,7 +1263,7 @@ def generic_seek(name: str):
     direction = request.args["direction"]
     offset = int(request.args["offset"])
     length = int(request.args["length"])
-    with t.time('generic.db'):
+    with t.time("generic.db"):
         q = Model.q(user=current_user, direction=direction)
         if direction not in ("n", "p"):
             return make_resp(error=dict(code="not_p_nor_n")), 400
@@ -1277,7 +1277,7 @@ def generic_seek(name: str):
 @bp.route("/generic/total/<name>", methods=("GET",))
 @login_required
 def generic_total(name: str):
-    with t.time('generic.req_perms'):
+    with t.time("generic.req_perms"):
         ok, reason, missing = has_perms((f"api_v2.generic.seek.{name}",))
         if not ok:
             return perm_handler(list(missing), reason)

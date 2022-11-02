@@ -29,7 +29,9 @@ class AiryModelView(sqla.ModelView):
         return current_user.is_authenticated
 
     def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('silica.login', next=request.path, args=urlencode(request.args)))
+        return redirect(
+            url_for("silica.login", next=request.path, args=urlencode(request.args))
+        )
 
 
 admin = Admin(name="Kyii Airy", index_view=IndexView(), template_mode="bootstrap3")

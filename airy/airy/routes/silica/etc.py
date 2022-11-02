@@ -4,7 +4,7 @@ from flask import request, render_template
 import jinja2
 
 
-__ALL__ = ['int_or_abort', 'paginate']
+__ALL__ = ["int_or_abort", "paginate"]
 
 
 def int_or_abort(s: str) -> int:
@@ -21,10 +21,12 @@ def paginate(f: Callable) -> Callable:
     :param f: the function to wrap; returns (query, per_page, template_name_or_list, context)
     TODO: change f to return a dataclass
     """
+
     @wraps(f)
     def inner():
         page = int_or_abort(request.args.get("page", 1))
         query, per_page, template_name_or_list, context = f()
         query = query.paginate(page, per_page, True)
         return render_template(template_name_or_list, **context, query=query)
+
     return inner
