@@ -17,6 +17,8 @@ body {
 	color: var(--c-fg);
 	font-family: 'Zen Kaku Gothic New', sans-serif;
 	font-weight: 400;
+	margin: 0;
+	padding: 0;
 }
 
 h1 {
@@ -123,4 +125,14 @@ td input,
 td select {
 	box-sizing: border-box;
 	width: 100%;
+}
+
+#nav-header {
+	margin: 0;
+	padding: 0.2rem;
+	box-shadow: 0 0 0.2rem var(--c-accent);
+
+	position: sticky;
+	top: 0;
+	background: var(--c-bg);
 }

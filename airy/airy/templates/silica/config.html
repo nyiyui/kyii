@@ -93,10 +93,10 @@
 			{% endfor %}
 		</table>
 		{{ macros.form_csrf() }}
-		<input type="submit" value="保存" class="Bsuccess" />
+		<input type="submit" value="{{ _('保存') }}" class="Bsuccess" />
 	</form>
 	<hr />
-	<h2>プロフィール</h2>
+	<h2>{{ _("プロフィール") }}</h2>
 	<form action="/config/profile" method="post">
 		<label>
 			ID

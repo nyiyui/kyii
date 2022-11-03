@@ -19,6 +19,7 @@
   </head>
   <body>
     <nav id="nav-global">
+      <!-- TODO: fix global looking weird (box-shadow goes on top too) -->
     </nav>
     <nav id="nav-header">
       <a href="{{ url_for('silica.index') }}">{{ _('きぃい シリカ') }}</a>
@@ -29,7 +30,7 @@
       <a href="{{ url_for('silica.config') }}">{{ _('設定') }}</a>
       <a href="{{ url_for('admin.index') }}">{{ _('管理') }}</a>
       <span class="spacer">{{ current_user.name }}</span>
-        <a href="{{ url_for('silica.iori') }}">別アカウントにログイン</a>
+      <a href="{{ url_for('silica.iori') }}">{{ _("別アカウントにログイン") }}</a>
       {% else %}
         {% if login_doing %}
           <a class="spacer" href="{{ url_for('silica.login_stop') }}">{{ _("ログインを止める") }}</a>

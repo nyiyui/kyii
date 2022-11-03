@@ -425,6 +425,6 @@ def config_profile():
     form = ConfigProfileForm(name=current_user.name, handle=current_user.slug)
     if form.validate_on_submit():
         current_user.name = form.name.data
-        current_user.handle = form.handle.data
+        current_user.slug = form.handle.data
         db.session.commit()
         return redirect(url_for("silica.config"))
