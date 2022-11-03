@@ -4,7 +4,7 @@ from pathlib import Path
 from flask import Flask
 from flask_migrate import Migrate
 
-from . import admin, config, db, etc, routes, seed
+from . import admin, config, db, etc, routes, seed, cli
 from .oauth2 import config_oauth
 from .session import session
 
@@ -29,8 +29,9 @@ def __setup_app(app):
     upload_path = app.config["UPLOAD_PATH"]
     Path(os.path.join(upload_path, "img-tmp")).mkdir(parents=True, exist_ok=True)
     Path(os.path.join(upload_path, "img")).mkdir(parents=True, exist_ok=True)
+    cli.init_app(app)
 
 
+app = create_app()
 if __name__ == "__main__":
-    app = create_app()
     app.run(threaded=True)

@@ -9,7 +9,7 @@ from wtforms import StringField, RadioField
 from wtforms.validators import InputRequired, Length, ValidationError
 from ...db import User, AP, AF, LogEntry, UserLogin
 from ...session import API_V1_UID, API_V1_APID, API_V1_SOLVED
-from ...ul import get_extra, current_user
+from ...ul import get_extra, current_user, login_required
 from .bp import bp
 from .etc import int_or_abort, paginate
 from sqlalchemy.orm.exc import NoResultFound
@@ -48,6 +48,7 @@ class LogFilterForm(FlaskForm):
 
 
 @bp.route("/log", methods=("GET",))
+@login_required
 def log():
     form = LogFilterForm(
         formdata=request.args if request.args.get("sid2") else None

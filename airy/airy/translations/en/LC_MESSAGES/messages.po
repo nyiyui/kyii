@@ -1,17 +1,18 @@
-# Translations template for PROJECT.
+# English translations for PROJECT.
 # Copyright (C) 2022 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2022.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2022-11-03 02:29-0400\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2022-11-03 02:29-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,7 +20,7 @@ msgstr ""
 
 #: airy/ul.py:132
 msgid "ログインが必要です。"
-msgstr ""
+msgstr "Login required."
 
 #: airy/ul.py:173
 msgid "不正（セッションデータに無い）なログインIDが指定されたので、初期化しました。"
@@ -31,33 +32,33 @@ msgstr ""
 
 #: airy/routes/silica/main.py:44 airy/routes/silica/main.py:66
 msgid "セッションID"
-msgstr ""
+msgstr "Session ID"
 
 #: airy/routes/silica/user.py:75
 msgid "認証パス"
-msgstr ""
+msgstr "AP"
 
 #: airy/routes/silica/user.py:98
 #, python-format
 msgid "全ての認証が完了しました。%(name)sとしてログインしました。"
-msgstr ""
+msgstr "All AFs cleared. Logged in as %(name)s."
 
 #: airy/routes/silica/user.py:126 airy/templates/silica/config.html:62
 msgid "パスワード"
-msgstr ""
+msgstr "Password"
 
 #: airy/routes/silica/user.py:134
 msgid "コード"
-msgstr ""
+msgstr "Code"
 
 #: airy/routes/silica/user.py:161
 msgid "認証要素IDが存在していないのに参照しています。"
-msgstr ""
+msgstr "Nonexistent AF."
 
 #: airy/routes/silica/user.py:165
 #, python-format
 msgid "「%(af_name)s」認証要素は既に解決されています。"
-msgstr ""
+msgstr "AF %(af_name)s already solved."
 
 #: airy/routes/silica/user.py:176
 #, python-format
@@ -116,16 +117,16 @@ msgstr ""
 
 #: airy/templates/silica/base.html:13
 msgid "シリカ"
-msgstr ""
+msgstr "Silica"
 
 #: airy/templates/silica/base.html:24
 msgid "きぃい シリカ"
-msgstr ""
+msgstr "Silica"
 
 #: airy/templates/silica/base.html:25 airy/templates/silica/log.html:4
 #: airy/templates/silica/macros.html:28
 msgid "ログ"
-msgstr ""
+msgstr "Log"
 
 #: airy/templates/silica/base.html:26 airy/templates/silica/macros.html:27
 #: airy/templates/silica/uls.html:4
@@ -134,19 +135,19 @@ msgstr ""
 
 #: airy/templates/silica/base.html:27 airy/templates/silica/config.html:66
 msgid "遠隔認証"
-msgstr ""
+msgstr "Remote"
 
 #: airy/templates/silica/base.html:28
 msgid "設定"
-msgstr ""
+msgstr "Config"
 
 #: airy/templates/silica/base.html:29
 msgid "管理"
-msgstr ""
+msgstr "Admin"
 
 #: airy/templates/silica/base.html:35 airy/templates/silica/login/stop.html:11
 msgid "ログインを止める"
-msgstr ""
+msgstr "Stop Logging In"
 
 #: airy/templates/silica/base.html:37
 msgid "ログイン一覧"
@@ -154,41 +155,41 @@ msgstr ""
 
 #: airy/templates/silica/base.html:39
 msgid "新規登録"
-msgstr ""
+msgstr "Signup"
 
 #: airy/templates/silica/config.html:63
 msgid "TOTP"
-msgstr ""
+msgstr "TOTP"
 
 #: airy/templates/silica/config.html:64
 msgid "WebAuthn"
-msgstr ""
+msgstr "WebAuthn"
 
 #: airy/templates/silica/config.html:65
 msgid "回数制限"
-msgstr ""
+msgstr "Limited"
 
 #: airy/templates/silica/config.html:74
 msgid "※Django PBKDF2/SHA256対応"
-msgstr ""
+msgstr "Django PBKDF2/SHA256 compatible"
 
 #: airy/templates/silica/config.html:77
 #, python-format
 msgid "%(limit)sまで"
-msgstr ""
+msgstr "Until %(limit)s"
 
 #: airy/templates/silica/config.html:82
 #, python-format
 msgid "%(used)s回使用"
-msgstr ""
+msgstr "Used %(used)s"
 
 #: airy/templates/silica/config.html:115 airy/templates/silica/macros.html:58
 msgid "保存"
-msgstr ""
+msgstr "Save"
 
 #: airy/templates/silica/index.html:7
 msgid "以下のユーザーとしてログインしています。"
-msgstr ""
+msgstr "Logged in as:"
 
 #: airy/templates/silica/iori.html:4
 msgid "アカウント選択"
@@ -200,19 +201,19 @@ msgstr ""
 
 #: airy/templates/silica/log.html:16 airy/templates/silica/uls.html:16
 msgid "検索"
-msgstr ""
+msgstr "Query"
 
 #: airy/templates/silica/log.html:62 airy/templates/silica/macros.html:134
 msgid "ページ"
-msgstr ""
+msgstr "Page"
 
 #: airy/templates/silica/log.html:64 airy/templates/silica/macros.html:136
 msgid "前"
-msgstr ""
+msgstr "Prev"
 
 #: airy/templates/silica/log.html:76 airy/templates/silica/macros.html:148
 msgid "次"
-msgstr ""
+msgstr "Next"
 
 #: airy/templates/silica/macros.html:10
 #, python-format

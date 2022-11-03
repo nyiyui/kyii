@@ -1,6 +1,8 @@
 {% extends "silica/base.html" %}
 {% import "silica/macros.html" as macros %}
 
+{% block title %}{{ _("ログ") }}{% endblock %}
+
 {% block content %}
 <form method="GET" action="?">
 	{{ form.sid2.label }} {{ form.sid2 }}
@@ -31,7 +33,7 @@
 				{{ macros.sid2_with_query(le.sid2) }}
 			</td>
 			<td>
-				{{ le.created }}
+				{{ macros.time(le.created) }}
 			</td>
 			<td>
 				<code>{{ le.renderer }}</code>

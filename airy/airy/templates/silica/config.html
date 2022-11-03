@@ -1,10 +1,12 @@
 {% extends "silica/base.html" %}
 {% import "silica/macros.html" as macros %}
 
+{% block title %}設定{% endblock %}
+
 {% block content %}
-	<h2>認証設定</h2>
+	<h2>{{ _("認証設定") }}</h2>
 	<form action="/config/ax" method="post">
-		<h3>認証パス</h3>
+		<h3>{{ _("認証パス") }}</h3>
 		<table id="ap">
 			<tr>
 				<th rowspan="2">ID</th>
@@ -37,7 +39,7 @@
 				</tr>
 			{% endfor %}
 		</table>
-		<h3>認証方法</h3>
+		<h3>{{ _("認証方法") }}</h3>
 		<table id="af">
 			<tr>
 				<th>ID</th>

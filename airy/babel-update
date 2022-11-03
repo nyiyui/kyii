@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -eux
+
+pybabel extract -F ./babel.cfg -k _l -o messages.pot .
+pybabel init -i messages.pot -d airy/translations -l en

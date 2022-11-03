@@ -1,5 +1,7 @@
 {% extends "silica/base.html" %}
 
+{% block title %}{{ _("遠隔認証トークン承認") }}{% endblock %}
+
 {% block content %}
 <form method="POST" action="">
 	{{ form.hidden_tag() }}

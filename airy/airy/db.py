@@ -14,6 +14,7 @@ from flask import session
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_utils import EmailType  # TODO: use UUIDType
 from sqlalchemy_utils import JSONType
+import sqlalchemy
 
 db = SQLAlchemy()
 
@@ -489,6 +490,8 @@ class LogEntry(db.Model):
 
     @classmethod
     def q(cls, user: User, direction: str = "n"):
+        if user.is_anonymous:
+            return cls.query.filter(sqlalchemy.sql.false())
         return cls.query.filter_by(user=user).order_by(
             cls.created if direction == "p" else cls.created.desc()
         )

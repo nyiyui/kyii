@@ -100,7 +100,6 @@ input[type="text"] {
 input[type="submit"],
 input[type="button"],
 button {
-	border-width: 0.1rem;
 	box-shadow: 0 0 0.2rem var(--c-accent);
 }
 

@@ -1,6 +1,8 @@
 {% extends "silica/base.html" %}
 {% import "silica/macros.html" as macros %}
 
+{% block title %}{{ _("ログイン") }}{% endblock %}
+
 {% block content %}
 	<form method="GET" action="?">
 		{{ form.sid2.label }} {{ form.sid2 }}
@@ -34,10 +36,14 @@
 					{{ ul.start }}
 				</td>
 				<td>
-					{{ ul.last }}
+					{{ ul.last if ul.last else _("無し") }}
 				</td>
 				<td>
-					{{ _("終了") if ul.end else _("持続中") }}
+					{% if ul.end %}
+						<span class="Asuccess">終了</span>
+					{% else %}
+						<span class="Awarning">持続中</span>
+					{% endif %}
 				</td>
 				<td>{{ macros.ap(ul.against) }}</td>
 				<td>

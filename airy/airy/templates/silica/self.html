@@ -1,6 +1,8 @@
 {% extends "silica/base.html" %}
 {% import "silica/macros.html" as macros %}
 
+{% block title %}{{ _("自分") }}{% endblock %}
+
 {% block content %}
 {{ macros.user(current_user) }}
 {% endblock %}
