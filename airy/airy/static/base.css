@@ -140,3 +140,7 @@ td select {
 	top: 0;
 	background: var(--c-bg);
 }
+
+.container {
+	padding: 8px;
+}
