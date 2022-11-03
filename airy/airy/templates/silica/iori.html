@@ -4,12 +4,40 @@
 {% block title %}{{ _("アカウント選択") }}{% endblock %}
 
 {% block content %}
-<ul class="nodeco">
-  {% for ul in uls %}
-    <li>
-      {{ macros.ul(ul, current, ul_map_flipped) }}
-    </li>
-  {% endfor %}
-</ul>
 <a href="{{ url_for('silica.login') }}">{{ _('新たにログインする') }}</a>
+<table>
+	<tr>
+		<th>{{ _("ID") }}</th>
+		<th>{{ _("名前") }}</th>
+		<th>{{ _("ユーザー") }}</th>
+		<th>{{ _("する") }}</th>
+	</tr>
+  {% for ul in uls %}
+		<tr>
+			<td>{{ ul.id }}</td>
+			<td>
+        {% if ul.name %}
+          {{ ul.name }}
+        {% else %}
+          <em>{{ _('未設定') }}</em>
+        {% endif %}
+			</td>
+			<td>
+				{{ macros.user_short(ul.user) }}
+			</td>
+			<td class="flex Frow Fpad">
+				<form class="spacer" method="post" action="{{ url_for('silica.iori_choose') }}">
+				{{ macros.form_csrf() }}
+				<input type="hidden" name="ulid" value="{{ ul.id }}"/>
+				<input type="submit" value="{{ _('使用') }}"{% if current == ul.id %} disabled{% endif %} />
+				</form>
+				<form method="post" action="{{ url_for('silica.iori_logout') }}">
+				{{ macros.form_csrf() }}
+				<input type="hidden" name="ulid" value="{{ ul.id }}"/>
+				<input class="Bcaution" type="submit" value="{{ _('ログアウト') }}" />
+				</form>
+			<td>
+		</tr>
+  {% endfor %}
+</table>
 {% endblock %}

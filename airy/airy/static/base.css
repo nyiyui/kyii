@@ -66,6 +66,10 @@ nav * {
 	flex-direction: column;
 }
 
+.Fpad > * {
+	margin: 4px;
+}
+
 .qr {
 	padding: 1rem;
 	background-color: #fff;
