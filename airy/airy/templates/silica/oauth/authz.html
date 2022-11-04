@@ -1,0 +1,25 @@
+{% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block content %}
+	<p>
+		{{ grant.client.client_metadata.client_name }}
+		{{ _("があなたのアカウントへのアクセスを求めています。") }}
+	</p>
+	<form method="post">
+		{{ _("次の権限を与えますか？") }}
+		<ul>
+			{% for scope in grant.request.args.scope.split() %}
+				<li>
+					<label>
+						<input type="checkbox" name="scope_{{ scope }}" checked />
+						{{ scope }}
+					</label>
+				</li>
+			{% endfor %}
+		</ul>
+		{{ macros.form_csrf() }}
+		<input type="submit" name="action_allow" value="{{ _("許可") }}" />
+		<input type="submit" name="action_deny" value="{{ _("拒否") }}" />
+	</form>
+{% endblock %}

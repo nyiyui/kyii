@@ -24,11 +24,11 @@ msgstr "Login required."
 
 #: airy/ul.py:173
 msgid "不正（セッションデータに無い）なログインIDが指定されたので、初期化しました。"
-msgstr ""
+msgstr "Reset session because I received an invalid (not in session data) login ID."
 
 #: airy/ul.py:181
 msgid "不正（データベースに無い）なログインIDが指定されたので、初期化しました。"
-msgstr ""
+msgstr "Reset session because I received an invalid (not in database) login ID."
 
 #: airy/routes/silica/main.py:44 airy/routes/silica/main.py:67
 msgid "セッションID"
@@ -72,15 +72,15 @@ msgstr "Solved AF %(af_name)s"
 
 #: airy/routes/silica/user.py:223
 msgid "未知の認証要素の認証方法です。どうしよう…"
-msgstr ""
+msgstr "Hmm. I don't know what this verifier is…"
 
 #: airy/routes/silica/user.py:290
 msgid "現ログインをログアウトしました。"
-msgstr ""
+msgstr "Logged out of current login."
 
 #: airy/routes/silica/user.py:292
 msgid "他ログインをログアウトしました。"
-msgstr ""
+msgstr "Logged out of non-current login."
 
 #: airy/routes/silica/user.py:338
 msgid "トークン"
@@ -156,12 +156,12 @@ msgstr "Stop Logging In"
 
 #: airy/templates/silica/base.html:38
 msgid "伊織"
-msgstr ""
+msgstr "Iori"
 
 #: airy/templates/silica/base.html:40 airy/templates/silica/macros.html:27
 #: airy/templates/silica/uls.html:4
 msgid "ログイン"
-msgstr ""
+msgstr "Login"
 
 #: airy/templates/silica/base.html:43
 msgid "新規登録"
@@ -216,11 +216,11 @@ msgstr "Logged in as:"
 
 #: airy/templates/silica/iori.html:4
 msgid "アカウント選択"
-msgstr ""
+msgstr "Select"
 
 #: airy/templates/silica/iori.html:14
 msgid "新たにログインする"
-msgstr ""
+msgstr "New Login"
 
 #: airy/templates/silica/log.html:16 airy/templates/silica/uls.html:16
 msgid "検索"
@@ -305,35 +305,35 @@ msgstr ""
 
 #: airy/templates/silica/macros.html:156
 msgid "メッセージ"
-msgstr ""
+msgstr "Message"
 
 #: airy/templates/silica/macros.html:159
 msgid "成功"
-msgstr ""
+msgstr "Success"
 
 #: airy/templates/silica/macros.html:162
 msgid "注意"
-msgstr ""
+msgstr "Warning"
 
 #: airy/templates/silica/macros.html:165
 msgid "警告"
-msgstr ""
+msgstr "Caution"
 
 #: airy/templates/silica/macros.html:168
 msgid "エラー"
-msgstr ""
+msgstr "Error"
 
 #: airy/templates/silica/remote_decide.html:3
 msgid "遠隔認証トークン承認"
-msgstr ""
+msgstr "Remote Token Authorization"
 
 #: airy/templates/silica/remote_decide.html:9
 msgid "承認"
-msgstr ""
+msgstr "Authorize"
 
 #: airy/templates/silica/self.html:4
 msgid "自分"
-msgstr ""
+msgstr "Me"
 
 #: airy/templates/silica/ui_test.html:4
 msgid "UIテスト"
@@ -345,19 +345,19 @@ msgstr ""
 
 #: airy/templates/silica/uls.html:23
 msgid "最新アクセス時刻"
-msgstr ""
+msgstr "Last Access Time"
 
 #: airy/templates/silica/uls.html:24
 msgid "終了・持続中"
-msgstr ""
+msgstr "Ended / Current"
 
 #: airy/templates/silica/uls.html:25
 msgid "使用パス"
-msgstr ""
+msgstr "Used AP"
 
 #: airy/templates/silica/uls.html:39
 msgid "無し"
-msgstr ""
+msgstr "None"
 
 #: airy/templates/silica/login/attempt_remote.html:9
 #: airy/templates/silica/login/attempt_single.html:4
@@ -366,23 +366,23 @@ msgstr ""
 #: airy/templates/silica/login/stop.html:5
 #, python-format
 msgid "「%(user)s」に認証パス「%(ap_name)s」でログインしようとしています。"
-msgstr ""
+msgstr "Logging into user %(user)s with AP %(ap_name)s."
 
 #: airy/templates/silica/login/attempt_remote.html:10
 #: airy/templates/silica/login/attempt_single.html:5
 #: airy/templates/silica/login/attempt_webauthn.html:9
 #, python-format
 msgid "認証要素「%(af_name)s」を解いて下さい。"
-msgstr ""
+msgstr "Solve AF %(af_name)s."
 
 #: airy/templates/silica/login/attempt_remote.html:13
 #, python-format
 msgid "承認を%(timeout)s秒以内に行ってください。"
-msgstr ""
+msgstr "Authorize within %(timeout)s second(s)."
 
 #: airy/templates/silica/login/attempt_remote.html:14
 msgid "承認を行ったら自動的に更新されます。（JavaScript必須）"
-msgstr ""
+msgstr "Once authorized, you will be automatically redirected (requires JavaScript)."
 
 #: airy/templates/silica/login/attempt_remote.html:17
 msgid "QRコード"
@@ -390,35 +390,35 @@ msgstr "QR Code"
 
 #: airy/templates/silica/login/attempt_remote.html:18
 msgid "下記のQRコードをスキャンして「許可」のボタンを押して下さい。"
-msgstr ""
+msgstr "Scan the below QR code and press the Allow button."
 
 #: airy/templates/silica/login/attempt_remote.html:20
 msgid "同等リンク"
-msgstr ""
+msgstr "Link"
 
 #: airy/templates/silica/login/attempt_remote.html:23
 msgid "手動"
-msgstr ""
+msgstr "Manual"
 
 #: airy/templates/silica/login/attempt_remote.html:30
 msgid "トークン："
-msgstr ""
+msgstr "Token: "
 
 #: airy/templates/silica/login/attempt_remote.html:35
 msgid "※トークンを再生成するには、このページを再読み込みして下さい。"
-msgstr ""
+msgstr "Reload to regenerate token."
 
 #: airy/templates/silica/login/attempt_remote.html:38
 msgid "※認証がタイムアウトしました。"
-msgstr ""
+msgstr "Timed out."
 
 #: airy/templates/silica/login/attempt_remote.html:41
 msgid "※認証が承認されました。"
-msgstr ""
+msgstr "Authorized."
 
 #: airy/templates/silica/login/attempt_remote.html:44
 msgid "進む"
-msgstr ""
+msgstr "Next"
 
 #: airy/templates/silica/login/attempt_single.html:10
 #: airy/templates/silica/login/attempt_webauthn.html:14
@@ -453,5 +453,5 @@ msgstr "Solve"
 
 #: airy/templates/silica/login/start.html:14
 msgid "アカウントを選ぶ"
-msgstr ""
+msgstr "Continue"
 

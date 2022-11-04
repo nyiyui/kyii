@@ -21,7 +21,7 @@ from ...session import (
 )
 from ...util import flip
 from ...ul import get_extra, login_user, current_user, login_required
-from ...verifiers import VerificationError, remote
+from ...verifiers import VerificationError, remote, VERIFIER_NAMES
 from .bp import bp
 
 
@@ -428,3 +428,8 @@ def config_profile():
         current_user.slug = form.handle.data
         db.session.commit()
         return redirect(url_for("silica.config"))
+
+
+@bp.context_processor
+def verifier_names():
+    return VERIFIER_NAMES

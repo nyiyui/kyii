@@ -4,8 +4,10 @@ from urllib.parse import urlencode, urljoin
 
 from authlib.integrations.flask_oauth2 import current_token
 from authlib.jose import JsonWebKey, KeySet
-from flask import Blueprint, current_app, jsonify, redirect, request, session, url_for
+from authlib.oauth2 import OAuth2Error
+from flask import Blueprint, current_app, jsonify, redirect, request, session, url_for, render_template
 from flask_cors import CORS
+from werkzeug.datastructures import ImmutableMultiDict
 
 from ..etc import csrf
 from ..oauth2 import authorization, generate_user_info, require_oauth
@@ -34,24 +36,17 @@ def oauth_authorize():
     for key in KEYS:
         if key in request.args:
             args[key] = request.args[key]
-    base = urljoin(current_app.config["KYII_YUUI_ORIGIN"], "/authz")
-    azrqid = uuid.uuid4()
-    # SECURITY: azrqids are not for security (normal sessions are used for that),
-    #           but for disambiguating between simultaneous azrqs. (Therefore,
-    #           using UUIDs which are not supposed to be infeasible to guess should
-    #           be fine.)
-    session[f"azrq-{azrqid}"] = dict(args=args)
-    query = urlencode(dict(azrqid=azrqid))
-    return redirect(f"{base}?{query}")
+    try:
+        grant = authorization.get_consent_grant(end_user=current_user)
+    except OAuth2Error as error:
+        return render_template("silica/oauth/error.html",
+                               step="get_consent_grant", error=dict(error.get_body()))
+    return render_template("silica/oauth/authz.html", args=args, grant=grant)
 
 
 @bp.route("/oauth/authorize", methods=("POST",))
 @login_required
 def oauth_authorize_post():
-    if "azrqid" not in request.args:
-        return "azrqid required", 400
-    azrqid = request.args["azrqid"]
-    del session[f"azrq-{azrqid}"]
     # SAFETY: If action_allow and action_deny are both present, default to deny.
     if "action_deny" in request.form:
         grant_user = None
@@ -59,7 +54,13 @@ def oauth_authorize_post():
         grant_user = current_user
     else:
         return "invalid choice", 400
-    return authorization.create_authorization_response(grant_user=grant_user)
+    scopes = [key[6:] for key in filter(lambda key: key.startswith('scope_'), request.form.keys())]
+    r = request
+    r.args = ImmutableMultiDict({
+        **request.args,
+        "scope": " ".join(scopes),
+    })
+    return authorization.create_authorization_response(request=r, grant_user=grant_user)
 
 
 @bp.route("/oauth/token", methods=("POST",))

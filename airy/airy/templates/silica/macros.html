@@ -22,7 +22,7 @@
 
 {% macro sid2_with_query(sid2) %}
   <span class="sid2">
-    <code>{{ sid2 }}</code>
+    <code>{{ sid2[:7] }}</code>
 		<br />
     （<a href="{{ url_for('silica.uls', sid2=sid2) }}">{{ _('ログイン') }}</a>）
     （<a href="{{ url_for('silica.log', sid2=sid2) }}">{{ _('ログ') }}</a>）

@@ -1,6 +1,7 @@
 import base64
 from typing import Any, Dict, Optional, Tuple
 
+from flask_babel import lazy_gettext as _l
 import nacl.pwhash
 from nacl.exceptions import InvalidkeyError
 from passlib.hash import django_pbkdf2_sha256
@@ -129,6 +130,14 @@ VERIFIERS: Dict[str, Any] = {
     "webauthn": webauthn,
     "limited": Limited,
     "remote": remote,
+}
+
+VERIFIER_NAMES: Dict[str, str] = {
+    "pw": _l("パスワード"),
+    "otp_totp": _l("TOTP"),
+    "webauthn": _l("WebAuthn"),
+    "limited": _l("回数制限"),
+    "remote": _l("遠隔承認"),
 }
 
 

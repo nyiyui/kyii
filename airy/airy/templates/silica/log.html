@@ -21,7 +21,6 @@
 		<th>ログID</th>
 		<th>セッションID</th>
 		<th>時刻</th>
-		<th>型</th>
 		<th>データ</th>
 	</tr>
 	{% for le in les.items %}
@@ -34,9 +33,6 @@
 			</td>
 			<td>
 				{{ macros.time(le.created) }}
-			</td>
-			<td>
-				<code>{{ le.renderer }}</code>
 			</td>
 			<td>
 				{% if le.renderer == "login_choose" %}
