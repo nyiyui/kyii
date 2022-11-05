@@ -49,18 +49,17 @@ class LogFilterForm(FlaskForm):
 
 @bp.route("/log", methods=("GET",))
 @login_required
+@paginate
 def log():
     form = LogFilterForm(
         formdata=request.args if request.args.get("sid2") else None
     )  # safe because this doesn't edit data
-    page = int_or_abort(request.args.get("page", 1))
     per_page = 20
     with t.time("db"):
         les = LogEntry.q(current_user, "n")
         if form.validate() and form.sid2.data:
             les = les.filter_by(sid2=form.sid2.data)
-        les = les.paginate(page, per_page, True)
-    return render_template("silica/log.html", les=les, form=form)
+    return les, per_page, "silica/log.html", dict(form=form)
 
 
 class UserLoginFilterForm(FlaskForm):

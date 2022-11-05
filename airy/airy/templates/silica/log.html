@@ -23,7 +23,7 @@
 		<th>時刻</th>
 		<th>データ</th>
 	</tr>
-	{% for le in les.items %}
+	{% for le in query.items %}
 		<tr>
 			<td>
 				{{ le.id }}
@@ -58,20 +58,5 @@
 	{% endfor %}
 </table>
 
-{{ _('ページ') }}
-{% if les.prev_num %}
-  <a href="?page={{ les.prev_num }}">{{ _('前') }}</a>
-{% endif %}
-{% for page in les.iter_pages() %}
-  {% if page == les.page %}
-    <span>{{ page }}</span>
-  {% elif page == None %}
-    …
-  {% else %}
-    <a href="?page={{ page }}">{{ page }}</a>
-  {% endif %}
-{% endfor %}
-{% if les.next_num %}
-  <a href="?page={{ les.next_num }}">{{ _('次') }}</a>
-{% endif %}
+{{ macros.pages(query) }}
 {% endblock %}

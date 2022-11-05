@@ -118,6 +118,7 @@ button:hover:not(:disabled) {
 input:disabled,
 button:disabled {
 	border-style: dashed;
+	border-width: 0.03rem;
 	box-shadow: 0 0 0.1rem var(--c-accent);
 }
 

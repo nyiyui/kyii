@@ -1,6 +1,6 @@
 from functools import wraps
 from typing import Callable, Any, Union, List
-from flask import request, render_template
+from flask import abort, request, render_template
 import jinja2
 
 
@@ -26,7 +26,7 @@ def paginate(f: Callable) -> Callable:
     def inner():
         page = int_or_abort(request.args.get("page", 1))
         query, per_page, template_name_or_list, context = f()
-        query = query.paginate(page, per_page, True)
+        query = query.paginate(page=page, per_page=per_page)
         return render_template(template_name_or_list, **context, query=query)
 
     return inner
