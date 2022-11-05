@@ -174,3 +174,10 @@
 {% macro time(t) %}
   {{ t }}
 {% endmacro %}
+
+{% macro generic_profile(img, name) %}
+  <span class="profile">
+    <img src="{{ img }}" />
+    {{ name }}
+  </span>
+{% endmacro %}

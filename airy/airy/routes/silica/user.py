@@ -44,7 +44,7 @@ def login():
 
 
 class LoginStartForm(FlaskForm):
-    slug = StringField("ハンドルネーム", validators=[InputRequired(), Length(min=1, max=128)])
+    slug = StringField(_l("ハンドル"), validators=[InputRequired(), Length(min=1, max=128)])
 
     def validate_slug(form, field):
         if not User.query.filter_by(slug=field.data, is_active=True).count():
@@ -53,13 +53,18 @@ class LoginStartForm(FlaskForm):
 
 @bp.route("/login/choose", methods=("GET", "POST"))
 def login_choose():
-    form = LoginChooseForm()
     if API_V1_UID not in session:
         raise RuntimeError("start login first")  # TODO: nicer UX
+    form = LoginChooseForm()
     with t.time("db"):
         u = User.query.get(session[API_V1_UID])
-        aps = AP.query.filter_by(user=u)
+        aps = list(AP.query.filter_by(user=u))
         u.add_le(LogEntry(renderer="login_start", data=dict(extra=get_extra())))
+    if len(aps) == 1:
+        ap = aps[0]
+        session[API_V1_APID] = ap.id
+        session[API_V1_SOLVED] = set()
+        return redirect(url_for("silica.login_list"))
     if API_V1_APID in session and API_V1_APID not in session:
         return redirect(url_for("silica.login_list"))
     form.apid.choices = [(ap.id, ap.name) for ap in aps]
@@ -301,7 +306,7 @@ def iori_rename():
     ulid = request.form["ulid"]
     name = request.form["name"]
     ul = UserLogin.query.get(ulid)
-    if ul.user != current_user:
+    if ulid not in session[SILICA_ULIDS]:
         abort(403)
         return
     ul.name = name

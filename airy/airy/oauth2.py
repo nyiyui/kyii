@@ -2,6 +2,7 @@
 oauth2.py implements OAuth 2- and OpenID Connect-related functionality.
 """
 
+from dataclasses import dataclass
 from pathlib import Path
 
 from authlib.integrations.flask_oauth2 import AuthorizationServer, ResourceProtector
@@ -24,6 +25,7 @@ from authlib.oidc.core.grants import OpenIDCode as _OpenIDCode
 from authlib.oidc.core.grants import OpenIDHybridGrant as _OpenIDHybridGrant
 from authlib.oidc.core.grants import OpenIDImplicitGrant as _OpenIDImplicitGrant
 from flask import current_app
+from flask_babel import lazy_gettext as _l
 from werkzeug.security import gen_salt
 
 from .db import OAuth2AuthorizationCode, OAuth2Client, OAuth2Token, User, db
@@ -154,6 +156,30 @@ def get_jwt_config():
     )
 
 
+@dataclass
+class Scope:
+    name: str
+    desc: str
+
+
+SCOPES = {
+    "openid": Scope(
+        _l("OpenID Connect"),
+        _l("OIDCを使用できます。"),
+    ),
+    "profile": Scope(
+        _l("プロフィール"),
+        _l("プロフィール画像や名前等"),
+    ),
+    "email": Scope(
+        _l("Eメール"),
+        _l("メルアドとそれの確認状態"),
+    ),
+}
+
+def scope_info_filter(scope: str) -> Scope:
+    return SCOPES.get(scope)
+
 def config_oauth(app):
     query_client = create_query_client_func(db.session, OAuth2Client)
     save_token = create_save_token_func(db.session, OAuth2Token)
@@ -180,3 +206,5 @@ def config_oauth(app):
     # protect resource
     bearer_cls = create_bearer_token_validator(db.session, OAuth2Token)
     require_oauth.register_token_validator(bearer_cls())
+
+    app.jinja_env.filters['scope_info'] = scope_info_filter

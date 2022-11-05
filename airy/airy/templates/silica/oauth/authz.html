@@ -3,8 +3,7 @@
 
 {% block content %}
 	<p>
-		{{ grant.client.client_metadata.client_name }}
-		{{ _("があなたのアカウントへのアクセスを求めています。") }}
+		{{ _("%(client)sがあなたの%(name)sアカウントへのアクセスを求めています。", client=grant.client.client_metadata.client_name, name=current_user.name) }}
 	</p>
 	<form method="post">
 		{{ _("次の権限を与えますか？") }}
@@ -13,7 +12,12 @@
 				<li>
 					<label>
 						<input type="checkbox" name="scope_{{ scope }}" checked />
-						{{ scope }}
+						<details style="display: inline;">
+							<summary>
+								{{ (scope|scope_info).name }}
+							</summary>
+							{{ (scope|scope_info).desc }}
+						</details>
 					</label>
 				</li>
 			{% endfor %}

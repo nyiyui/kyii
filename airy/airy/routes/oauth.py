@@ -22,6 +22,7 @@ def init_app(app):
 
 
 @bp.route("/oauth/authorize", methods=("GET",))
+@login_required
 def oauth_authorize():
     KEYS = [
         "response_type",

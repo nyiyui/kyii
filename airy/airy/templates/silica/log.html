@@ -36,17 +36,20 @@
 			</td>
 			<td>
 				{% if le.renderer == "login_choose" %}
-					認証パス{{ macros.ap(le.data.apid | get_ap) }}を選びます。
+					{{ _("認証パス%(ap)sを選びます。", ap=macros.ap(le.data.apid | get_ap)) }}
 				{% elif le.renderer == "login_attempt" %}
-					認証方法{{ macros.af(le.data.afid | get_af) }}を選びます。
+					{{ _("認証方法%(af)sを選びます。", af=macros.af(le.data.afid | get_af)) }}
 					{% if le.data.cur_done %}
-						このステップで<strong>ログインしました。</strong>
+						{{ _("このステップで<strong>ログインしました。</strong>") }}
 					{% endif %}
 				{% elif le.renderer == "login_start" %}
-					{{ le.data.extra.remote }}からログインを開始します。<br />
-					ユーザーエージェント：{{ le.data.extra.headers.key[0] }}
+					{{ _("%(remote)sからログインを開始します。", remote=le.data.extra.remote) }}
+					<details>
+						<summary>{{ _("ユーザーエージェント") }}</summary>
+						{{ le.data.extra.headers.key[0] }}
+					</details>
 				{% elif le.renderer == "remote" %}
-					遠隔認証トークン<code>{{ le.data.token }}</code>を承認しました。
+					{{ _("遠隔認証トークン<%(token)sを承認しました。", token=le.data.token) }}
 				{% else %}
 					<code>{{ le.data | tojson }}</code>
 				{% endif %}

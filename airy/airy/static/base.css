@@ -118,6 +118,7 @@ button:hover:not(:disabled) {
 input:disabled,
 button:disabled {
 	border-style: dashed;
+	box-shadow: 0 0 0.1rem var(--c-accent);
 }
 
 table {
@@ -143,4 +144,6 @@ td select {
 
 .container {
 	padding: 8px;
+	max-width: 50rem;
+	margin: auto;
 }
