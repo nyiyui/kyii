@@ -37,7 +37,6 @@ def current_user_login() -> Optional[UserLogin]:
     return None
 
 
-
 mail = Mail()
 
 

@@ -177,8 +177,10 @@ SCOPES = {
     ),
 }
 
+
 def scope_info_filter(scope: str) -> Scope:
     return SCOPES.get(scope)
+
 
 def config_oauth(app):
     query_client = create_query_client_func(db.session, OAuth2Client)
@@ -207,4 +209,4 @@ def config_oauth(app):
     bearer_cls = create_bearer_token_validator(db.session, OAuth2Token)
     require_oauth.register_token_validator(bearer_cls())
 
-    app.jinja_env.filters['scope_info'] = scope_info_filter
+    app.jinja_env.filters["scope_info"] = scope_info_filter
