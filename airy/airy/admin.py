@@ -3,7 +3,7 @@ from urllib.parse import urlencode
 from flask import current_app, redirect, request, url_for
 from flask_admin import Admin, AdminIndexView, expose
 from flask_admin.contrib import sqla
-from flask_login import current_user
+from .ul import current_user
 
 from .db import (
     AF,

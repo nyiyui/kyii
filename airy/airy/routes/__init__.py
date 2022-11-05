@@ -1,4 +1,4 @@
-from . import api2, main, oauth, silica, yuui
+from . import main, oauth, silica, yuui
 
 
 def init_app(app):

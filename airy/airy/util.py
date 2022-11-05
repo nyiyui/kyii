@@ -3,7 +3,7 @@ from functools import wraps
 from typing import Set, Tuple
 
 from flask import current_app
-from flask_login import current_user
+from .ul import current_user
 from server_timing import Timing as t
 
 

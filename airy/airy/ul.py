@@ -58,7 +58,6 @@ def get_extra() -> dict:
 
 
 def login_user(u: User, apid: Optional[str]) -> Tuple[UserLogin, str]:
-    # flask_login.login_user(u)
     ul = UserLogin(
         id=gen_uuid(),
         user=u,
@@ -73,7 +72,6 @@ def login_user(u: User, apid: Optional[str]) -> Tuple[UserLogin, str]:
 
 
 def logout_user() -> None:
-    # flask_login.logout_user()
     ul = current_ul
     if not ul:
         raise RuntimeError("No user logged in")
