@@ -33,10 +33,10 @@
 					{{ ul.name if ul.name else '' }}
 				</td>
 				<td>
-					{{ ul.start }}
+					{{ ul.start|format_datetime }}
 				</td>
 				<td>
-					{{ ul.last if ul.last else _("無し") }}
+					{{ ul.last|format_datetime if ul.last else _("無し") }}
 				</td>
 				<td>
 					{% if ul.end %}

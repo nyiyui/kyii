@@ -34,11 +34,11 @@ def unauthorized(error):
 def login():
     if API_V1_UID in session:
         return redirect(url_for("silica.login_choose"))
-    session[SILICA_NEXT] = request.args.get("next")
     form = LoginStartForm()
     if form.validate_on_submit():
         target = User.query.filter_by(slug=form.slug.data, is_active=True).one()
         session[API_V1_UID] = target.id
+        session[SILICA_NEXT] = tuple(request.args.get(key) for key in ("next", "nextargs"))
         return redirect(url_for("silica.login_choose"))
     return render_template("silica/login/start.html", form=form)
 
@@ -99,7 +99,6 @@ def login_list():
         if afid not in session[API_V1_SOLVED]:
             return redirect(url_for("silica.login_attempt", afid=afid))
     if len(missing) == 0:
-        print("NEXT", session[SILICA_NEXT], session)
         flash(_("全ての認証が完了しました。%(name)sとしてログインしました。", name=u.name), "success")
         ul, _token = login_user(u, ap.id)
         session.pop(API_V1_UID)
@@ -110,9 +109,9 @@ def login_list():
         session[SILICA_UL_MAP] = session.get(SILICA_UL_MAP, {})
         i = max([0] + list(session[SILICA_UL_MAP].keys())) + 1
         session[SILICA_UL_MAP][i] = ul.id
-        print("NEXT", session[SILICA_NEXT], session)
         if (next_ := session.get(SILICA_NEXT, None)) is not None:
-            return redirect(next_)
+            if next_[0] is not None and next_[1] is not None:
+                return redirect(next_[0] + '?' + next_[1])
         return redirect(url_for("silica.index"))
     return render_template(
         "silica/login/list.html",
@@ -237,18 +236,16 @@ class LoginStopForm(FlaskForm):
 def login_stop():
     if (
         API_V1_UID not in session
-        or API_V1_APID not in session
-        or API_V1_SOLVED not in session
     ):
         return redirect(url_for("silica.login"))
     form = LoginStopForm()
-    ap = AP.query.get(session[API_V1_APID])
+    ap = AP.query.get(session.get(API_V1_APID))
     u = User.query.get(session[API_V1_UID])
     if form.validate_on_submit():
         u.add_le(LogEntry(renderer="login_stop"))
-        session.pop(API_V1_UID)
-        session.pop(API_V1_APID)
-        session.pop(API_V1_SOLVED)
+        session.pop(API_V1_UID, None)
+        session.pop(API_V1_APID, None)
+        session.pop(API_V1_SOLVED, None)
         return redirect(url_for("silica.login"))
     return render_template("silica/login/stop.html", form=form, u=u, ap=ap)
 

@@ -1,4 +1,4 @@
-from . import user, main, etc
+from . import user, main, oauth, etc
 
 from .bp import init_app
 

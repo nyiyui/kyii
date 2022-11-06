@@ -1,7 +1,7 @@
 {% extends "silica/base.html" %}
 
 {% block content %}
-<form method="POST" action="{{ url_for("silica.login") }}">
+<form method="POST">
 	{{ form.hidden_tag() }}
 	{{ form.slug.label }} {{ form.slug }}
 	<div class="errors">

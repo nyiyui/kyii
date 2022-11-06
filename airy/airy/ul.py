@@ -1,5 +1,6 @@
 from functools import wraps
 from typing import Optional, Tuple
+from urllib.parse import urlencode
 
 from flask import (
     _request_ctx_stack,
@@ -128,7 +129,7 @@ class ULManager:
 
     def unauthenticated(self):
         flash(_("ログインが必要です。"), "warning")
-        return redirect(url_for("silica.login"))
+        return redirect(url_for("silica.login", next=request.path, nextargs=urlencode(request.args)))
 
     def __get_ul(self, token):
         return UserLogin.query.filter_by(token=token).first()

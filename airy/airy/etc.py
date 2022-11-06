@@ -1,3 +1,4 @@
+import time
 from typing import Optional
 from urllib.parse import urlencode, urljoin
 
@@ -5,6 +6,7 @@ from flask_qrcode import QRcode
 from blinker import Namespace
 from flask import current_app, redirect, request, session, g
 from flask_babel import Babel
+import flask_babel
 from flask_caching import Cache
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -83,3 +85,9 @@ def init_app(app):
     def before_request(resp):
         Timing.stop("request")
         return resp
+
+    KEYS = ['format_datetime', 'format_date', 'format_time']
+    for key in KEYS:
+        app.jinja_env.filters[key] = getattr(flask_babel, key)
+
+    app.jinja_env.globals['now_epoch'] = time.time

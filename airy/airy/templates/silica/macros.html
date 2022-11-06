@@ -172,7 +172,7 @@
 {% endmacro %}
 
 {% macro time(t) %}
-  {{ t }}
+  {{ t|format_datetime }}
 {% endmacro %}
 
 {% macro generic_profile(img, name) %}

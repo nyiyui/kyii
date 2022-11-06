@@ -25,7 +25,8 @@ def paginate(f: Callable) -> Callable:
     @wraps(f)
     def inner():
         page = int_or_abort(request.args.get("page", 1))
-        query, per_page, template_name_or_list, context = f()
+        per_page = min(max(int_or_abort(request.args.get("per_page", 20)), 0), 100)
+        query, template_name_or_list, context = f()
         query = query.paginate(page=page, per_page=per_page)
         return render_template(template_name_or_list, **context, query=query)
 

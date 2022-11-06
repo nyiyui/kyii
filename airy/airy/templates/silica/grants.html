@@ -1,0 +1,74 @@
+{% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block title %}{{ _("認可") }}{% endblock %}
+
+{% block content %}
+	<table>
+		<tr>
+			<th>ID</th>
+			<th>{{ _("権限") }}</th>
+			<th>{{ _("発行（承認）時刻") }}</th>
+			<th>{{ _("期限時刻") }}</th>
+			<th>{{ _("アクセストークン状態") }}</th>
+			<th>{{ _("れフレッシュトークン状態") }}</th>
+			<th>{{ _("する") }}</th>
+		</tr>
+		{% for grant in query.items %}
+			<tr>
+				<td>
+					{{ grant.id }}
+				</td>
+				<td>
+					<ul>
+						{% for scope in grant.scope.split() %}
+							<li>
+								<details style="display: inline;">
+									<summary>
+										{{ (scope|scope_info).name }}
+									</summary>
+									{{ (scope|scope_info).desc }}
+								</details>
+							</li>
+						{% endfor %}
+					</ul>
+				</td>
+				<td>
+					{{ grant.issued_at|format_datetime }}
+				</td>
+				<td>
+					{% set expires = grant.issued_at + grant.expires_in %}
+					{{ expires|format_datetime }}
+					<br />
+					{% if expires < now_epoch() %}
+						{{ _("（期限切れ）") }}
+					{% else %}
+						{{ _("（未だ有効）") }}
+					{% endif %}
+				</td>
+				<td>
+					{{ _("未だ有効") if grant.access_token_revoked_at == 0 else _("取消済み") }}
+				</td>
+				<td>
+					{{ _("未だ有効") if grant.refresh_token_revoked_at == 0 else _("取消済み") }}
+				</td>
+				<td>
+					{% if expires >= now_epoch() %}
+						<form method="post" action="{{ url_for('silica.grant_revoke') }}">
+							{{ macros.form_csrf() }}
+							<input type="hidden" name="grid" value="{{ grant.id }}"/>
+							<input type="submit" value="{{ _('取消す') }}" />
+						</form>
+					{% else %}
+						<form method="post" action="{{ url_for('silica.grant_delete') }}">
+							{{ macros.form_csrf() }}
+							<input type="hidden" name="grid" value="{{ grant.id }}"/>
+							<input class="Bcaution" type="submit" value="{{ _('削除') }}" />
+						</form>
+					{% endif %}
+				</td>
+			</tr>
+		{% endfor %}
+	</table>
+	{{ macros.pages(query) }}
+{% endblock %}

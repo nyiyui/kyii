@@ -1,5 +1,6 @@
 import secrets
 import uuid
+import time
 from datetime import datetime, timedelta
 from hashlib import sha256
 from typing import Optional, Set, Tuple
@@ -423,6 +424,8 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
     def revoke(self):
         # TODO: properly implement
         self.expires_in = 0
+        self.access_token_revoked_at = time.time()
+        self.refresh_token_revoked_at = time.time()
 
     @property
     def for_api_v1_trusted(self) -> dict:
