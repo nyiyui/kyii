@@ -40,7 +40,10 @@
 				{% elif le.renderer == "login_attempt" %}
 					{{ _("認証方法%(af)sを選びます。", af=macros.af(le.data.afid | get_af)) }}
 					{% if le.data.cur_done %}
-						{{ _("このステップで<strong>ログインしました。</strong>") }}
+						{{ _("このステップは<strong>成功</strong>しました。") }}
+					{% endif %}
+					{% if le.data.level %}
+						{{ _("レベル：%(level)s", level=le.data.level) }}
 					{% endif %}
 				{% elif le.renderer == "login_start" %}
 					{{ _("%(remote)sからログインを開始します。", remote=le.data.extra.remote) }}

@@ -1,0 +1,39 @@
+{% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block title %}{{ _("認証方法確認") }}{% endblock %}
+
+{% block content %}
+	<div class="flex Fcol">
+		<!-- TODO: QRコード -->
+		<label>
+			{{ _("シークレット") }}
+			<input type="text" value="{{ taf.feedback.secret_key }}" readonly />
+		</label>
+		<label>
+			{{ _("桁") }}
+			<input type="text" value="{{ taf.feedback.digits }}" readonly />
+		</label>
+		<label>
+			{{ _("ハッシュ関数") }}
+			<input type="text" value="{{ taf.feedback.algorithm }}" readonly />
+		</label>
+		<label>
+			{{ _("ピリオド") }}
+			<input type="text" value="{{ taf.feedback.period }}" readonly />
+		</label>
+	</div>
+	{{ _("認証方法を確認してください。") }}
+	<form method="post">
+		{{ form.hidden_tag() }}
+		{{ form.code.label }} {{ form.code }}
+		<div class="errors">
+			<ul>
+				{% for error in form.errors.slug %}
+					<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+		</div>
+		<input type="submit" value="{{ _('確認') }}" class="Bsuccess" />
+	</form>
+{% endblock %}

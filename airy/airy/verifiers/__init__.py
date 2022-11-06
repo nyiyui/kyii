@@ -1,5 +1,5 @@
 import base64
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from flask_babel import lazy_gettext as _l
 import nacl.pwhash
@@ -140,6 +140,9 @@ VERIFIER_NAMES: Dict[str, str] = {
     "limited": _l("回数制限"),
     "remote": _l("遠隔承認"),
 }
+
+
+VERIFIER_CHOICES: List[Tuple[str, str]] = list(VERIFIER_NAMES.items())
 
 def gen(
     verifier: str,

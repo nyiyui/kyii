@@ -2,14 +2,16 @@ import json
 from flask import redirect, render_template, url_for, session, flash, request, abort
 from flask_cors import CORS
 from collections import defaultdict
+from dataclasses import dataclass
+from typing import Optional
 
 from sqlalchemy import column
 from server_timing import Timing as t
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
 from flask_wtf import FlaskForm
-from wtforms import StringField, RadioField, PasswordField
-from wtforms.validators import InputRequired, Length, ValidationError
+from wtforms import StringField, RadioField, PasswordField, IntegerField
+from wtforms.validators import InputRequired, Length, ValidationError, NumberRange
 from ...db import User, AF, AP, ap_reqs, LogEntry, UserLogin, db
 from ...session import (
     API_V1_UID,
@@ -20,10 +22,12 @@ from ...session import (
     SILICA_UL_MAP,
     SILICA_NEXT,
     SILICA_LOGIN_LEVEL,
+    SILICA_TAF,
 )
 from ...util import flip
 from ...ul import get_extra, login_user, current_user, login_required
-from ...verifiers import VerificationError, remote, VERIFIER_NAMES
+from ...verifiers import VerificationError, remote, VERIFIER_NAMES, VERIFIER_CHOICES
+from ... import verifiers
 from .bp import bp
 from .etc import int_or_abort
 
@@ -198,7 +202,7 @@ def login_attempt():
                 cur_done = False
             u.add_le(
                 LogEntry(
-                    renderer="login_attempt", data=dict(afid=af.id, cur_done=cur_done)
+                    renderer="login_attempt", data=dict(afid=af.id, cur_done=cur_done, level=session[SILICA_LOGIN_LEVEL])
                 )
             )
             if cur_done:
@@ -309,7 +313,7 @@ def iori_logout():
         flash(_("他ログインをログアウトしました。"), "message")
     ul.revoke("revoke")
     db.session.commit()
-    return redirect(url_for("silica.uls" if request.args['uls'] else "silica.iori"))
+    return redirect(url_for("silica.uls" if request.args.get('uls') else "silica.iori"))
 
 
 @bp.route("/iori/rename", methods=("POST",))
@@ -392,6 +396,7 @@ def check_freshness(ap, af):
 
 
 def apply_changes(ap, af):
+    print(ap)
     for afid, af in af.items():
         a = AF.query.filter_by(id=afid)
         if (b := a.first()) is not None:
@@ -404,7 +409,9 @@ def apply_changes(ap, af):
         if (b := a.first()) is not None:
             b.name = ap["name"]
             b.reqs = reqs
+            print('===REQS', ap['reqs'])
             for afid, level in ap["reqs"].items():
+                print('===AFID', afid, level)
                 db.session.query(ap_reqs).filter_by(ap_id=apid, af_id=afid).update(dict(level=level))
         else:
             db.session.add(AP(name=ap["name"], reqs=reqs))
@@ -426,7 +433,7 @@ def config_ax():
                 ap[apid]["name"] = value
             elif tokens[2] == "req":
                 if value:
-                    ap[apid]["reqs"][tokens[3]] = {}
+                    ap[apid]["reqs"][tokens[3]] = 1
             elif tokens[2] == "reqlevel":
                 if tokens[3] in ap[apid]["reqs"]:
                     if value == '':
@@ -444,6 +451,159 @@ def config_ax():
         return s
     # NOTE: do AFs first as APs might have integrity issues with noexistent reqs
     return apply_changes(ap, af)
+
+
+@bp.route("/config/af/<afid>/delete", methods=("POST",))
+@login_required
+def config_af_delete(afid):
+    af = AF.query.get(afid)
+    if af.user != current_user:
+        abort(403)
+    AF.query.filter_by(id=afid).delete()
+    db.session.commit()
+    flash(_("認証方法「%(af_name)s」を削除しました。", af_name=af.name))
+    return redirect(url_for('silica.config'))
+
+
+class ConfigTAFForm(FlaskForm):
+    name = StringField(_l("名前"), validators=[InputRequired(), Length(min=1)])
+    verifier = RadioField(_l("型"), choices=VERIFIER_CHOICES)
+
+
+@dataclass
+class TAF:
+    id: str
+    name: str
+    verifier: str
+
+    params: Optional[dict] = None
+    state: Optional[dict] = None
+    gen_state: Optional[dict] = None
+    feedback: Optional[dict] = None
+    gen_done: Optional[bool] = None
+    verify_done: bool = False
+
+
+@bp.route("/config/taf", methods=("GET", "POST"))
+@login_required
+def config_taf():
+    id = request.args.get('id', '')
+    name = ''
+    if id:
+        af = AF.query.get_or_404(id)
+        if af.user != current_user:
+            abort(403)
+        name = af.name
+    form = ConfigTAFForm(name=name)
+    if form.validate_on_submit():
+        session[SILICA_TAF] = TAF(id=id, name=form.name.data, verifier=form.verifier.data)
+        return redirect(url_for('silica.config_taf_gen'))
+    return render_template("silica/config_taf.html", form=form)
+
+
+@bp.route("/config/af/<afid>/regen", methods=("POST",))
+@login_required
+def config_af_regen(afid):
+    return redirect(url_for('silica.config_taf', id=afid))
+
+
+class ConfigTAFPwForm(FlaskForm):
+    password = PasswordField(_l("パスワード"), validators=[InputRequired(), Length(min=1)])
+
+    @property
+    def gen_params(self):
+        return dict(password=self.password.data)
+
+    @property
+    def attempt(self):
+        return self.password.data
+
+
+class ConfigTAFTOTPGenForm(FlaskForm):
+    digits = IntegerField(_l("桁"), default=6, validators=[NumberRange(min=6, max=8)])
+    algorithm = RadioField(_l("ハッシュ関数"), default="SHA1", choices=list({
+        "SHA1": _l("SHA-1"),
+        "SHA256": _l("SHA-256"),
+        "SHA512": _l("SHA-512"),
+    }.items()))
+
+    @property
+    def gen_params(self):
+        return dict(digits=self.digits.data, algorithm=self.algorithm.data)
+
+
+class ConfigTAFTOTPVerifyForm(FlaskForm):
+    code = StringField(_l("コード"))
+
+    @property
+    def attempt(self):
+        return self.code.data
+
+
+CONFIG_TAF_GEN_FORMS = {
+    "pw": ConfigTAFPwForm,
+    "otp_totp": ConfigTAFTOTPGenForm,
+}
+
+
+@bp.route("/config/taf/gen", methods=("GET", "POST"))
+@login_required
+def config_taf_gen():
+    taf = session[SILICA_TAF]
+    form = CONFIG_TAF_GEN_FORMS[taf.verifier]()
+    if form.validate_on_submit():
+        try:
+            taf.params, taf.gen_state, taf.feedback, taf.gen_done = verifiers.gen(taf.verifier, form.gen_params, taf.gen_state)
+        except VerificationError as e:
+            flash(_("認証方法生成：%(err)s", err=e), "error")
+        session[SILICA_TAF] = taf
+        if taf.gen_done:
+            return redirect(url_for('silica.config_taf_verify'))
+    if taf.verifier not in VERIFIER_NAMES:
+        abort(422)
+    return render_template(f"silica/config_taf_gen_{taf.verifier}.html", form=form)
+
+
+CONFIG_TAF_VERIFY_FORMS = {
+    "pw": ConfigTAFPwForm,
+    "otp_totp": ConfigTAFTOTPVerifyForm
+}
+
+
+@bp.route("/config/taf/verify", methods=("GET", "POST"))
+@login_required
+def config_taf_verify():
+    taf = session[SILICA_TAF]
+    form = CONFIG_TAF_VERIFY_FORMS[taf.verifier]()
+    if taf.verifier == 'otp_totp':
+        digits = taf.params['digits']
+        form.code.validators += (Length(min=digits, max=digits),)
+    if form.validate_on_submit():
+        try:
+            taf.params, taf.state, feedback, taf.verify_done = verifiers.verify(taf.verifier, form.attempt, taf.params, taf.state)
+        except VerificationError as e:
+            flash(_("認証方法確認：%(err)s", err=e), "error")
+        session[SILICA_TAF] = taf
+        if taf.verify_done:
+            if taf.id:
+                af = AF.query.get(taf.id)
+            else:
+                af = AF()
+            af.name = taf.name
+            af.user = current_user
+            af.verifier = taf.verifier
+            af.params = taf.params
+            af.state = taf.state
+            af.gen_done = taf.gen_done
+            if not taf.id:
+                db.session.add(af)
+            db.session.commit()
+            del session[SILICA_TAF]
+            flash(_("認証方法「%(af_name)s」を生成および確認、保存しました。", af_name=af.name), 'success')
+            return redirect(url_for('silica.config'))
+    if taf.verifier not in VERIFIER_NAMES:
+        abort(422)
+    return render_template(f"silica/config_taf_verify_{taf.verifier}.html", form=form, taf=taf)
 
 
 @bp.route("/config/profile", methods=("POST",))

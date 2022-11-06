@@ -1,0 +1,20 @@
+{% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block title %}{{ _("認証方法設定") }}{% endblock %}
+
+{% block content %}
+	<form method="post">
+		{{ form.hidden_tag() }}
+		{{ form.name.label }} {{ form.name }}
+		{{ form.verifier.label }} {{ form.verifier }}
+		<div class="errors">
+			<ul>
+				{% for error in form.errors.slug %}
+					<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+		</div>
+		<input type="submit" value="{{ _('生成') }}" class="Bsuccess" />
+	</form>
+{% endblock %}
