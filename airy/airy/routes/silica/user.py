@@ -3,13 +3,14 @@ from flask import redirect, render_template, url_for, session, flash, request, a
 from flask_cors import CORS
 from collections import defaultdict
 
+from sqlalchemy import column
 from server_timing import Timing as t
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
 from flask_wtf import FlaskForm
 from wtforms import StringField, RadioField, PasswordField
 from wtforms.validators import InputRequired, Length, ValidationError
-from ...db import User, AF, AP, LogEntry, UserLogin, db
+from ...db import User, AF, AP, ap_reqs, LogEntry, UserLogin, db
 from ...session import (
     API_V1_UID,
     API_V1_APID,
@@ -18,11 +19,13 @@ from ...session import (
     SILICA_CURRENT_ULID,
     SILICA_UL_MAP,
     SILICA_NEXT,
+    SILICA_LOGIN_LEVEL,
 )
 from ...util import flip
 from ...ul import get_extra, login_user, current_user, login_required
 from ...verifiers import VerificationError, remote, VERIFIER_NAMES
 from .bp import bp
+from .etc import int_or_abort
 
 
 @bp.errorhandler(403)
@@ -73,6 +76,7 @@ def login_choose():
     if form.validate_on_submit():
         session[API_V1_APID] = form.apid.data
         session[API_V1_SOLVED] = set()
+        session[SILICA_LOGIN_LEVEL] = 1
         u.add_le(LogEntry(renderer="login_choose", data=dict(apid=form.apid.data)))
         return redirect(url_for("silica.login_list"))
     return render_template("silica/login/choose.html", form=form, u=u)
@@ -94,34 +98,44 @@ def login_list():
     with t.time("db"):
         u = User.query.get(session[API_V1_UID])
         ap = AP.query.get(session[API_V1_APID])
-    afs = ap.afs(user_id=u.id)
+    afs = ap.afs(user_id=u.id).filter(column("level") == session[SILICA_LOGIN_LEVEL])
     afids = set(a[0] for a in afs.with_entities(AF.id).all())
     missing = afids - session[API_V1_SOLVED]
+    if len(missing) == 0:
+        all_afs = ap.afs(user_id=u.id).filter(column("level") > session[SILICA_LOGIN_LEVEL]).order_by(column("level").desc()).all()
+        if len(all_afs) != 0:
+            session[SILICA_LOGIN_LEVEL] = db.session.query(ap_reqs).filter_by(ap_id=ap.id, af_id=all_afs[0].id).first().level
+            afs = ap.afs(user_id=u.id).filter(column("level") == session[SILICA_LOGIN_LEVEL])
+            afids = set(a[0] for a in afs.with_entities(AF.id).all())
+            missing = afids - session[API_V1_SOLVED]
+            print('RELEVEL', session[SILICA_LOGIN_LEVEL])
+        else:
+            flash(_("全ての認証が完了しました。%(name)sとしてログインしました。", name=u.name), "success")
+            ul, _token = login_user(u, ap.id)
+            session.pop(API_V1_UID)
+            session.pop(API_V1_APID)
+            session.pop(API_V1_SOLVED)
+            session[SILICA_ULIDS] = session.get(SILICA_ULIDS, set()) | {ul.id}
+            session[SILICA_CURRENT_ULID] = ul.id
+            session[SILICA_UL_MAP] = session.get(SILICA_UL_MAP, {})
+            i = max([0] + list(session[SILICA_UL_MAP].keys())) + 1
+            session[SILICA_UL_MAP][i] = ul.id
+            if (next_ := session.get(SILICA_NEXT, None)) is not None:
+                if next_[0] is not None and next_[1] is not None:
+                    return redirect(next_[0] + "?" + next_[1])
+            return redirect(url_for("silica.index"))
+    print('MISSING', missing)
     if len(missing) == 1:
         afid = list(missing)[0]
         if afid not in session[API_V1_SOLVED]:
             return redirect(url_for("silica.login_attempt", afid=afid))
-    if len(missing) == 0:
-        flash(_("全ての認証が完了しました。%(name)sとしてログインしました。", name=u.name), "success")
-        ul, _token = login_user(u, ap.id)
-        session.pop(API_V1_UID)
-        session.pop(API_V1_APID)
-        session.pop(API_V1_SOLVED)
-        session[SILICA_ULIDS] = session.get(SILICA_ULIDS, set()) | {ul.id}
-        session[SILICA_CURRENT_ULID] = ul.id
-        session[SILICA_UL_MAP] = session.get(SILICA_UL_MAP, {})
-        i = max([0] + list(session[SILICA_UL_MAP].keys())) + 1
-        session[SILICA_UL_MAP][i] = ul.id
-        if (next_ := session.get(SILICA_NEXT, None)) is not None:
-            if next_[0] is not None and next_[1] is not None:
-                return redirect(next_[0] + "?" + next_[1])
-        return redirect(url_for("silica.index"))
     return render_template(
         "silica/login/list.html",
         u=u,
         ap=ap,
         afs=afs,
         solved_afs=session[API_V1_SOLVED],
+        level=session[SILICA_LOGIN_LEVEL],
     )
 
 
@@ -386,10 +400,12 @@ def apply_changes(ap, af):
             db.session.add(AF(name=af["name"]))
     for apid, ap in ap.items():
         a = AP.query.filter_by(id=apid)
-        reqs = [AF.query.filter_by(id=afid).first() for afid in ap["reqs"]]
+        reqs = [AF.query.filter_by(id=afid).first() for afid in ap["reqs"].keys()]
         if (b := a.first()) is not None:
             b.name = ap["name"]
             b.reqs = reqs
+            for afid, level in ap["reqs"].items():
+                db.session.query(ap_reqs).filter_by(ap_id=apid, af_id=afid).update(dict(level=level))
         else:
             db.session.add(AP(name=ap["name"], reqs=reqs))
     db.session.commit()
@@ -400,20 +416,28 @@ def apply_changes(ap, af):
 @bp.route("/config/ax", methods=("POST",))
 @login_required
 def config_ax():
-    ap = defaultdict(lambda: dict(name="", reqs=[]))
+    ap = defaultdict(lambda: dict(name="", reqs={}))
     af = defaultdict(dict)
-    for key in request.form.keys():
+    for key, value in request.form.items():
         tokens = key.split("_")
         if tokens[0] == "ap":
             apid = tokens[1]
             if tokens[2] == "name":
-                ap[apid]["name"] = request.form[key]
+                ap[apid]["name"] = value
             elif tokens[2] == "req":
-                ap[apid]["reqs"].append(request.form[key])
+                if value:
+                    ap[apid]["reqs"][tokens[3]] = {}
+            elif tokens[2] == "reqlevel":
+                if tokens[3] in ap[apid]["reqs"]:
+                    if value == '':
+                        ap[apid]["reqs"][tokens[3]] = 1
+                    else:
+                        ap[apid]["reqs"][tokens[3]] = int_or_abort(value, 422)
         elif tokens[0] == "af":
             afid = tokens[1]
             if tokens[2] == "name":
-                af[afid]["name"] = request.form[key]
+                af[afid]["name"] = value
+    print('AP', dict(ap))
     ap = dict(ap)
     af = dict(af)
     if (s := check_freshness(ap, af)) is not None:

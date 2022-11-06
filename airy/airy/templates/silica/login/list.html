@@ -2,6 +2,7 @@
 
 {% block content %}
 {{ _('「%(user)s」に認証パス「%(ap_name)s」でログインしようとしています。', user=u.name, ap_name=ap.name) }}
+{{ _("現在のレベルは%(level)sです。", level=level) }}
 {{ _('認証要素を選んで下さい。') }}
 <ul>
 	{% for af in afs %}

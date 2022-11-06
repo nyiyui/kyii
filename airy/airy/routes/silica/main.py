@@ -4,14 +4,12 @@ from flask_wtf import FlaskForm
 
 from server_timing import Timing as t
 from flask_babel import lazy_gettext as _l
-from flask_wtf import FlaskForm
 from wtforms import StringField, RadioField
 from wtforms.validators import InputRequired, Length, ValidationError
-from ...db import User, AP, AF, LogEntry, UserLogin
-from ...session import API_V1_UID, API_V1_APID, API_V1_SOLVED
-from ...ul import get_extra, current_user, login_required
+from ...db import AP, AF, LogEntry, UserLogin
+from ...ul import current_user, login_required
 from .bp import bp
-from .etc import int_or_abort, paginate
+from .etc import paginate
 from sqlalchemy.orm.exc import NoResultFound
 
 

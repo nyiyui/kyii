@@ -7,11 +7,11 @@ import jinja2
 __ALL__ = ["int_or_abort", "paginate"]
 
 
-def int_or_abort(s: str) -> int:
+def int_or_abort(s: str, code: int = 400) -> int:
     try:
         return int(s)
     except ValueError:
-        abort(400)
+        abort(code)
 
 
 def paginate(f: Callable) -> Callable:

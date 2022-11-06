@@ -28,12 +28,24 @@
 					</td>
 					{% for af in current_user.af %}
 						<td>
-							<input
-								type="checkbox"
-								name="ap_{{ ap.id }}_req_{{ af.id }}"
-								{% if af in ap.reqs %}checked{% endif %}
-								value="{{ af.id }}"
-							/>
+							<div class="flex">
+								<input
+									type="checkbox"
+									name="ap_{{ ap.id }}_req_{{ af.id }}"
+									{% if af in ap.reqs %}checked{% endif %}
+									value="{{ af.id }}"
+								/>
+								{% if af in ap.reqs %}
+									<input
+										type="number"
+										min="1"
+										name="ap_{{ ap.id }}_reqlevel_{{ af.id }}"
+										{% set req = get_ap_req(ap.id, af.id) %}
+										value="{{ req.level if req.level else '' }}"
+										style="width: 2rem;"
+									/>
+								{% endif %}
+							</div>
 						</td>
 					{% endfor %}
 				</tr>
