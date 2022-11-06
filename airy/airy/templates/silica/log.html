@@ -18,21 +18,21 @@
 
 <table>
 	<tr>
-		<th>ログID</th>
-		<th>セッションID</th>
-		<th>時刻</th>
-		<th>データ</th>
+		<th class="hidden">ログID</th>
+		<th>{{ _("時刻") }}</th>
+		<th>{{ _("セッションID") }}</th>
+		<th>{{ _("データ") }}</th>
 	</tr>
 	{% for le in query.items %}
 		<tr>
-			<td>
+			<td class="hidden">
 				{{ le.id }}
 			</td>
 			<td>
-				{{ macros.sid2_with_query(le.sid2) }}
+				{{ macros.time(le.created) }}
 			</td>
 			<td>
-				{{ macros.time(le.created) }}
+				{{ macros.sid2_with_query(le.sid2) }}
 			</td>
 			<td>
 				{% if le.renderer == "login_choose" %}

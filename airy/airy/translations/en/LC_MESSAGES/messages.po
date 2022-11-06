@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-11-05 22:01-0400\n"
+"POT-Creation-Date: 2022-11-05 23:55-0400\n"
 "PO-Revision-Date: 2022-11-03 02:29-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -43,25 +43,26 @@ msgstr "Read Email"
 msgid "メルアドとそれの確認状態"
 msgstr "Email address and whether that is verified."
 
-#: airy/ul.py:130
+#: airy/ul.py:131
 msgid "ログインが必要です。"
 msgstr "Login required."
 
-#: airy/ul.py:171
+#: airy/ul.py:172
 msgid "不正（セッションデータに無い）なログインIDが指定されたので、初期化しました。"
 msgstr ""
 "Reset session because I received an invalid (not in session data) login "
 "ID."
 
-#: airy/ul.py:179
+#: airy/ul.py:180
 msgid "不正（データベースに無い）なログインIDが指定されたので、初期化しました。"
 msgstr "Reset session because I received an invalid (not in database) login ID."
 
 #: airy/routes/silica/main.py:44 airy/routes/silica/main.py:65
+#: airy/templates/silica/log.html:23
 msgid "セッションID"
 msgstr "Session ID"
 
-#: airy/routes/silica/user.py:47 airy/routes/silica/user.py:361
+#: airy/routes/silica/user.py:47 airy/routes/silica/user.py:358
 msgid "ハンドル"
 msgstr "Handle"
 
@@ -69,72 +70,72 @@ msgstr "Handle"
 msgid "認証パス"
 msgstr "AP"
 
-#: airy/routes/silica/user.py:103
+#: airy/routes/silica/user.py:102
 #, python-format
 msgid "全ての認証が完了しました。%(name)sとしてログインしました。"
 msgstr "All AFs cleared. Logged in as %(name)s."
 
-#: airy/routes/silica/user.py:131 airy/templates/silica/config.html:62
+#: airy/routes/silica/user.py:130 airy/templates/silica/config.html:62
 #: airy/verifiers/__init__.py:136
 msgid "パスワード"
 msgstr "Password"
 
-#: airy/routes/silica/user.py:139
+#: airy/routes/silica/user.py:138
 msgid "コード"
 msgstr "Code"
 
-#: airy/routes/silica/user.py:166
+#: airy/routes/silica/user.py:165
 msgid "認証要素IDが存在していないのに参照しています。"
 msgstr "Nonexistent AF."
 
-#: airy/routes/silica/user.py:170
+#: airy/routes/silica/user.py:169
 #, python-format
 msgid "「%(af_name)s」認証要素は既に解決されています。"
 msgstr "AF %(af_name)s already solved."
 
-#: airy/routes/silica/user.py:181
+#: airy/routes/silica/user.py:180
 #, python-format
 msgid "ペケ！認証要素を解けません：%(error)s"
 msgstr "Cannot solve AF: %(error)s"
 
-#: airy/routes/silica/user.py:189
+#: airy/routes/silica/user.py:188
 #, python-format
 msgid "「%(af_name)s」認証要素を解きました。"
 msgstr "Solved AF %(af_name)s"
 
-#: airy/routes/silica/user.py:228
+#: airy/routes/silica/user.py:227
 msgid "未知の認証要素の認証方法です。どうしよう…"
 msgstr "Hmm. I don't know what this verifier is…"
 
-#: airy/routes/silica/user.py:295
+#: airy/routes/silica/user.py:292
 msgid "現ログインをログアウトしました。"
 msgstr "Logged out of current login."
 
-#: airy/routes/silica/user.py:297
+#: airy/routes/silica/user.py:294
 msgid "他ログインをログアウトしました。"
 msgstr "Logged out of non-current login."
 
-#: airy/routes/silica/user.py:343
+#: airy/routes/silica/user.py:340
 msgid "トークン"
 msgstr "Token"
 
-#: airy/routes/silica/user.py:353
+#: airy/routes/silica/user.py:350
 #, python-format
 msgid "トークン%(token)sを承認しました。"
 msgstr "Authorized token %(token)s"
 
-#: airy/routes/silica/user.py:360 airy/templates/silica/iori.html:11
+#: airy/routes/silica/user.py:357 airy/templates/silica/iori.html:11
 #: airy/templates/silica/uls.html:21
 msgid "名前"
 msgstr "Name"
 
-#: airy/routes/silica/user.py:375 airy/routes/silica/user.py:378
+#: airy/routes/silica/user.py:372 airy/routes/silica/user.py:375
 msgid "フォームが入力中に無効になりました。再度保存してください。"
 msgstr ""
 "Form became invalid (configuration was updated) while inputting. Please "
 "attempt again."
 
-#: airy/routes/silica/user.py:398
+#: airy/routes/silica/user.py:395
 msgid "認証設定を保存しました。"
 msgstr "Saved authentication config."
 
@@ -155,7 +156,7 @@ msgid "きぃい シリカ"
 msgstr "Silica"
 
 #: airy/templates/silica/base.html:30 airy/templates/silica/log.html:4
-#: airy/templates/silica/macros.html:28
+#: airy/templates/silica/macros.html:25
 msgid "ログ"
 msgstr "Log"
 
@@ -191,7 +192,7 @@ msgstr "Stop Logging In"
 msgid "伊織"
 msgstr "Iori"
 
-#: airy/templates/silica/base.html:45 airy/templates/silica/macros.html:27
+#: airy/templates/silica/base.html:45 airy/templates/silica/macros.html:24
 #: airy/templates/silica/uls.html:4
 msgid "ログイン"
 msgstr "Login"
@@ -235,53 +236,61 @@ msgid "%(used)s回使用"
 msgstr "Used %(used)s"
 
 #: airy/templates/silica/config.html:96 airy/templates/silica/config.html:115
-#: airy/templates/silica/iori.html:23 airy/templates/silica/macros.html:58
+#: airy/templates/silica/iori.html:23 airy/templates/silica/macros.html:55
 msgid "保存"
 msgstr "Save"
 
 #: airy/templates/silica/grants.html:10
+msgid "対象"
+msgstr ""
+
+#: airy/templates/silica/grants.html:11
 msgid "権限"
 msgstr "Priviledges"
 
-#: airy/templates/silica/grants.html:11
+#: airy/templates/silica/grants.html:12
 msgid "発行（承認）時刻"
 msgstr "Issuance (Allowance) Time"
 
-#: airy/templates/silica/grants.html:12
+#: airy/templates/silica/grants.html:13
 msgid "期限時刻"
 msgstr "Expiry Time"
 
-#: airy/templates/silica/grants.html:13
+#: airy/templates/silica/grants.html:14
 msgid "アクセストークン状態"
 msgstr "Access Token State"
 
-#: airy/templates/silica/grants.html:14
+#: airy/templates/silica/grants.html:15
 msgid "れフレッシュトークン状態"
 msgstr "Refresh Token State"
 
-#: airy/templates/silica/grants.html:15 airy/templates/silica/iori.html:13
+#: airy/templates/silica/grants.html:16 airy/templates/silica/iori.html:13
 msgid "する"
 msgstr "Action"
 
-#: airy/templates/silica/grants.html:44
+#: airy/templates/silica/grants.html:48
 msgid "（期限切れ）"
 msgstr "(revoked)"
 
-#: airy/templates/silica/grants.html:46
+#: airy/templates/silica/grants.html:50
 msgid "（未だ有効）"
 msgstr "(still active)"
 
-#: airy/templates/silica/grants.html:50 airy/templates/silica/grants.html:53
+#: airy/templates/silica/grants.html:54 airy/templates/silica/grants.html:57
 msgid "未だ有効"
 msgstr "Still Active"
 
-#: airy/templates/silica/grants.html:50 airy/templates/silica/grants.html:53
+#: airy/templates/silica/grants.html:54 airy/templates/silica/grants.html:57
 msgid "取消済み"
 msgstr "Revoked"
 
-#: airy/templates/silica/grants.html:59
+#: airy/templates/silica/grants.html:64
 msgid "取消す"
 msgstr "Revoke"
+
+#: airy/templates/silica/grants.html:70
+msgid "削除"
+msgstr ""
 
 #: airy/templates/silica/index.html:7
 msgid "以下のユーザーとしてログインしています。"
@@ -308,17 +317,26 @@ msgstr "User"
 msgid "未設定"
 msgstr "Config"
 
-#: airy/templates/silica/iori.html:33 airy/templates/silica/macros.html:88
+#: airy/templates/silica/iori.html:33 airy/templates/silica/macros.html:85
 msgid "使用"
 msgstr "Use"
 
-#: airy/templates/silica/iori.html:38 airy/templates/silica/macros.html:93
+#: airy/templates/silica/iori.html:38 airy/templates/silica/macros.html:90
 msgid "ログアウト"
 msgstr "Logout"
 
 #: airy/templates/silica/log.html:16 airy/templates/silica/uls.html:16
 msgid "検索"
 msgstr "Query"
+
+#: airy/templates/silica/log.html:22
+#, fuzzy
+msgid "時刻"
+msgstr "Expiry Time"
+
+#: airy/templates/silica/log.html:24
+msgid "データ"
+msgstr ""
 
 #: airy/templates/silica/log.html:39
 #, python-format
@@ -348,92 +366,87 @@ msgstr "User Agent"
 msgid "遠隔認証トークン<%(token)sを承認しました。"
 msgstr "Authorized token %(token)s"
 
-#: airy/templates/silica/macros.html:10
-#, python-format
-msgid "（ユーザーID：%(id)s）"
-msgstr ""
-
-#: airy/templates/silica/macros.html:61 airy/templates/silica/macros.html:114
+#: airy/templates/silica/macros.html:58 airy/templates/silica/macros.html:111
 #, python-format
 msgid "（ログインID：%(id)s）"
 msgstr ""
 
-#: airy/templates/silica/macros.html:62 airy/templates/silica/macros.html:121
+#: airy/templates/silica/macros.html:59 airy/templates/silica/macros.html:118
 msgid "使用した認証パス："
 msgstr ""
 
-#: airy/templates/silica/macros.html:67 airy/templates/silica/uls.html:53
+#: airy/templates/silica/macros.html:64 airy/templates/silica/uls.html:53
 msgid "終了"
 msgstr ""
 
-#: airy/templates/silica/macros.html:70
+#: airy/templates/silica/macros.html:67
 msgid "（使用中）"
 msgstr ""
 
-#: airy/templates/silica/macros.html:82
+#: airy/templates/silica/macros.html:79
 msgid "名前未設定"
 msgstr ""
 
-#: airy/templates/silica/macros.html:97
+#: airy/templates/silica/macros.html:94
 msgid "ログインID："
 msgstr ""
 
-#: airy/templates/silica/macros.html:100
+#: airy/templates/silica/macros.html:97
 msgid "アカウント："
 msgstr ""
 
-#: airy/templates/silica/macros.html:103
+#: airy/templates/silica/macros.html:100
 msgid "省略："
 msgstr ""
 
-#: airy/templates/silica/macros.html:116
+#: airy/templates/silica/macros.html:113
 #, python-format
 msgid "開始時刻：%(start)s"
 msgstr ""
 
-#: airy/templates/silica/macros.html:117
+#: airy/templates/silica/macros.html:114
 #, python-format
 msgid "最後にアクセス：%(last)s"
 msgstr ""
 
-#: airy/templates/silica/macros.html:118
+#: airy/templates/silica/macros.html:115
 #, python-format
 msgid "終了時刻：%(end)s"
 msgstr ""
 
-#: airy/templates/silica/macros.html:126
+#: airy/templates/silica/macros.html:123
 msgid "セッション："
 msgstr ""
 
-#: airy/templates/silica/macros.html:134
+#: airy/templates/silica/macros.html:131
 msgid "ページ"
 msgstr "Page"
 
-#: airy/templates/silica/macros.html:136
+#: airy/templates/silica/macros.html:133
 msgid "前"
 msgstr "Prev"
 
-#: airy/templates/silica/macros.html:148
+#: airy/templates/silica/macros.html:145
 msgid "次"
 msgstr "Next"
 
-#: airy/templates/silica/macros.html:156
+#: airy/templates/silica/macros.html:153
 msgid "メッセージ"
 msgstr "Message"
 
-#: airy/templates/silica/macros.html:159
+#: airy/templates/silica/macros.html:156
 msgid "成功"
 msgstr "Success"
 
+#: airy/templates/silica/macros.html:159
+msgid "気をつけて"
+msgstr "Caution"
+
 #: airy/templates/silica/macros.html:162
-msgid "注意"
+msgid "警告"
 msgstr "Warning"
 
 #: airy/templates/silica/macros.html:165
-msgid "警告"
-msgstr "Caution"
-
-#: airy/templates/silica/macros.html:168
 msgid "エラー"
 msgstr "Error"
 
@@ -441,7 +454,11 @@ msgstr "Error"
 msgid "遠隔認証トークン承認"
 msgstr "Remote Token Authorization"
 
-#: airy/templates/silica/remote_decide.html:9
+#: airy/templates/silica/remote_decide.html:6
+msgid "トークンを承認するとあなたのアカウントをアクセス出来る可能性があります。"
+msgstr ""
+
+#: airy/templates/silica/remote_decide.html:10
 msgid "承認"
 msgstr "Authorize"
 
@@ -587,6 +604,25 @@ msgstr "Allow"
 #: airy/templates/silica/oauth/authz.html:27
 msgid "拒否"
 msgstr "Deny"
+
+#: airy/templates/silica/oauth/client.html:4
+#: airy/templates/silica/oauth/client.html:7
+#, python-format
+msgid "クライアント　「%(name)s」"
+msgstr ""
+
+#: airy/templates/silica/oauth/client.html:9
+msgid "ウェブサイト"
+msgstr ""
+
+#: airy/templates/silica/oauth/client.html:12
+#, fuzzy, python-format
+msgid "管理者：%(user)s"
+msgstr "Used %(user)s"
+
+#: airy/templates/silica/oauth/client.html:14
+msgid "求めれる権限"
+msgstr ""
 
 #: airy/verifiers/__init__.py:140
 #, fuzzy

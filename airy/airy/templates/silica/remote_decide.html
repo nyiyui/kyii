@@ -3,9 +3,10 @@
 {% block title %}{{ _("遠隔認証トークン承認") }}{% endblock %}
 
 {% block content %}
+{{ macros.alert('warning', _("トークンを承認するとあなたのアカウントをアクセス出来る可能性があります。")) }}
 <form method="POST" action="">
 	{{ form.hidden_tag() }}
-  {{ form.token.label }} {{ form.token }}
+	{{ form.token.label }} {{ form.token }}
 	<input type="submit" value="{{ _("承認") }}">
 	<div class="errors">
 		<ul>

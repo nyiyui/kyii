@@ -1,8 +1,8 @@
-from flask import abort, redirect, request, url_for
+from flask import abort, redirect, render_template, request, url_for
 
 from .bp import bp
 from ...db import db
-from ...db import OAuth2Token
+from ...db import OAuth2Token, OAuth2Client
 from .etc import paginate
 from ...oauth2 import authorization
 from ...ul import current_user, login_required
@@ -38,3 +38,9 @@ def grant_delete():
     db.session.delete(gr)
     db.session.commit()
     return redirect(url_for("silica.grants"))
+
+
+@bp.route("/clients/<client_id>", methods=("GET",))
+def client(client_id):
+    client = OAuth2Client.query.filter_by(client_id=client_id).first_or_404()
+    return render_template("silica/oauth/client.html", client=client)

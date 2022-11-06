@@ -2,20 +2,18 @@
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 {% endmacro %}
 
-{% macro user(user) %}
-  <span class="user">
-    <a href="{{ url_for('silica.user', uid=user.id) }}">
-      {{ user.name }}
-      <code class="user-slug">{{ user.slug }}</code>
-      {{ _('（ユーザーID：%(id)s）', id=user.id) }}
+{% macro client(client) %}
+  <span class="client">
+    <a href="{{ url_for('silica.client', client_id=client.client_id) }}">
+      {{ client.client_metadata.client_name }}
     </a>
   </span>
 {% endmacro %}
 
-{% macro user_short(user) %}
+{% macro user(user) %}
   <span class="user">
     <a href="{{ url_for('silica.user', uid=user.id) }}">
-      {{ user.name }}
+      {{ user.slug }}
     </a>
   </span>
 {% endmacro %}
@@ -23,9 +21,8 @@
 {% macro sid2_with_query(sid2) %}
   <span class="sid2">
     <code>{{ sid2[:7] }}</code>
-		<br />
-    （<a href="{{ url_for('silica.uls', sid2=sid2) }}">{{ _('ログイン') }}</a>）
-    （<a href="{{ url_for('silica.log', sid2=sid2) }}">{{ _('ログ') }}</a>）
+    (<a href="{{ url_for('silica.uls', sid2=sid2) }}">{{ _('ログイン') }}</a>)
+    (<a href="{{ url_for('silica.log', sid2=sid2) }}">{{ _('ログ') }}</a>)
   </span>
 {% endmacro %}
 
@@ -97,7 +94,7 @@
       {{ _('ログインID：') }} {{ ul_short(ul) }}
     </div>
     <div>
-      {{ _('アカウント：') }} {{ user_short(ul.user) }}
+      {{ _('アカウント：') }} {{ user(ul.user) }}
     </div>
     <div>
       {{ _('省略：') }} {{ ul_map_flipped[ul.id] }}
@@ -158,10 +155,10 @@
        <span class="material-symbols-outlined">check</span>
        {{ _("成功") }}
      {% elif category == 'caution' %}
-       <span class="material-symbols-outlined">warning</span>
-       {{ _("注意") }}
+       <span class="material-symbols-outlined">change_history</span>
+       {{ _("気をつけて") }}
      {% elif category == 'warning' %}
-       <span class="material-symbols-outlined">dangerous</span>
+       <span class="material-symbols-outlined">warning</span>
        {{ _("警告") }}
      {% elif category == 'error' %}
        <span class="material-symbols-outlined">error</span>

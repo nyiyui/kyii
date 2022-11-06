@@ -7,6 +7,7 @@
 	<table>
 		<tr>
 			<th>ID</th>
+			<th>{{ _("対象") }}</th>
 			<th>{{ _("権限") }}</th>
 			<th>{{ _("発行（承認）時刻") }}</th>
 			<th>{{ _("期限時刻") }}</th>
@@ -18,6 +19,9 @@
 			<tr>
 				<td>
 					{{ grant.id }}
+				</td>
+				<td>
+					{{ macros.client(grant.client_id|query_client) }}
 				</td>
 				<td>
 					<ul>

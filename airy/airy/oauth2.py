@@ -184,6 +184,7 @@ def scope_info_filter(scope: str) -> Scope:
 
 def config_oauth(app):
     query_client = create_query_client_func(db.session, OAuth2Client)
+    app.jinja_env.filters['query_client'] = query_client
     save_token = create_save_token_func(db.session, OAuth2Token)
     authorization.init_app(app, query_client=query_client, save_token=save_token)
 

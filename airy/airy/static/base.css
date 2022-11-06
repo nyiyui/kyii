@@ -145,6 +145,10 @@ td select {
 
 .container {
 	padding: 8px;
-	max-width: 50rem;
+	max-width: 70rem;
 	margin: auto;
+}
+
+.hidden {
+	display: none;
 }

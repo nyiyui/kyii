@@ -1,0 +1,27 @@
+{% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block title %}{{ _("クライアント　「%(name)s」", name=client.client_metadata.client_name) }}{% endblock %}
+
+{% block content %}
+	<h1>{{ _("クライアント　「%(name)s」", name=client.client_metadata.client_name) }}</h1>
+	<p>
+		<a rel="nofollow" href="{{ client.client_metadata.client_uri }}">{{ _("ウェブサイト") }}</a>
+	</p>
+	<p>
+		{{ _("管理者：%(user)s", user=macros.user(client.user)) }}
+	</p>
+	<h2>{{ _("求めれる権限") }}</h2>
+	<ul>
+		{% for scope in client.client_metadata.scope.split() %}
+			<li>
+				<details style="display: inline;">
+					<summary>
+						{{ (scope|scope_info).name }}
+					</summary>
+					{{ (scope|scope_info).desc }}
+				</details>
+			</li>
+		{% endfor %}
+	</ul>
+{% endblock %}
