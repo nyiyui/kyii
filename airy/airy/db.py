@@ -254,6 +254,9 @@ ap_reqs = db.Table(
     "ap_reqs",
     db.Column("ap_id", db.String(32), db.ForeignKey("ap.id"), primary_key=True),
     db.Column("af_id", db.String(32), db.ForeignKey("af.id"), primary_key=True),
+    db.Column("level", db.Integer, default=1),
+    # Lower-level req must be solved before higher-level can be.
+    # TODO: what does level 1 do?
 )
 
 

@@ -38,7 +38,9 @@ def login():
     if form.validate_on_submit():
         target = User.query.filter_by(slug=form.slug.data, is_active=True).one()
         session[API_V1_UID] = target.id
-        session[SILICA_NEXT] = tuple(request.args.get(key) for key in ("next", "nextargs"))
+        session[SILICA_NEXT] = tuple(
+            request.args.get(key) for key in ("next", "nextargs")
+        )
         return redirect(url_for("silica.login_choose"))
     return render_template("silica/login/start.html", form=form)
 
@@ -82,6 +84,7 @@ class LoginChooseForm(FlaskForm):
 
 @bp.route("/login/list", methods=("GET",))
 def login_list():
+    # TODO: implement leveling
     if (
         API_V1_UID not in session
         or API_V1_APID not in session
@@ -111,7 +114,7 @@ def login_list():
         session[SILICA_UL_MAP][i] = ul.id
         if (next_ := session.get(SILICA_NEXT, None)) is not None:
             if next_[0] is not None and next_[1] is not None:
-                return redirect(next_[0] + '?' + next_[1])
+                return redirect(next_[0] + "?" + next_[1])
         return redirect(url_for("silica.index"))
     return render_template(
         "silica/login/list.html",
@@ -234,9 +237,7 @@ class LoginStopForm(FlaskForm):
 
 @bp.route("/login/stop", methods=("GET", "POST"))
 def login_stop():
-    if (
-        API_V1_UID not in session
-    ):
+    if API_V1_UID not in session:
         return redirect(url_for("silica.login"))
     form = LoginStopForm()
     ap = AP.query.get(session.get(API_V1_APID))

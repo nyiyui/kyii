@@ -86,8 +86,8 @@ def init_app(app):
         Timing.stop("request")
         return resp
 
-    KEYS = ['format_datetime', 'format_date', 'format_time']
+    KEYS = ["format_datetime", "format_date", "format_time"]
     for key in KEYS:
         app.jinja_env.filters[key] = getattr(flask_babel, key)
 
-    app.jinja_env.globals['now_epoch'] = time.time
+    app.jinja_env.globals["now_epoch"] = time.time

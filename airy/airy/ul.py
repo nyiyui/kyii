@@ -129,7 +129,9 @@ class ULManager:
 
     def unauthenticated(self):
         flash(_("ログインが必要です。"), "warning")
-        return redirect(url_for("silica.login", next=request.path, nextargs=urlencode(request.args)))
+        return redirect(
+            url_for("silica.login", next=request.path, nextargs=urlencode(request.args))
+        )
 
     def __get_ul(self, token):
         return UserLogin.query.filter_by(token=token).first()
