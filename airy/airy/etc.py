@@ -1,5 +1,5 @@
 import time
-from typing import Optional
+from typing import Dict, Optional
 from urllib.parse import urlencode, urljoin
 
 from flask_qrcode import QRcode
@@ -16,6 +16,7 @@ from server_timing import Timing
 
 from .db import User, UserLogin
 from .ul import ULManager, current_user, current_ul
+
 
 signals = Namespace()
 

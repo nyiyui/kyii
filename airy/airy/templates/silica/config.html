@@ -9,7 +9,6 @@
 		<h3>{{ _("認証パス") }}</h3>
 		<table id="ap">
 			<tr>
-				<th rowspan="2">ID</th>
 				<th rowspan="2">名前</th>
 				<th colspan="{{ current_user.af | length }}">認証方法</th>
 			</tr>
@@ -22,7 +21,6 @@
 			</tr>
 			{% for ap in current_user.ap %}
 				<tr id="ap-{{ ap.id }}">
-					<td>{{ ap.id }}</td>
 					<td>
 						<input type="text" name="ap_{{ ap.id }}_name" value="{{ ap.name }}" />
 					</td>
@@ -54,31 +52,20 @@
 		<h3>{{ _("認証方法") }}</h3>
 		<table id="af">
 			<tr>
-				<th>ID</th>
-				<th>名前</th>
-				<th>型</th>
-				<th>設定</th>
-				<th>状態</th>
-				<th>編集</th>
+				<th>{{ _("名前") }}</th>
+				<th>{{ _("型") }}</th>
+				<th>{{ _("設定") }}</th>
+				<th>{{ _("状態") }}</th>
+				<th>{{ _("編集") }}</th>
 			</tr>
 			{% for af in current_user.af %}
 				{% if af.gen_done %}
 					<tr id="af-{{ af.id }}">
-						<td>{{ af.id }}</td>
 						<td>
 							<input type="text" name="af_{{ af.id }}_name" value="{{ af.name }}" />
 						</td>
 						<td>
-							<!--
-							<select name="af_{{ af.id }}_verifier">
-								<option value="pw"       {{ 'selected' if af.verifier == "pw" }}>{{ _("パスワード") }}</option>
-								<option value="otp_totp" {{ 'selected' if af.verifier == "otp_totp" }}>{{ _("TOTP") }}</option>
-								<option value="webauthn" {{ 'selected' if af.verifier == "webauthn" }}>{{ _("WebAuthn") }}</option>
-								<option value="limited"  {{ 'selected' if af.verifier == "limited" }}>{{ _("回数制限") }}</option>
-								<option value="remote"   {{ 'selected' if af.verifier == "remote" }}>{{ _("遠隔認証") }}</option>
-							</select>
-							-->
-							{{ af.verifier }}
+							{{ verifier_names[af.verifier] }}
 						</td>
 						<td>
 							{% if af.verifier == "pw" %}

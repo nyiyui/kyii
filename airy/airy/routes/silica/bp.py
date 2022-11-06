@@ -1,5 +1,6 @@
 from flask import Blueprint, session
 from ...session import API_V1_UID
+from ...verifiers import VERIFIER_NAMES
 from ...db import db, ap_reqs
 
 
@@ -17,3 +18,4 @@ def login_doing_processor():
 def init_app(app):
     app.register_blueprint(bp)
     app.jinja_env.globals['get_ap_req'] = get_ap_req
+    app.jinja_env.globals['verifier_names'] = VERIFIER_NAMES

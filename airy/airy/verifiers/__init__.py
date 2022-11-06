@@ -132,6 +132,7 @@ VERIFIERS: Dict[str, Any] = {
     "remote": remote,
 }
 
+
 VERIFIER_NAMES: Dict[str, str] = {
     "pw": _l("パスワード"),
     "otp_totp": _l("TOTP"),
@@ -139,7 +140,6 @@ VERIFIER_NAMES: Dict[str, str] = {
     "limited": _l("回数制限"),
     "remote": _l("遠隔承認"),
 }
-
 
 def gen(
     verifier: str,
