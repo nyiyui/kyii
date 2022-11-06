@@ -297,10 +297,10 @@ def iori_logout():
     ulid = request.form["ulid"]
     if SILICA_ULIDS not in session:
         return redirect(url_for("silica.login"))
-    if ulid not in session[SILICA_ULIDS]:
+    ul = UserLogin.query.get(ulid)
+    if ulid not in session[SILICA_ULIDS] and ul.user != current_user:
         abort(403)
         return
-    ul = UserLogin.query.get(ulid)
     if session.get(SILICA_CURRENT_ULID) == ul.id:
         del session[SILICA_CURRENT_ULID]
         del session[SILICA_UL_MAP][flip(session[SILICA_UL_MAP])[ul.id]]
@@ -309,7 +309,7 @@ def iori_logout():
         flash(_("他ログインをログアウトしました。"), "message")
     ul.revoke("revoke")
     db.session.commit()
-    return redirect(url_for("silica.iori"))
+    return redirect(url_for("silica.uls" if request.args['uls'] else "silica.iori"))
 
 
 @bp.route("/iori/rename", methods=("POST",))

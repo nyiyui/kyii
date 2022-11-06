@@ -186,13 +186,9 @@ class ULManager:
                 ul = AnonymousUserLogin()
                 _request_ctx_stack.top.airy_ul = ul
             if ul.is_authenticated and ul.revoked:
-                is_api = print(request.path).startswith("/api")
-                if is_api:
-                    abort(self.unauthenticated())
-                    return
-                else:
-                    abort(403)
-                    return
+                session[SILICA_CURRENT_ULID] = None
+                abort(403)
+                return
             _request_ctx_stack.top.airy_ul = ul
             with t.time("load_ul.see"):
                 if ul.is_authenticated and ul.see():

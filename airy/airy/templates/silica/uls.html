@@ -31,6 +31,9 @@
 				</td>
 				<td>
 					{{ ul.name if ul.name else '' }}
+					{% if ul.id == current_ul.id %}
+						{{ _("（自分）") }}
+					{% endif %}
 				</td>
 				<td>
 					{{ ul.start|format_datetime }}
@@ -47,7 +50,7 @@
 				</td>
 				<td>{{ macros.ap(ul.against) }}</td>
 				<td>
-					<form method="post" action="{{ url_for('silica.iori_logout') }}">
+					<form method="post" action="{{ url_for('silica.iori_logout', uls=True) }}">
 						{{ macros.form_csrf() }}
 						<input type="hidden" name="ulid" value="{{ ul.id }}"/>
 						<input type="submit" value="{{ _('終了') }}" />
