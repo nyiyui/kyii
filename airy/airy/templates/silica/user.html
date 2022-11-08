@@ -2,5 +2,6 @@
 {% import "silica/macros.html" as macros %}
 
 {% block content %}
-{{ macros.user(user) }}
+	{{ user.name }}
+	{{ macros.user(user) }}
 {% endblock %}

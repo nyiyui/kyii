@@ -12,6 +12,13 @@
 	--c-accent: #002b36;
 }
 
+:root {
+	/* mcpt colours */
+	--c-bg: ##e9ecef;
+	--c-navbg: #3737B4;
+	--c-navfg: rgba(255,255,255,.8) !important;
+}
+
 body {
 	background-color: var(--c-bg);
 	color: var(--c-fg);
@@ -140,7 +147,12 @@ td > select {
 
 	position: sticky;
 	top: 0;
-	background: var(--c-bg);
+	background: var(--c-navbg, var(--c-bg));
+	color: var(--c-navfg, inherit);
+}
+
+#nav-header a {
+	color: var(--c-navfg, inherit);
 }
 
 .container {

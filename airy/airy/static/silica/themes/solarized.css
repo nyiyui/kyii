@@ -1,0 +1,13 @@
+:root {
+	/* colour scheme from https://ethanschoonover.com/solarized/#the-values */
+	--c-bg: #fdf6e3;
+	--c-fg: #586e75;
+	--c-msg: #93a1a1;
+	--c-suc: #859900;
+	--c-ctn: #b58900;
+	--c-warn: #cb4b16;
+	--c-err: #dc322f;
+	--c-1a: #268bd2;
+	--c-1b: #6c71c4;
+	--c-accent: #002b36;
+}
