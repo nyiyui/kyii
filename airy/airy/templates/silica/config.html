@@ -9,8 +9,8 @@
 		<h3>{{ _("認証パス") }}</h3>
 		<table id="ap">
 			<tr>
-				<th rowspan="2">名前</th>
-				<th colspan="{{ current_user.af | length }}">認証方法</th>
+				<th rowspan="2">{{ _("名前") }}</th>
+				<th colspan="{{ current_user.af | length }}">{{ _("認証方法") }}</th>
 			</tr>
 			<tr>
 				{% for af in current_user.af %}
@@ -87,7 +87,7 @@
 						<td>
 							<form action="{{ url_for('silica.config_af_delete', afid=af.id) }}" method="post">
 								{{ macros.form_csrf() }}
-								<input type="submit" value="{{ _("削除") }}" />
+								<input class="Bcaution" type="submit" value="{{ _("削除") }}" />
 							</form>
 							<form action="{{ url_for('silica.config_af_regen', afid=af.id) }}" method="post">
 								{{ macros.form_csrf() }}
