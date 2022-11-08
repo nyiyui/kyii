@@ -1,7 +1,5 @@
 :root {
 	/* colour scheme from https://ethanschoonover.com/solarized/#the-values */
-	--c-bg: #fdf6e3;
-	--c-fg: #586e75;
 	--c-msg: #93a1a1;
 	--c-suc: #859900;
 	--c-ctn: #b58900;
@@ -9,15 +7,29 @@
 	--c-err: #dc322f;
 	--c-1a: #268bd2;
 	--c-1b: #6c71c4;
-	--c-accent: #002b36;
+
+	--c-bg: #fdf6e3;
+	--c-fg: #586e75;
+	--c-shadow: #586e75;
+	--c-accent: #416fc4;
 }
 
+@media (prefers-color-scheme: dark) {
+	:root {
+		--c-bg: #002b36;
+		--c-fg: #93a1a1;
+		--c-accent: #ff6bdf;
+		--c-shadow: #93a1a1;
+	}
+}
+
+/*
 :root {
-	/* mcpt colours */
 	--c-bg: ##e9ecef;
 	--c-navbg: #3737B4;
 	--c-navfg: rgba(255,255,255,.8) !important;
 }
+*/
 
 body {
 	background-color: var(--c-bg);
@@ -40,11 +52,11 @@ a:visited {
 	color: var(--c-1b);
 }
 
-.Bmessage { --c-accent: var(--c-msg) !important; }
-.Bsuccess { --c-accent: var(--c-suc) !important; }
-.Bcaution { --c-accent: var(--c-ctn) !important; }
-.Bwarning { --c-accent: var(--c-warn) !important; }
-.Berror { --c-accent: var(--c-err) !important; }
+.Bmessage { --c-accent2: var(--c-msg) !important; }
+.Bsuccess { --c-accent2: var(--c-suc) !important; }
+.Bcaution { --c-accent2: var(--c-ctn) !important; }
+.Bwarning { --c-accent2: var(--c-warn) !important; }
+.Berror { --c-accent2: var(--c-err) !important; }
 
 .Amessage { color: var(--c-msg); }
 .Asuccess { color: var(--c-suc); }
@@ -97,36 +109,37 @@ ol.nodeco, ul.nodeco {
 input,
 button {
 	background-color: inherit;
-	color: inherit;
-	border: 0.05rem solid var(--c-accent);
+	border: 0.05rem solid var(--c-shadow);
 	border-radius: 0.5rem;
 	margin: 0.2rem;
 	padding: 0.1rem 0.3rem;
 	transition: 0.2s;
+	color: var(--c-accent2, inherit);
 }
 
-input[type="text"] {
-	box-shadow: inset 0 0 0.2rem var(--c-accent);
+input[type="text"],
+input[type="number"] {
+	box-shadow: inset 0 0 0.2rem var(--c-shadow);
 	padding: 0.2rem 0.4rem;
 }
 
 input[type="submit"],
 input[type="button"],
 button {
-	box-shadow: 0 0 0.2rem var(--c-accent);
+	box-shadow: 0 0 0.2rem var(--c-shadow);
 }
 
 input[type="submit"]:hover:not(:disabled),
 input[type="button"]:hover:not(:disabled),
 button:hover:not(:disabled) {
-	box-shadow: 0 0 0.4rem var(--c-accent);
+	box-shadow: 0 0 0.4rem var(--c-shadow);
 }
 
 input:disabled,
 button:disabled {
 	border-style: dashed;
 	border-width: 0.03rem;
-	box-shadow: 0 0 0.1rem var(--c-accent);
+	box-shadow: 0 0 0.1rem var(--c-shadow);
 }
 
 table {
