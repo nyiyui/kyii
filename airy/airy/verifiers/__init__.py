@@ -117,7 +117,8 @@ class Limited(Verifier):
     ) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
         limit = params["limit"]
         if state is None:
-            raise VerificationError("state required")
+            state = dict(used=0)
+            #raise VerificationError("state required")
         used = state["used"]
         if used >= limit:
             raise VerificationError("limit reached")

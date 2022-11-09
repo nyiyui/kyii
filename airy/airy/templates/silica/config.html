@@ -76,12 +76,12 @@
 									{{ _("※Django PBKDF2/SHA256対応") }}
 								{% endif %}
 							{% elif af.verifier == "limited" %}
-								{{ _("%(limit)sまで", af.params.limit) }}
+								{{ _("%(limit)sまで", limit=af.params.limit) }}
 							{% endif %}
 						</td>
 						<td>
 							{% if af.verifier == "limited" %}
-								{{ _("%(used)s回使用", af.params.used) }}
+								{{ _("%(used)s回使用", used=af.params.used) }}
 							{% endif %}
 						</td>
 						<td>

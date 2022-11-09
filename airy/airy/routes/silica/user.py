@@ -213,7 +213,13 @@ def login_attempt():
             "silica/login/attempt_single.html", form=form, u=u, ap=ap, af=af
         )
     elif af.verifier in AUTOMATIC_VERIFIERS:
-        abort(400)  # cannot attempt an automatic verifier
+        if af.verifier == "limited":
+            feedback, cur_done = af.verify(None, target_id=u.id)
+            if not cur_done:
+                raise RuntimeError("limited must not not cur_done")
+            flash(_("「%(af_name)s」認証要素を解きました。", af_name=af.name))
+            session[API_V1_SOLVED] = session[API_V1_SOLVED] | {af.id}
+            return redirect(url_for("silica.login_list"))
         return
     elif af.verifier == "webauthn":
         feedback, done = af.verify(json.dumps(dict(state="1_generate")))
@@ -478,10 +484,27 @@ class TAF:
 
     params: Optional[dict] = None
     state: Optional[dict] = None
-    gen_state: Optional[dict] = None
     feedback: Optional[dict] = None
     gen_done: Optional[bool] = None
     verify_done: bool = False
+
+    def save(self):
+        if self.id:
+            af = AF.query.get(self.id)
+        else:
+            af = AF()
+        af.name = self.name
+        af.user = current_user
+        af.verifier = self.verifier
+        af.params = self.params
+        af.state = self.state
+        af.gen_done = self.gen_done
+        if not self.id:
+            db.session.add(af)
+        db.session.commit()
+        del session[SILICA_TAF]
+        flash(_("認証方法「%(af_name)s」を生成および確認、保存しました。", af_name=af.name), 'success')
+        return redirect(url_for('silica.config'))
 
 
 @bp.route("/config/taf", methods=("GET", "POST"))
@@ -540,9 +563,18 @@ class ConfigTAFTOTPVerifyForm(FlaskForm):
         return self.code.data
 
 
+class ConfigTAFLimitedGenForm(FlaskForm):
+    times = IntegerField(_l("回数"), validators=[NumberRange(min=0)])
+
+    @property
+    def gen_params(self) -> dict:
+        return dict(times=self.times.data)
+
+
 CONFIG_TAF_GEN_FORMS = {
     "pw": ConfigTAFPwForm,
     "otp_totp": ConfigTAFTOTPGenForm,
+    "limited": ConfigTAFLimitedGenForm,
 }
 
 
@@ -553,7 +585,7 @@ def config_taf_gen():
     form = CONFIG_TAF_GEN_FORMS[taf.verifier]()
     if form.validate_on_submit():
         try:
-            taf.params, taf.gen_state, taf.feedback, taf.gen_done = verifiers.gen(taf.verifier, form.gen_params, taf.gen_state)
+            taf.params, taf.state, taf.feedback, taf.gen_done = verifiers.gen(taf.verifier, form.gen_params, taf.state)
         except VerificationError as e:
             flash(_("認証方法生成：%(err)s", err=e), "error")
         session[SILICA_TAF] = taf
@@ -574,6 +606,8 @@ CONFIG_TAF_VERIFY_FORMS = {
 @login_required
 def config_taf_verify():
     taf = session[SILICA_TAF]
+    if taf.verifier == 'limited':
+       return taf.save()
     form = CONFIG_TAF_VERIFY_FORMS[taf.verifier]()
     if taf.verifier == 'otp_totp':
         digits = taf.params['digits']
@@ -585,22 +619,7 @@ def config_taf_verify():
             flash(_("認証方法確認：%(err)s", err=e), "error")
         session[SILICA_TAF] = taf
         if taf.verify_done:
-            if taf.id:
-                af = AF.query.get(taf.id)
-            else:
-                af = AF()
-            af.name = taf.name
-            af.user = current_user
-            af.verifier = taf.verifier
-            af.params = taf.params
-            af.state = taf.state
-            af.gen_done = taf.gen_done
-            if not taf.id:
-                db.session.add(af)
-            db.session.commit()
-            del session[SILICA_TAF]
-            flash(_("認証方法「%(af_name)s」を生成および確認、保存しました。", af_name=af.name), 'success')
-            return redirect(url_for('silica.config'))
+            return taf.save()
     if taf.verifier not in VERIFIER_NAMES:
         abort(422)
     return render_template(f"silica/config_taf_verify_{taf.verifier}.html", form=form, taf=taf)
