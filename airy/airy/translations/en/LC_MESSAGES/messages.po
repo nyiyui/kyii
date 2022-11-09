@@ -33,7 +33,7 @@ msgstr "Profile"
 #: airy/oauth2.py:172
 #, fuzzy
 msgid "プロフィール画像や名前等"
-msgstr "Profile"
+msgstr "Profile image, name, etc."
 
 #: airy/oauth2.py:175
 msgid "Eメール"
