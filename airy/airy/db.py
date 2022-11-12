@@ -30,8 +30,8 @@ class User(db.Model):
     slug = db.Column(db.String(128), unique=True)  # null if unset
     name = db.Column(db.Unicode(256))
     is_active = db.Column(db.Boolean, nullable=False, default=True)
-    primary_group_id = db.Column(db.String(32), db.ForeignKey("group.id"))
-    primary_group = db.relationship("Group", foreign_keys=[primary_group_id])
+    email_id = db.Column(db.String(32), db.ForeignKey("email.id"))
+    email = db.relationship("Email", backref=db.backref("user", lazy=True))
     groups = db.relationship(
         "Group",
         secondary="user_groups",
@@ -40,7 +40,7 @@ class User(db.Model):
     )
 
     def __str__(self):
-        return f"<User {self.id} {self.slug}>"
+        return self.slug
 
     @property
     def all_groups(self):
@@ -96,7 +96,7 @@ class Group(db.Model):
         return [gp.perm_name for gp in self._perms]
 
     def __str__(self):
-        return f"<Group {self.slug} {self.id}>"
+        return self.slug
 
     @property
     def for_api_v1_trusted(self):
@@ -368,6 +368,9 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
     id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
     user_id = db.Column(db.String(32), db.ForeignKey("user.id", ondelete="CASCADE"))
     user = db.relationship("User")
+
+    def __str__(self):
+        return self.client_metadata['client_name']
 
     def set_client_metadata(self, client_metadata):
         super().set_client_metadata(client_metadata)

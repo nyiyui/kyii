@@ -54,6 +54,9 @@ class Config:
     # Flask-Babel
     LANGUAGES = ["en", "ja"]
 
+    # OAuth
+    OAUTH2_CLIENTS = {}
+
 
 def init_app(app):
     app.config.from_object(Config)

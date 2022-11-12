@@ -30,6 +30,7 @@ gunicorn = "*"
 flask-server-timing = "0.1.2"
 flask-babel = "*"
 flask-qrcode = "*"
+requests = "*"
 
 [dev-packages]
 pytest = "*"

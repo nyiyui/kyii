@@ -6,7 +6,7 @@ import nacl.pwhash
 from nacl.exceptions import InvalidkeyError
 from passlib.hash import django_pbkdf2_sha256
 
-from . import remote, totp, webauthn
+from . import remote, totp, webauthn, oauth
 from .errors import GenerationError, VerificationError
 
 # TODO: convert to modules
@@ -131,6 +131,7 @@ VERIFIERS: Dict[str, Any] = {
     "webauthn": webauthn,
     "limited": Limited,
     "remote": remote,
+    "oauth": oauth,
 }
 
 
@@ -140,6 +141,7 @@ VERIFIER_NAMES: Dict[str, str] = {
     "webauthn": _l("WebAuthn"),
     "limited": _l("回数制限"),
     "remote": _l("遠隔承認"),
+    "oauth": _l("OAuth"),
 }
 
 

@@ -1,4 +1,5 @@
 import uuid
+import json
 from pathlib import Path
 from urllib.parse import urlencode, urljoin
 
@@ -7,6 +8,7 @@ from authlib.jose import JsonWebKey, KeySet
 from authlib.oauth2 import OAuth2Error
 from flask import (
     Blueprint,
+    abort,
     current_app,
     jsonify,
     redirect,
@@ -20,6 +22,7 @@ from werkzeug.datastructures import ImmutableMultiDict
 
 from ..etc import csrf
 from ..oauth2 import authorization, generate_user_info, require_oauth
+from ..oauth2_client import oauth
 from ..ul import current_user, login_required
 
 bp = Blueprint("oauth", __name__)
@@ -133,3 +136,21 @@ def load_public_keys():
 def jwks_endpoint():
     pks = load_public_keys()
     return pks.as_dict()
+
+
+@bp.route("/oauth-client/<client_handle>/redirect")
+def oauth_client_redirect(client_handle):
+    if client_handle not in current_app.config.OAUTH2_CLIENTS:
+        abort(422)
+    redirect_uri = url_for('oauth_client_authorize', client_handle=client_handle, _external=True)
+    return getattr(oauth, client_handle).authorize_redirect(redirect_uri)
+
+
+@bp.route("/oauth-client/<client_handle>/authorize")
+def oauth_client_authorize(client_handle):
+    if client_handle not in current_app.config.OAUTH2_CLIENTS:
+        abort(422)
+    client = getattr(oauth, client_handle)
+    token = client.authorize_access_token()
+    print(json.dumps(token))
+    print(token['userinfo'])

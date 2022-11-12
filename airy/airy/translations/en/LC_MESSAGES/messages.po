@@ -661,7 +661,7 @@ msgstr "Next"
 #: airy/templates/silica/login/attempt_single.html:10
 #: airy/templates/silica/login/attempt_webauthn.html:14
 msgid "認証要素を解く"
-msgstr "Solve AF."
+msgstr "Solve AF"
 
 #: airy/templates/silica/login/choose.html:4
 #: airy/templates/silica/login/stop.html:7

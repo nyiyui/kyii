@@ -1,5 +1,5 @@
 import json
-from flask import redirect, render_template, url_for, session, flash, request, abort
+from flask import redirect, render_template, url_for, session, flash, request, abort, current_app
 from flask_cors import CORS
 from collections import defaultdict
 from dataclasses import dataclass
@@ -571,10 +571,14 @@ class ConfigTAFLimitedGenForm(FlaskForm):
         return dict(times=self.times.data)
 
 
+class ConfigTAFOAuthGenForm(FlaskForm):
+    provider = RadioField(_l("プロバイダ"), validators=[InputRequired()])
+
 CONFIG_TAF_GEN_FORMS = {
     "pw": ConfigTAFPwForm,
     "otp_totp": ConfigTAFTOTPGenForm,
     "limited": ConfigTAFLimitedGenForm,
+    "oauth": ConfigTAFOAuthGenForm
 }
 
 
@@ -583,6 +587,8 @@ CONFIG_TAF_GEN_FORMS = {
 def config_taf_gen():
     taf = session[SILICA_TAF]
     form = CONFIG_TAF_GEN_FORMS[taf.verifier]()
+    if taf.verifier == 'oauth':
+        form.choices = [(handle, client['name']) for handle, client in current_app.config.OAUTH2_CLIENTS.items()]
     if form.validate_on_submit():
         try:
             taf.params, taf.state, taf.feedback, taf.gen_done = verifiers.gen(taf.verifier, form.gen_params, taf.state)

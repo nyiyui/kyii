@@ -4,7 +4,7 @@ from pathlib import Path
 from flask import Flask
 from flask_migrate import Migrate
 
-from . import admin, config, db, etc, routes, seed, cli
+from . import admin, config, db, etc, routes, seed, cli, oauth2_client
 from .oauth2 import config_oauth
 from .session import session
 
@@ -30,6 +30,7 @@ def __setup_app(app):
     Path(os.path.join(upload_path, "img-tmp")).mkdir(parents=True, exist_ok=True)
     Path(os.path.join(upload_path, "img")).mkdir(parents=True, exist_ok=True)
     cli.init_app(app)
+    oauth2_client.init_app(app)
 
 
 app = create_app()
