@@ -1,0 +1,41 @@
+{% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block title %}設定{% endblock %}
+
+{% block content %}
+	<h2>{{ _("プロフィール") }}</h2>
+	<form action="" method="post" enctype="multipart/form-data">
+		<label>
+			ID
+			<input type="text" disabled value="{{ current_user.id }}" />
+		</label>
+		{{ macros.form_csrf() }}
+		{{ form.name.label }} {{ form.name }}
+		<div class="errors">
+			<ul>
+				{% for error in form.errors.label %}
+					<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+		</div>
+		{{ form.handle.label }} {{ form.handle }}
+		<div class="errors">
+			<ul>
+				{% for error in form.errors.handle %}
+					<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+		</div>
+		{{ form.image.label }} {{ form.image }}
+		<div class="errors">
+			<ul>
+				{% for error in form.errors.image %}
+					<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+		</div>
+		<input type="submit" value="{{ _('保存') }}" class="Bsuccess" />
+	</form>
+{% endblock %}
+

@@ -16,6 +16,7 @@
 	<input type="submit" value="{{ _("検索") }}">
 </form>
 
+{{ macros.pages(query) }}
 <table>
 	<tr>
 		<th class="hidden">ログID</th>
@@ -60,6 +61,4 @@
 		</tr>
 	{% endfor %}
 </table>
-
-{{ macros.pages(query) }}
 {% endblock %}

@@ -5,3 +5,5 @@
 /airy/local_config.py
 /test.db
 .mypy-cache
+/local-profile
+/local-profile-tmp

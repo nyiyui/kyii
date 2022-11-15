@@ -4,6 +4,7 @@
 {% block title %}{{ _("認可") }}{% endblock %}
 
 {% block content %}
+	{{ macros.pages(query) }}
 	<table>
 		<tr>
 			<th>ID</th>
@@ -74,5 +75,4 @@
 			</tr>
 		{% endfor %}
 	</table>
-	{{ macros.pages(query) }}
 {% endblock %}
