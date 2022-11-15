@@ -152,5 +152,3 @@ def oauth_client_authorize(client_handle):
         abort(422)
     client = getattr(oauth, client_handle)
     token = client.authorize_access_token()
-    print(json.dumps(token))
-    print(token['userinfo'])

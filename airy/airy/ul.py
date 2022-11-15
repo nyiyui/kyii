@@ -137,7 +137,6 @@ class ULManager:
         return UserLogin.query.filter_by(token=token).first()
 
     def _load_ul(self):
-        print(session.get(SILICA_UL_MAP))
         with t.time("load_ul"):
             token = request.headers.get(TOKEN_HEADER)
             if token is None:
@@ -167,7 +166,6 @@ class ULManager:
                     ul = AnonymousUserLogin()
                     _request_ctx_stack.top.airy_ul = ul
                 else:
-                    print("ulid", ulid)
                     if ulid not in ulids:
                         if SILICA_CURRENT_ULID in session:
                             session[SILICA_CURRENT_ULID] = None

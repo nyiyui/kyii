@@ -116,7 +116,6 @@ def login_list():
             afs = ap.afs(user_id=u.id).filter(column("level") == session[SILICA_LOGIN_LEVEL])
             afids = set(a[0] for a in afs.with_entities(AF.id).all())
             missing = afids - session[API_V1_SOLVED]
-            print('RELEVEL', session[SILICA_LOGIN_LEVEL])
         else:
             flash(_("全ての認証が完了しました。%(name)sとしてログインしました。", name=u.name), "success")
             ul, _token = login_user(u, ap.id)
@@ -132,7 +131,6 @@ def login_list():
                 if next_[0] is not None and next_[1] is not None:
                     return redirect(next_[0] + "?" + next_[1])
             return redirect(url_for("silica.index"))
-    print('MISSING', missing)
     if len(missing) == 1:
         afid = list(missing)[0]
         if afid not in session[API_V1_SOLVED]:
@@ -406,7 +404,6 @@ def check_freshness(ap, af):
 
 
 def apply_changes(ap, af):
-    print(ap)
     for afid, af in af.items():
         a = AF.query.filter_by(id=afid)
         if (b := a.first()) is not None:
@@ -419,9 +416,7 @@ def apply_changes(ap, af):
         if (b := a.first()) is not None:
             b.name = ap["name"]
             b.reqs = reqs
-            print('===REQS', ap['reqs'])
             for afid, level in ap["reqs"].items():
-                print('===AFID', afid, level)
                 db.session.query(ap_reqs).filter_by(ap_id=apid, af_id=afid).update(dict(level=level))
         else:
             db.session.add(AP(name=ap["name"], reqs=reqs))
@@ -454,7 +449,6 @@ def config_ax():
             afid = tokens[1]
             if tokens[2] == "name":
                 af[afid]["name"] = value
-    print('AP', dict(ap))
     ap = dict(ap)
     af = dict(af)
     if (s := check_freshness(ap, af)) is not None:
@@ -639,21 +633,17 @@ def config_taf_verify():
 @login_required
 def config_profile():
     form = ConfigProfileForm(name=current_user.name, handle=current_user.slug)
-    print('(*˘︶˘*).｡.:*♡')
     if form.validate_on_submit():
         current_user.name = form.name.data
         current_user.slug = form.handle.data
-        print('form', form.image.data)
         if form.image.data:
             f = form.image.data
-            print('f', f)
             fn = secure_filename(f.filename)
             f.save(tmp_path := os.path.join(current_app.config['SILICA_IMAGES_TMP_PATH'], f'{current_user.id}_{fn}'))
             dest_path = os.path.join(current_app.config['SILICA_IMAGES_PATH'], f'{current_user.id}.webp')
             conv_to_webp(tmp_path, dest_path)
             os.remove(tmp_path)
         db.session.commit()
-    print('===', form)
     return render_template("silica/config_profile.html", form=form)
 
 
@@ -666,9 +656,7 @@ def verifier_names():
 @login_required
 def user_pfp(uid):
     u = User.query.get_or_404(uid)
-    print(os.getcwd())
     path = os.path.join(os.path.abspath(current_app.config['SILICA_IMAGES_PATH']), f'{u.id}.webp')
-    print(path)
     try:
         return send_file(path, download_name=f'{u.id}.webp', mimetype="image/webp")
     except FileNotFoundError:
