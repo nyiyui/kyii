@@ -1,10 +1,12 @@
 import json
-from flask import redirect, render_template, url_for, session, flash, request, abort, current_app
+import os
+from flask import redirect, render_template, url_for, session, flash, request, abort, current_app, send_file
 from flask_cors import CORS
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Optional
 
+from werkzeug.utils import secure_filename
 from sqlalchemy import column
 from server_timing import Timing as t
 from flask_babel import lazy_gettext as _l
@@ -12,6 +14,8 @@ from flask_babel import _
 from flask_wtf import FlaskForm
 from wtforms import StringField, RadioField, PasswordField, IntegerField
 from wtforms.validators import InputRequired, Length, ValidationError, NumberRange
+from flask_wtf.file import FileField
+from ..util import conv_to_webp
 from ...db import User, AF, AP, ap_reqs, LogEntry, UserLogin, db
 from ...session import (
     API_V1_UID,
@@ -353,10 +357,9 @@ def self():
     return render_template("silica/self.html")
 
 
-@bp.route("/user", methods=("GET",))
+@bp.route("/user/<uid>", methods=("GET",))
 @login_required
-def user():
-    uid = request.args["uid"]
+def user(uid):
     u = User.query.get_or_404(uid)
     return render_template("silica/user.html", user=u)
 
@@ -381,6 +384,7 @@ def remote_decide():
 class ConfigProfileForm(FlaskForm):
     name = StringField(_l("名前"), validators=[InputRequired(), Length(min=1)])
     handle = StringField(_l("ハンドル"), validators=[InputRequired(), Length(min=1)])
+    image = FileField(_l("プロファイル画像"))
 
 
 @bp.route("/config", methods=("GET",))
@@ -631,17 +635,42 @@ def config_taf_verify():
     return render_template(f"silica/config_taf_verify_{taf.verifier}.html", form=form, taf=taf)
 
 
-@bp.route("/config/profile", methods=("POST",))
+@bp.route("/config/profile", methods=("GET", "POST"))
 @login_required
 def config_profile():
     form = ConfigProfileForm(name=current_user.name, handle=current_user.slug)
+    print('(*˘︶˘*).｡.:*♡')
     if form.validate_on_submit():
         current_user.name = form.name.data
         current_user.slug = form.handle.data
+        print('form', form.image.data)
+        if form.image.data:
+            f = form.image.data
+            print('f', f)
+            fn = secure_filename(f.filename)
+            f.save(tmp_path := os.path.join(current_app.config['SILICA_IMAGES_TMP_PATH'], f'{current_user.id}_{fn}'))
+            dest_path = os.path.join(current_app.config['SILICA_IMAGES_PATH'], f'{current_user.id}.webp')
+            conv_to_webp(tmp_path, dest_path)
+            os.remove(tmp_path)
         db.session.commit()
-        return redirect(url_for("silica.config"))
+    print('===', form)
+    return render_template("silica/config_profile.html", form=form)
 
 
 @bp.context_processor
 def verifier_names():
     return VERIFIER_NAMES
+
+
+@bp.route("/user/<uid>/pfp.webp")
+@login_required
+def user_pfp(uid):
+    u = User.query.get_or_404(uid)
+    print(os.getcwd())
+    path = os.path.join(os.path.abspath(current_app.config['SILICA_IMAGES_PATH']), f'{u.id}.webp')
+    print(path)
+    try:
+        return send_file(path, download_name=f'{u.id}.webp', mimetype="image/webp")
+    except FileNotFoundError:
+        abort(404)
+

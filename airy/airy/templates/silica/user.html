@@ -2,6 +2,11 @@
 {% import "silica/macros.html" as macros %}
 
 {% block content %}
-	{{ user.name }}
-	{{ macros.user(user) }}
+	<div class="pfp">
+		<img src="{{ url_for('silica.user_pfp', uid=user.id) }}" />
+		<div class="etc">
+			{{ macros.user(user) }}
+			{{ user.name }}
+		</div>
+	</div>
 {% endblock %}

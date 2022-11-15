@@ -108,9 +108,10 @@
 			ID
 			<input type="text" disabled value="{{ current_user.id }}" />
 		</label>
-		{{ form.hidden_tag() }}
+		{{ macros.form_csrf() }}
 		{{ form.name.label }} {{ form.name }}
 		{{ form.handle.label }} {{ form.handle }}
+		{{ form.image.label }} {{ form.image }}
 		<div class="errors">
 			<ul>
 				{% for error in form.errors.slug %}

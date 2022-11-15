@@ -177,3 +177,21 @@ td > select {
 .hidden {
 	display: none;
 }
+
+.pfp {
+	display: flex;
+}
+
+.pfp > img {
+	object-fit: cover;
+	border-radius: 50%;
+	height: 54px;
+}
+
+.pfp > .etc {
+	margin: 0;
+	margin-left: 8px;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+}

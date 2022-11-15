@@ -54,6 +54,9 @@ class Config:
     # Flask-Babel
     LANGUAGES = ["en", "ja"]
 
+    # Images
+    SILICA_IMAGES_PATH = "./local-images"
+
     # OAuth
     OAUTH2_CLIENTS = {}
 
