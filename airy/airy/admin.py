@@ -43,8 +43,11 @@ class IndexView(AdminIndexView):
 
 class AiryModelView(sqla.ModelView):
     def is_accessible(self):
-        # TODO: secure admin
-        return current_user.is_authenticated
+        if not current_user.is_authenticated:
+            return False
+        if "admin" not in current_user.perms:
+            return False
+        return True
 
     def inaccessible_callback(self, name, **kwargs):
         return redirect(
@@ -58,6 +61,9 @@ class UserModelView(AiryModelView):
 
 class GroupModelView(AiryModelView):
     column_searchable_list = ("slug", "name")
+    form_extra_fields = dict(
+        perms=FieldList(StringField()),
+    )
 
 
 class UserLoginModelView(AiryModelView):

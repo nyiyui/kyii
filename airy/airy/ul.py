@@ -1,5 +1,5 @@
 from functools import wraps
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Set
 from urllib.parse import urlencode
 
 from flask import (
@@ -89,6 +89,21 @@ def login_required(f):
             return current_app.ul_manager.unauthenticated()
 
     return decorated_function
+
+
+def req_perms(perms: Set[str]):
+    def inner(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if current_ul.is_authenticated:
+                if perms - current_ul.user.perms == set():
+                    return f(*args, **kwargs)
+                else:
+                    abort(403)
+            else:
+                return current_app.ul_manager.unauthenticated()
+
+        return decorated_function
 
 
 class AnonymousUser:

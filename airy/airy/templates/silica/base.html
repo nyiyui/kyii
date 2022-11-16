@@ -34,7 +34,9 @@
         <a href="{{ url_for('silica.remote_decide') }}">{{ _('遠隔認証') }}</a>
         <a href="{{ url_for('silica.config') }}">{{ _('設定') }}</a>
         <a href="{{ url_for('silica.grants') }}">{{ _('認可') }}</a>
-        <a href="{{ url_for('admin.index') }}">{{ _('管理') }}</a>
+        {% if 'admin' in current_user.perms %}
+          <a href="{{ url_for('admin.index') }}">{{ _('管理') }}</a>
+        {% endif %}
         <span class="spacer">
           {{ macros.user(current_user) }}
         </span>

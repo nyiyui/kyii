@@ -15,6 +15,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy_utils import EmailType  # TODO: use UUIDType
 from sqlalchemy_utils import JSONType
 import sqlalchemy
+from sqlalchemy.ext.hybrid import hybrid_property
 
 db = SQLAlchemy()
 
@@ -43,7 +44,7 @@ class User(db.Model):
 
     @property
     def all_groups(self):
-        return self.groups + [self.primary_group]
+        return self.groups
 
     # for flask-login
 
@@ -86,9 +87,22 @@ class Group(db.Model):
     name = db.Column(db.Unicode(256))
     is_active = db.Column(db.Boolean, nullable=False, default=True)
 
-    @property
+    @hybrid_property
     def perms(self):
-        return [gp.perm_name for gp in self._perms]
+        return [gp.perm_name for gp in self.perms_]
+
+    @perms.setter
+    def perms(self, perms):
+        perms = list(filter(lambda a: a is not "", perms))
+        for perm in perms:
+            gp = GroupPerms.query.filter_by(group=self, perm_name=perm).first()
+            if gp is None:
+                gp = GroupPerms()
+            gp.group = self
+            gp.perm_name = perm
+        for gp in GroupPerms.query.filter_by(group=self):
+            if gp.perm_name not in perms:
+                GroupPerms.query.filter_by(group=self, perm_name=gp.perm_name).delete()
 
     def __str__(self):
         return self.slug
@@ -97,7 +111,7 @@ class Group(db.Model):
 class GroupPerms(db.Model):
     __tablename__ = "group_perms"
     group_id = db.Column(db.String(32), db.ForeignKey("group.id"), primary_key=True)
-    group = db.relationship("Group", backref="_perms", foreign_keys=[group_id])
+    group = db.relationship("Group", backref="perms_", foreign_keys=[group_id])
     perm_name = db.Column(db.String(128), primary_key=True)
 
 
