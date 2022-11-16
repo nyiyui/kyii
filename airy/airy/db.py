@@ -46,10 +46,6 @@ class User(db.Model):
     def all_groups(self):
         return self.groups + [self.primary_group]
 
-    @property
-    def for_api_v2(self):
-        return dict(uid=self.id, slug=self.slug, name=self.name)
-
     # for flask-login
 
     @property
@@ -98,18 +94,6 @@ class Group(db.Model):
     def __str__(self):
         return self.slug
 
-    @property
-    def for_api_v1_trusted(self):
-        return dict(
-            id=self.id,
-            slug=self.slug,
-            name=self.name,
-            emails=[email.for_api_v1_trusted for email in self.emails],
-            perms=self.perms,
-        )
-
-    for_api_v2 = for_api_v1_trusted
-
 
 class GroupPerms(db.Model):
     __tablename__ = "group_perms"
@@ -134,16 +118,6 @@ class Email(db.Model):
     def unverify(self):
         self.is_verified = False
         self.verify_token = None
-
-    @property
-    def for_api_v1_trusted(self):
-        return dict(
-            id=self.id,
-            email=self.email,
-            is_verified=self.is_verified,
-        )
-
-    for_api_v2 = for_api_v1_trusted
 
 
 class UserLogin(db.Model):
@@ -210,41 +184,6 @@ class UserLogin(db.Model):
     def revoked(self):
         return self.end is not None
 
-    @property
-    def for_api_v1_trusted(self):
-        return dict(
-            uuid=self.id,
-            name=self.name,
-            extra=self.extra,
-            against=dict(
-                name=self.against.name,
-                uuid=self.against_id,
-            )
-            if self.against is not None
-            else None,
-            start=self.start.timestamp(),
-            last=self.last.timestamp() if self.last else None,
-            end=self.end.timestamp() if self.end else None,
-        )
-
-    @property
-    def for_api_v2_trusted(self):
-        return dict(
-            uuid=self.id,
-            name=self.name,
-            extra=self.extra,
-            against=dict(
-                name=self.against.name,
-                uuid=self.against_id,
-            )
-            if self.against is not None
-            else None,
-            start=self.start.timestamp(),
-            last=self.last.timestamp() if self.last else None,
-            end=self.end.timestamp() if self.end else None,
-            reason=self.reason_end,
-        )
-
     @classmethod
     def q(cls, user: User):
         return cls.query.filter_by(user=user).order_by(cls.start)
@@ -279,21 +218,6 @@ class AP(db.Model):
             AF.query.filter_by(user_id=user_id, gen_done=True)
             .join(ap_reqs)
             .filter_by(ap_id=self.id)
-        )
-
-    @property
-    def for_api_v1_trusted(self):
-        return dict(
-            uuid=self.id,
-            name=self.name,
-            reqs=list(af.id for af in self.reqs),
-        )
-
-    @property
-    def for_api_v1(self):
-        return dict(
-            uuid=self.id,
-            name=self.name,
         )
 
 
@@ -343,24 +267,6 @@ class AF(db.Model):
 
         return verifiers.public_params(self.verifier, self.params)
 
-    @property
-    def for_api_v1_trusted(self):
-        return dict(
-            uuid=self.id,
-            name=self.name,
-            verifier=self.verifier,
-            public_params=self.public_params,
-        )
-
-    @property
-    def for_api_v1(self):
-        return dict(
-            uuid=self.id,
-            name=self.name,
-            verifier=self.verifier,
-            public_params=self.public_params,
-        )
-
 
 class OAuth2Client(db.Model, OAuth2ClientMixin):
     __tablename__ = "oauth2_client"
@@ -395,20 +301,6 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
             contacts=self.contacts,
         )
 
-    @property
-    def for_api_v1_trusted(self) -> dict:
-        return self.as_dict()
-
-    @property
-    def for_api_v2(self) -> dict:
-        return self.client_metadata | dict(
-            id=self.id,
-            client_id=self.client_id,
-            client_secret=self.client_secret,
-            client_id_issued_at=self.client_id_issued_at,
-            client_secret_expires_at=self.client_secret_expires_at,
-        )
-
 
 class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
     __tablename__ = "oauth2_code"
@@ -433,35 +325,6 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
         self.access_token_revoked_at = time.time()
         self.refresh_token_revoked_at = time.time()
 
-    @property
-    def for_api_v1_trusted(self) -> dict:
-        return dict(
-            client=OAuth2Client.query.filter_by(client_id=self.client_id)
-            .one()
-            .as_dict(),
-            scope=self.scope,
-            issued_at=self.issued_at,
-            expires_in=self.expires_in,
-        )
-
-    @property
-    def for_api_v2(self) -> dict:
-        return dict(
-            id=self.id,
-            client=OAuth2Client.query.filter_by(client_id=self.client_id)
-            .one()
-            .as_dict(),
-            request=dict(
-                scope=self.scope,
-                issued_at=self.issued_at,
-                expires_at=self.issued_at + self.expires_in,
-                token_type=self.token_type,
-                has_refresh_token=bool(self.refresh_token),
-            ),
-            issued_at=self.issued_at,
-            expires_in=self.expires_in,
-        )
-
     @classmethod
     def q(cls, user: User, direction: str = "n"):
         return cls.query.filter_by(user=user).order_by(
@@ -480,8 +343,7 @@ class LogEntry(db.Model):
     user_id = db.Column(db.String(32), db.ForeignKey("user.id"))
     user = db.relationship("User", foreign_keys=[user_id])
 
-    @property
-    def for_api_v2_trusted(self):
+    def generic_serialize(self):
         return dict(
             id=self.id,
             created=self.created.isoformat(),
@@ -489,9 +351,6 @@ class LogEntry(db.Model):
             sid2=self.sid2,
             data=self.data,
         )
-
-    def generic_serialize(self):
-        return self.for_api_v2_trusted
 
     @classmethod
     def get_sid2(cls) -> str:
