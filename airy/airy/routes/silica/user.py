@@ -1,6 +1,16 @@
 import json
 import os
-from flask import redirect, render_template, url_for, session, flash, request, abort, current_app, send_file
+from flask import (
+    redirect,
+    render_template,
+    url_for,
+    session,
+    flash,
+    request,
+    abort,
+    current_app,
+    send_file,
+)
 from flask_cors import CORS
 from collections import defaultdict
 from dataclasses import dataclass
@@ -110,10 +120,22 @@ def login_list():
     afids = set(a[0] for a in afs.with_entities(AF.id).all())
     missing = afids - session[API_V1_SOLVED]
     if len(missing) == 0:
-        all_afs = ap.afs(user_id=u.id).filter(column("level") > session[SILICA_LOGIN_LEVEL]).order_by(column("level").desc()).all()
+        all_afs = (
+            ap.afs(user_id=u.id)
+            .filter(column("level") > session[SILICA_LOGIN_LEVEL])
+            .order_by(column("level").desc())
+            .all()
+        )
         if len(all_afs) != 0:
-            session[SILICA_LOGIN_LEVEL] = db.session.query(ap_reqs).filter_by(ap_id=ap.id, af_id=all_afs[0].id).first().level
-            afs = ap.afs(user_id=u.id).filter(column("level") == session[SILICA_LOGIN_LEVEL])
+            session[SILICA_LOGIN_LEVEL] = (
+                db.session.query(ap_reqs)
+                .filter_by(ap_id=ap.id, af_id=all_afs[0].id)
+                .first()
+                .level
+            )
+            afs = ap.afs(user_id=u.id).filter(
+                column("level") == session[SILICA_LOGIN_LEVEL]
+            )
             afids = set(a[0] for a in afs.with_entities(AF.id).all())
             missing = afids - session[API_V1_SOLVED]
         else:
@@ -204,7 +226,10 @@ def login_attempt():
                 cur_done = False
             u.add_le(
                 LogEntry(
-                    renderer="login_attempt", data=dict(afid=af.id, cur_done=cur_done, level=session[SILICA_LOGIN_LEVEL])
+                    renderer="login_attempt",
+                    data=dict(
+                        afid=af.id, cur_done=cur_done, level=session[SILICA_LOGIN_LEVEL]
+                    ),
                 )
             )
             if cur_done:
@@ -321,7 +346,7 @@ def iori_logout():
         flash(_("他ログインをログアウトしました。"), "message")
     ul.revoke("revoke")
     db.session.commit()
-    return redirect(url_for("silica.uls" if request.args.get('uls') else "silica.iori"))
+    return redirect(url_for("silica.uls" if request.args.get("uls") else "silica.iori"))
 
 
 @bp.route("/iori/rename", methods=("POST",))
@@ -417,7 +442,9 @@ def apply_changes(ap, af):
             b.name = ap["name"]
             b.reqs = reqs
             for afid, level in ap["reqs"].items():
-                db.session.query(ap_reqs).filter_by(ap_id=apid, af_id=afid).update(dict(level=level))
+                db.session.query(ap_reqs).filter_by(ap_id=apid, af_id=afid).update(
+                    dict(level=level)
+                )
         else:
             db.session.add(AP(name=ap["name"], reqs=reqs))
     db.session.commit()
@@ -441,7 +468,7 @@ def config_ax():
                     ap[apid]["reqs"][tokens[3]] = 1
             elif tokens[2] == "reqlevel":
                 if tokens[3] in ap[apid]["reqs"]:
-                    if value == '':
+                    if value == "":
                         ap[apid]["reqs"][tokens[3]] = 1
                     else:
                         ap[apid]["reqs"][tokens[3]] = int_or_abort(value, 422)
@@ -466,7 +493,7 @@ def config_af_delete(afid):
     AF.query.filter_by(id=afid).delete()
     db.session.commit()
     flash(_("認証方法「%(af_name)s」を削除しました。", af_name=af.name))
-    return redirect(url_for('silica.config'))
+    return redirect(url_for("silica.config"))
 
 
 class ConfigTAFForm(FlaskForm):
@@ -501,15 +528,15 @@ class TAF:
             db.session.add(af)
         db.session.commit()
         del session[SILICA_TAF]
-        flash(_("認証方法「%(af_name)s」を生成および確認、保存しました。", af_name=af.name), 'success')
-        return redirect(url_for('silica.config'))
+        flash(_("認証方法「%(af_name)s」を生成および確認、保存しました。", af_name=af.name), "success")
+        return redirect(url_for("silica.config"))
 
 
 @bp.route("/config/taf", methods=("GET", "POST"))
 @login_required
 def config_taf():
-    id = request.args.get('id', '')
-    name = ''
+    id = request.args.get("id", "")
+    name = ""
     if id:
         af = AF.query.get_or_404(id)
         if af.user != current_user:
@@ -517,15 +544,17 @@ def config_taf():
         name = af.name
     form = ConfigTAFForm(name=name)
     if form.validate_on_submit():
-        session[SILICA_TAF] = TAF(id=id, name=form.name.data, verifier=form.verifier.data)
-        return redirect(url_for('silica.config_taf_gen'))
+        session[SILICA_TAF] = TAF(
+            id=id, name=form.name.data, verifier=form.verifier.data
+        )
+        return redirect(url_for("silica.config_taf_gen"))
     return render_template("silica/config_taf.html", form=form)
 
 
 @bp.route("/config/af/<afid>/regen", methods=("POST",))
 @login_required
 def config_af_regen(afid):
-    return redirect(url_for('silica.config_taf', id=afid))
+    return redirect(url_for("silica.config_taf", id=afid))
 
 
 class ConfigTAFPwForm(FlaskForm):
@@ -542,11 +571,17 @@ class ConfigTAFPwForm(FlaskForm):
 
 class ConfigTAFTOTPGenForm(FlaskForm):
     digits = IntegerField(_l("桁"), default=6, validators=[NumberRange(min=6, max=8)])
-    algorithm = RadioField(_l("ハッシュ関数"), default="SHA1", choices=list({
-        "SHA1": _l("SHA-1"),
-        "SHA256": _l("SHA-256"),
-        "SHA512": _l("SHA-512"),
-    }.items()))
+    algorithm = RadioField(
+        _l("ハッシュ関数"),
+        default="SHA1",
+        choices=list(
+            {
+                "SHA1": _l("SHA-1"),
+                "SHA256": _l("SHA-256"),
+                "SHA512": _l("SHA-512"),
+            }.items()
+        ),
+    )
 
     @property
     def gen_params(self):
@@ -572,11 +607,12 @@ class ConfigTAFLimitedGenForm(FlaskForm):
 class ConfigTAFOAuthGenForm(FlaskForm):
     provider = RadioField(_l("プロバイダ"), validators=[InputRequired()])
 
+
 CONFIG_TAF_GEN_FORMS = {
     "pw": ConfigTAFPwForm,
     "otp_totp": ConfigTAFTOTPGenForm,
     "limited": ConfigTAFLimitedGenForm,
-    "oauth": ConfigTAFOAuthGenForm
+    "oauth": ConfigTAFOAuthGenForm,
 }
 
 
@@ -585,40 +621,44 @@ CONFIG_TAF_GEN_FORMS = {
 def config_taf_gen():
     taf = session[SILICA_TAF]
     form = CONFIG_TAF_GEN_FORMS[taf.verifier]()
-    if taf.verifier == 'oauth':
-        form.choices = [(handle, client['name']) for handle, client in current_app.config.OAUTH2_CLIENTS.items()]
+    if taf.verifier == "oauth":
+        form.choices = [
+            (handle, client["name"])
+            for handle, client in current_app.config.OAUTH2_CLIENTS.items()
+        ]
     if form.validate_on_submit():
         try:
-            taf.params, taf.state, taf.feedback, taf.gen_done = verifiers.gen(taf.verifier, form.gen_params, taf.state)
+            taf.params, taf.state, taf.feedback, taf.gen_done = verifiers.gen(
+                taf.verifier, form.gen_params, taf.state
+            )
         except VerificationError as e:
             flash(_("認証方法生成：%(err)s", err=e), "error")
         session[SILICA_TAF] = taf
         if taf.gen_done:
-            return redirect(url_for('silica.config_taf_verify'))
+            return redirect(url_for("silica.config_taf_verify"))
     if taf.verifier not in VERIFIER_NAMES:
         abort(422)
     return render_template(f"silica/config_taf_gen_{taf.verifier}.html", form=form)
 
 
-CONFIG_TAF_VERIFY_FORMS = {
-    "pw": ConfigTAFPwForm,
-    "otp_totp": ConfigTAFTOTPVerifyForm
-}
+CONFIG_TAF_VERIFY_FORMS = {"pw": ConfigTAFPwForm, "otp_totp": ConfigTAFTOTPVerifyForm}
 
 
 @bp.route("/config/taf/verify", methods=("GET", "POST"))
 @login_required
 def config_taf_verify():
     taf = session[SILICA_TAF]
-    if taf.verifier == 'limited':
-       return taf.save()
+    if taf.verifier == "limited":
+        return taf.save()
     form = CONFIG_TAF_VERIFY_FORMS[taf.verifier]()
-    if taf.verifier == 'otp_totp':
-        digits = taf.params['digits']
+    if taf.verifier == "otp_totp":
+        digits = taf.params["digits"]
         form.code.validators += (Length(min=digits, max=digits),)
     if form.validate_on_submit():
         try:
-            taf.params, taf.state, feedback, taf.verify_done = verifiers.verify(taf.verifier, form.attempt, taf.params, taf.state)
+            taf.params, taf.state, feedback, taf.verify_done = verifiers.verify(
+                taf.verifier, form.attempt, taf.params, taf.state
+            )
         except VerificationError as e:
             flash(_("認証方法確認：%(err)s", err=e), "error")
         session[SILICA_TAF] = taf
@@ -626,7 +666,9 @@ def config_taf_verify():
             return taf.save()
     if taf.verifier not in VERIFIER_NAMES:
         abort(422)
-    return render_template(f"silica/config_taf_verify_{taf.verifier}.html", form=form, taf=taf)
+    return render_template(
+        f"silica/config_taf_verify_{taf.verifier}.html", form=form, taf=taf
+    )
 
 
 @bp.route("/config/profile", methods=("GET", "POST"))
@@ -639,8 +681,15 @@ def config_profile():
         if form.image.data:
             f = form.image.data
             fn = secure_filename(f.filename)
-            f.save(tmp_path := os.path.join(current_app.config['SILICA_IMAGES_TMP_PATH'], f'{current_user.id}_{fn}'))
-            dest_path = os.path.join(current_app.config['SILICA_IMAGES_PATH'], f'{current_user.id}.webp')
+            f.save(
+                tmp_path := os.path.join(
+                    current_app.config["SILICA_IMAGES_TMP_PATH"],
+                    f"{current_user.id}_{fn}",
+                )
+            )
+            dest_path = os.path.join(
+                current_app.config["SILICA_IMAGES_PATH"], f"{current_user.id}.webp"
+            )
             conv_to_webp(tmp_path, dest_path)
             os.remove(tmp_path)
         db.session.commit()
@@ -656,9 +705,10 @@ def verifier_names():
 @login_required
 def user_pfp(uid):
     u = User.query.get_or_404(uid)
-    path = os.path.join(os.path.abspath(current_app.config['SILICA_IMAGES_PATH']), f'{u.id}.webp')
+    path = os.path.join(
+        os.path.abspath(current_app.config["SILICA_IMAGES_PATH"]), f"{u.id}.webp"
+    )
     try:
-        return send_file(path, download_name=f'{u.id}.webp', mimetype="image/webp")
+        return send_file(path, download_name=f"{u.id}.webp", mimetype="image/webp")
     except FileNotFoundError:
         abort(404)
-

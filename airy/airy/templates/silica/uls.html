@@ -21,20 +21,22 @@
 			<th>ID</th>
 			<th>{{ _("名前") }}</th>
 			<th>{{ _("開始時刻") }}</th>
-			<th>{{ _("最新アクセス時刻") }}</th>
+			<th>{{ _("使用時刻") }}</th>
 			<th>{{ _("終了・持続中") }}</th>
 			<th>{{ _("使用パス") }}</th>
 		</tr>
 		{% for ul in query.items %}
 			<tr>
 				<td>
-					{{ ul.id }}
+					{{ ul.id[:8] }}
 				</td>
 				<td>
-					{{ ul.name if ul.name else '' }}
-					{% if ul.id == current_ul.id %}
-						{{ _("（自分）") }}
-					{% endif %}
+					<form class="flex" method="post" action="{{ url_for('silica.iori_rename') }}">
+						{{ macros.form_csrf() }}
+						<input type="hidden" name="ulid" value="{{ ul.id }}"/>
+						<input type="text" name="name" value="{{ ul.name if ul.name else "" }}" placeholder="{{ _("未設定") }}" />
+						<input style="flex-shrink: 10;" type="submit" value="{{ _('保存') }}" />
+					</form>
 				</td>
 				<td>
 					{{ ul.start|format_datetime }}
@@ -47,6 +49,10 @@
 						<span class="Asuccess">終了</span>
 					{% else %}
 						<span class="Awarning">持続中</span>
+					{% endif %}
+					<br />
+					{% if ul.id == current_ul.id %}
+						{{ _("（自分）") }}
 					{% endif %}
 				</td>
 				<td>{{ macros.ap(ul.against) }}</td>

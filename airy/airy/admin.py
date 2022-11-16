@@ -22,9 +22,17 @@ from .db import (
 )
 
 
-TOKEN_ENDPOINT_AUTH_METHOD_CHOICES = [(a, a) for a in ('client_secret_post', 'client_secret_basic', 'client_secret_jwt', 'private_key_jwt')]
-RESPONSE_TYPE_CHOICES = [(a, a) for a in ('code',)]
-GRANT_TYPE_CHOICES = [(a, a) for a in ('authorization_code', 'client_credentials')]
+TOKEN_ENDPOINT_AUTH_METHOD_CHOICES = [
+    (a, a)
+    for a in (
+        "client_secret_post",
+        "client_secret_basic",
+        "client_secret_jwt",
+        "private_key_jwt",
+    )
+]
+RESPONSE_TYPE_CHOICES = [(a, a) for a in ("code",)]
+GRANT_TYPE_CHOICES = [(a, a) for a in ("authorization_code", "client_credentials")]
 
 
 class IndexView(AdminIndexView):
@@ -45,29 +53,31 @@ class AiryModelView(sqla.ModelView):
 
 
 class UserModelView(AiryModelView):
-    column_searchable_list = ('slug', 'name')
+    column_searchable_list = ("slug", "name")
 
 
 class GroupModelView(AiryModelView):
-    column_searchable_list = ('slug', 'name')
+    column_searchable_list = ("slug", "name")
 
 
 class UserLoginModelView(AiryModelView):
-    column_excluded_columns = ('extra',)
+    column_excluded_columns = ("extra",)
 
 
 class OAuth2ClientModelView(AiryModelView):
-    column_searchable_list = ('client_id',)
+    column_searchable_list = ("client_id",)
     column_labels = dict(
-        user=_l('管理者'),
+        user=_l("管理者"),
     )
-    column_list = ('client_name', 'user', 'client_id')
+    column_list = ("client_name", "user", "client_id")
     form_extra_fields = dict(
         client_name=StringField(),
         client_uri=StringField(),
         grant_types=FieldList(SelectField(choices=GRANT_TYPE_CHOICES), min_entries=1),
         redirect_uris=FieldList(URLField(), min_entries=1),
-        response_types=FieldList(SelectField(choices=RESPONSE_TYPE_CHOICES), min_entries=1),
+        response_types=FieldList(
+            SelectField(choices=RESPONSE_TYPE_CHOICES), min_entries=1
+        ),
         scope=StringField(),
         token_endpoint_auth_method=SelectField(
             choices=TOKEN_ENDPOINT_AUTH_METHOD_CHOICES,

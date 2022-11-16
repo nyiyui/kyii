@@ -370,7 +370,7 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
     user = db.relationship("User")
 
     def __str__(self):
-        return self.client_metadata['client_name']
+        return self.client_metadata["client_name"]
 
     def set_client_metadata(self, client_metadata):
         super().set_client_metadata(client_metadata)

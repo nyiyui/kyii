@@ -31,6 +31,7 @@ flask-server-timing = "0.1.2"
 flask-babel = "*"
 flask-qrcode = "*"
 requests = "*"
+flask-moment = "*"
 
 [dev-packages]
 pytest = "*"

@@ -118,7 +118,7 @@ class Limited(Verifier):
         limit = params["limit"]
         if state is None:
             state = dict(used=0)
-            #raise VerificationError("state required")
+            # raise VerificationError("state required")
         used = state["used"]
         if used >= limit:
             raise VerificationError("limit reached")
@@ -146,6 +146,7 @@ VERIFIER_NAMES: Dict[str, str] = {
 
 
 VERIFIER_CHOICES: List[Tuple[str, str]] = list(VERIFIER_NAMES.items())
+
 
 def gen(
     verifier: str,

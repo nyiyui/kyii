@@ -11,6 +11,8 @@ from flask_caching import Cache
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_mail import Mail
+from flask_moment import Moment
+from flask_moment import moment
 from flask_wtf.csrf import CSRFProtect
 from server_timing import Timing
 
@@ -25,6 +27,8 @@ csrf = CSRFProtect()
 ulm = ULManager()
 
 babel = Babel()
+
+moment_ = Moment()
 
 
 @babel.localeselector
@@ -50,6 +54,14 @@ limiter = Limiter(
     key_func=get_remote_address,
     default_limits=["2000 per hour"],
 )
+
+
+def format_time(t):
+    now = time.time()
+    if now - t.timestamp() < 604800:
+        return moment(t).fromNow()
+    else:
+        return moment(t).format("LLL")
 
 
 def init_app(app):
@@ -92,3 +104,6 @@ def init_app(app):
         app.jinja_env.filters[key] = getattr(flask_babel, key)
 
     app.jinja_env.globals["now_epoch"] = time.time
+    app.jinja_env.filters["time"] = format_time
+
+    moment_.init_app(app)

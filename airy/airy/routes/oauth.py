@@ -142,7 +142,9 @@ def jwks_endpoint():
 def oauth_client_redirect(client_handle):
     if client_handle not in current_app.config.OAUTH2_CLIENTS:
         abort(422)
-    redirect_uri = url_for('oauth_client_authorize', client_handle=client_handle, _external=True)
+    redirect_uri = url_for(
+        "oauth_client_authorize", client_handle=client_handle, _external=True
+    )
     return getattr(oauth, client_handle).authorize_redirect(redirect_uri)
 
 
