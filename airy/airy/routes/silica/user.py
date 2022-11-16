@@ -67,7 +67,11 @@ def login():
 
 
 class LoginStartForm(FlaskForm):
-    slug = StringField(_l("ハンドル"), validators=[InputRequired(), Length(min=1, max=128)])
+    slug = StringField(
+        _l("ハンドル"),
+        validators=[InputRequired(), Length(min=1, max=128)],
+        render_kw=dict(autofocus=True),
+    )
 
     def validate_slug(form, field):
         if not User.query.filter_by(slug=field.data, is_active=True).count():
@@ -101,7 +105,9 @@ def login_choose():
 
 
 class LoginChooseForm(FlaskForm):
-    apid = RadioField(_l("認証パス"), validators=[InputRequired()])
+    apid = RadioField(
+        _l("認証パス"), validators=[InputRequired()], render_kw=dict(autofocus=True)
+    )
 
 
 @bp.route("/login/list", methods=("GET",))
@@ -173,7 +179,9 @@ class LoginAttemptRemoteForm(FlaskForm):
 
 
 class LoginAttemptPwForm(FlaskForm):
-    password = PasswordField(_l("パスワード"), validators=[InputRequired()])
+    password = PasswordField(
+        _l("パスワード"), validators=[InputRequired()], render_kw=dict(autofocus=True)
+    )
 
     @property
     def attempt(self):
@@ -181,7 +189,9 @@ class LoginAttemptPwForm(FlaskForm):
 
 
 class LoginAttemptOtpTotpForm(FlaskForm):
-    code = StringField(_l("コード"), validators=[InputRequired()])
+    code = StringField(
+        _l("コード"), validators=[InputRequired()], render_kw=dict(autofocus=True)
+    )
 
     @property
     def attempt(self):
