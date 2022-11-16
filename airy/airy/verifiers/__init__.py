@@ -96,7 +96,7 @@ class Pw(Verifier):
             if not ok:
                 raise VerificationError("verify failed")
         except InvalidkeyError:
-            raise VerificationError("verify failed: invalid key")
+            raise VerificationError(_l("パスワードが一致しません。"))
 
 
 class Limited(Verifier):

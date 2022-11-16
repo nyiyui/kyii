@@ -17,7 +17,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from werkzeug.utils import secure_filename
-from sqlalchemy import column
+from sqlalchemy import column, or_
 from server_timing import Timing as t
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
@@ -106,7 +106,6 @@ class LoginChooseForm(FlaskForm):
 
 @bp.route("/login/list", methods=("GET",))
 def login_list():
-    # TODO: implement leveling
     if (
         API_V1_UID not in session
         or API_V1_APID not in session
@@ -116,7 +115,9 @@ def login_list():
     with t.time("db"):
         u = User.query.get(session[API_V1_UID])
         ap = AP.query.get(session[API_V1_APID])
-    afs = ap.afs(user_id=u.id).filter(column("level") == session[SILICA_LOGIN_LEVEL])
+    afs = ap.afs(user_id=u.id).filter(
+        or_(column("level") == session[SILICA_LOGIN_LEVEL], column("level") == None)
+    )
     afids = set(a[0] for a in afs.with_entities(AF.id).all())
     missing = afids - session[API_V1_SOLVED]
     if len(missing) == 0:
