@@ -19,7 +19,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.local import LocalProxy
 from flask_babel import _
 
-from .db import User, UserLogin, db, gen_uuid
+from .db import User, UserLogin, db, gen_id
 from .session import SILICA_ULIDS, SILICA_CURRENT_ULID, SILICA_UL_MAP
 
 TOKEN_HEADER = "X-Airy-Token"
@@ -60,7 +60,7 @@ def get_extra() -> dict:
 
 def login_user(u: User, apid: Optional[str]) -> Tuple[UserLogin, str]:
     ul = UserLogin(
-        id=gen_uuid(),
+        id=gen_id(),
         user=u,
         sid2=UserLogin.get_sid2(),
         extra=get_extra(),

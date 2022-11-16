@@ -79,7 +79,7 @@ def uls():
     return query, "silica/uls.html", dict(form=form)
 
 
-@bp.route("/ul/<uuid:ulid>", methods=("GET",))
+@bp.route("/ul/<ulid>", methods=("GET",))
 def ul(ulid):
     try:
         ul = UserLogin.q(current_user).filter_by(id=str(ulid)).one()

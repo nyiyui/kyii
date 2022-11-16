@@ -1,4 +1,3 @@
-import uuid
 import json
 from pathlib import Path
 from urllib.parse import urlencode, urljoin

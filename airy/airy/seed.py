@@ -3,7 +3,7 @@ import json
 
 from passlib.hash import django_pbkdf2_sha256
 
-from .db import AF, AP, Group, GroupPerms, OAuth2Client, User, db, gen_uuid
+from .db import AF, AP, Group, GroupPerms, OAuth2Client, User, db, gen_id
 
 
 def init_app(app):
@@ -19,7 +19,7 @@ def init_app(app):
         # db.session.add(email)
 
         nyiyui = User(
-            id=gen_uuid(),
+            id=gen_id(),
             slug="nyiyui",
             name="Yui Shibata",
             primary_group=sus,
@@ -33,7 +33,7 @@ def init_app(app):
         asuna_g = Group(slug="asuna", name="Superusers")
         db.session.add(asuna_g)
         asuna = User(
-            id=gen_uuid(),
+            id=gen_id(),
             slug="asuna",
             name="Yuuki Asuna",
             primary_group=asuna_g,

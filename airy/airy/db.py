@@ -1,5 +1,4 @@
 import secrets
-import uuid
 import time
 from datetime import datetime, timedelta
 from hashlib import sha256
@@ -20,13 +19,13 @@ import sqlalchemy
 db = SQLAlchemy()
 
 
-def gen_uuid():
-    return str(uuid.uuid4())
+def gen_id():
+    return secrets.token_urlsafe(24)
 
 
 class User(db.Model):
     __tablename__ = "user"
-    id = db.Column(db.String(32), primary_key=True, nullable=False, default=gen_uuid)
+    id = db.Column(db.String(32), primary_key=True, nullable=False, default=gen_id)
     slug = db.Column(db.String(128), unique=True)  # null if unset
     name = db.Column(db.Unicode(256))
     is_active = db.Column(db.Boolean, nullable=False, default=True)
@@ -82,7 +81,7 @@ class UserGroups(db.Model):
 
 class Group(db.Model):
     __tablename__ = "group"
-    id = db.Column(db.String(32), primary_key=True, nullable=False, default=gen_uuid)
+    id = db.Column(db.String(32), primary_key=True, nullable=False, default=gen_id)
     slug = db.Column(db.String(128), unique=True, nullable=False)
     name = db.Column(db.Unicode(256))
     is_active = db.Column(db.Boolean, nullable=False, default=True)
@@ -104,7 +103,7 @@ class GroupPerms(db.Model):
 
 class Email(db.Model):
     __tablename__ = "email"
-    id = db.Column(db.String(32), primary_key=True, nullable=False, default=gen_uuid)
+    id = db.Column(db.String(32), primary_key=True, nullable=False, default=gen_id)
     email = db.Column(EmailType, unique=True, nullable=False)
     is_verified = db.Column(db.Boolean, nullable=False, default=False)
     verify_token = db.Column(db.String(256), unique=True, nullable=True, default=None)
@@ -122,7 +121,7 @@ class Email(db.Model):
 
 class UserLogin(db.Model):
     __tablename__ = "user_login"
-    id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
+    id = db.Column(db.String(32), primary_key=True, default=gen_id)
     name = db.Column(db.Unicode(256))
     user_id = db.Column(db.String(32), db.ForeignKey("user.id"), nullable=False)
     user = db.relationship("User", backref="logins", foreign_keys=[user_id])
@@ -201,7 +200,7 @@ ap_reqs = db.Table(
 
 class AP(db.Model):
     __tablename__ = "ap"
-    id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
+    id = db.Column(db.String(32), primary_key=True, default=gen_id)
     name = db.Column(db.Unicode(256))
     user_id = db.Column(db.String(32), db.ForeignKey("user.id"), nullable=False)
     user = db.relationship("User", backref="ap", foreign_keys=[user_id])
@@ -223,7 +222,7 @@ class AP(db.Model):
 
 class AF(db.Model):
     __tablename__ = "af"
-    id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
+    id = db.Column(db.String(32), primary_key=True, default=gen_id)
     name = db.Column(db.Unicode(256))
     user_id = db.Column(db.String(32), db.ForeignKey("user.id"), nullable=False)
     user = db.relationship("User", backref="af", foreign_keys=[user_id])
@@ -270,7 +269,7 @@ class AF(db.Model):
 
 class OAuth2Client(db.Model, OAuth2ClientMixin):
     __tablename__ = "oauth2_client"
-    id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
+    id = db.Column(db.String(32), primary_key=True, default=gen_id)
     user_id = db.Column(db.String(32), db.ForeignKey("user.id", ondelete="CASCADE"))
     user = db.relationship("User")
 
@@ -303,14 +302,14 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
 
 class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
     __tablename__ = "oauth2_code"
-    id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
+    id = db.Column(db.String(32), primary_key=True, default=gen_id)
     user_id = db.Column(db.String(32), db.ForeignKey("user.id", ondelete="CASCADE"))
     user = db.relationship("User")
 
 
 class OAuth2Token(db.Model, OAuth2TokenMixin):
     __tablename__ = "oauth2_token"
-    id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
+    id = db.Column(db.String(32), primary_key=True, default=gen_id)
     user_id = db.Column(db.String(32), db.ForeignKey("user.id", ondelete="CASCADE"))
     user = db.relationship("User")
     client_id = db.Column(db.String(48), db.ForeignKey("oauth2_client.id"))
@@ -331,7 +330,7 @@ class OAuth2Token(db.Model, OAuth2TokenMixin):
 
 class LogEntry(db.Model):
     __tablename__ = "log_entry"
-    id = db.Column(db.String(32), primary_key=True, default=gen_uuid)
+    id = db.Column(db.String(32), primary_key=True, default=gen_id)
     created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     renderer = db.Column(db.String(32))
     sid2 = db.Column(db.String(64))
