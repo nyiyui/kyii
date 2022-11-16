@@ -148,6 +148,14 @@ def login_list():
         else:
             flash(_("全ての認証が完了しました。%(name)sとしてログインしました。", name=u.name), "success")
             ul, _token = login_user(u, ap.id)
+            u.add_le(
+                LogEntry(
+                    renderer="login_done",
+                    data=dict(
+                        ulid=ul.id,
+                    ),
+                )
+            )
             session.pop(API_V1_UID)
             session.pop(API_V1_APID)
             session.pop(API_V1_SOLVED)

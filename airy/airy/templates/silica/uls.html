@@ -13,6 +13,14 @@
 				{% endfor %}
 			</ul>
 		</div>
+		{{ form.ulid.label }} {{ form.ulid }}
+		<div class="errors">
+			<ul>
+				{% for error in form.errors.ulid %}
+					<li>{{ error }}</li>
+				{% endfor %}
+			</ul>
+		</div>
 		<input type="submit" value="{{ _("検索") }}">
 	</form>
 	{{ macros.pages(query) }}
@@ -50,7 +58,6 @@
 					{% else %}
 						<span class="Awarning">持続中</span>
 					{% endif %}
-					<br />
 					{% if ul.id == current_ul.id %}
 						{{ _("（自分）") }}
 					{% endif %}

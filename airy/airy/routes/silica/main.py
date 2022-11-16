@@ -50,7 +50,7 @@ class LogFilterForm(FlaskForm):
 @paginate
 def log():
     form = LogFilterForm(
-        formdata=request.args if request.args.get("sid2") else None
+        formdata=request.args,
     )  # safe because this doesn't edit data
     with t.time("db"):
         les = LogEntry.q(current_user, "n")
@@ -61,6 +61,7 @@ def log():
 
 class UserLoginFilterForm(FlaskForm):
     sid2 = StringField(_l("セッションID"))
+    ulid = StringField(_l("ログインID"))
 
     class Meta:
         csrf = False
@@ -71,11 +72,14 @@ class UserLoginFilterForm(FlaskForm):
 @paginate
 def uls():
     form = UserLoginFilterForm(
-        formdata=request.args if request.args.get("sid2") else None
+        formdata=request.args,
     )  # safe because this doesn't edit data
     query = UserLogin.q(current_user)
-    if form.validate() and form.sid2.data:
-        query = query.filter_by(sid2=form.sid2.data)
+    if form.validate():
+        if form.sid2.data:
+            query = query.filter_by(sid2=form.sid2.data)
+        if form.ulid.data:
+            query = query.filter_by(id=form.ulid.data)
     return query, "silica/uls.html", dict(form=form)
 
 

@@ -52,6 +52,11 @@
 						<summary>{{ _("ユーザーエージェント") }}</summary>
 						{{ le.data.extra.headers.key[0] }}
 					</details>
+				{% elif le.renderer == "login_done" %}
+					{{ _("ログインしました。") }}
+					<a href="{{ url_for('silica.uls', ulid=le.data.ulid) }}">
+						{{ _("ログイン") }}
+					</a>
 				{% elif le.renderer == "remote" %}
 					{{ _("遠隔認証トークン<%(token)sを承認しました。", token=le.data.token) }}
 				{% else %}
