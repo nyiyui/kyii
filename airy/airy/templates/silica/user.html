@@ -5,7 +5,9 @@
 	<div class="pfp">
 		<img src="{{ url_for('silica.user_pfp', uid=user.id) }}" />
 		<div class="etc">
-			{{ macros.user(user) }}
+			<a href="{{ url_for('silica.user', uid=user.id) }}">
+				{{ user.slug }}
+			</a>
 			{{ user.name }}
 		</div>
 	</div>

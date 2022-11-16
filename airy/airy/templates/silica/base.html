@@ -35,7 +35,9 @@
         <a href="{{ url_for('silica.config') }}">{{ _('設定') }}</a>
         <a href="{{ url_for('silica.grants') }}">{{ _('認可') }}</a>
         <a href="{{ url_for('admin.index') }}">{{ _('管理') }}</a>
-        <span class="spacer">{{ current_user.name }}</span>
+        <span class="spacer">
+          {{ macros.user(current_user) }}
+        </span>
         <a href="{{ url_for('silica.iori') }}">{{ _("別アカウントにログイン") }}</a>
       {% else %}
         {% if login_doing %}

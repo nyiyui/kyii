@@ -103,7 +103,7 @@
 	</form>
 	<hr />
 	<h2>{{ _("プロフィール") }}</h2>
-	<form action="/config/profile" method="post">
+	<form action="{{ url_for('silica.config') }}" method="post">
 		<label>
 			ID
 			<input type="text" disabled value="{{ current_user.id }}" />

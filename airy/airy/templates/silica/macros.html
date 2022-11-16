@@ -12,7 +12,8 @@
 
 {% macro user(user) %}
   <span class="user">
-    <a href="{{ url_for('silica.user', uid=user.id) }}">
+    <img src="{{ url_for('silica.user_pfp', uid=user.id) }}" />
+    <a class="handle" href="{{ url_for('silica.user', uid=user.id) }}">
       {{ user.slug }}
     </a>
   </span>

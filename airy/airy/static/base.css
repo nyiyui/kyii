@@ -185,10 +185,31 @@ td > select {
 .pfp > img {
 	object-fit: cover;
 	border-radius: 50%;
-	height: 54px;
+	height: 42px;
+	align-self: center;
 }
 
 .pfp > .etc {
+	margin: 0;
+	margin-left: 8px;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.user {
+	display: flex;
+}
+
+.user > img {
+	object-fit: cover;
+	border-radius: 50%;
+	height: 18px;
+	align-self: center;
+	padding: 0;
+}
+
+.user > .handle {
 	margin: 0;
 	margin-left: 8px;
 	padding: 0;

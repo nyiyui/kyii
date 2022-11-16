@@ -410,11 +410,30 @@ class ConfigProfileForm(FlaskForm):
     image = FileField(_l("プロファイル画像"))
 
 
-@bp.route("/config", methods=("GET",))
+@bp.route("/config", methods=("GET", "POST"))
 @login_required
 def config():
-    form = ConfigProfileForm(name=current_user.name, handle=current_user.slug)
-    return render_template("silica/config.html", form=form)
+    profile_form = ConfigProfileForm(name=current_user.name, handle=current_user.slug)
+    if profile_form.validate_on_submit():
+        current_user.name = profile_form.name.data
+        current_user.slug = profile_form.handle.data
+        print(profile_form.image.data)
+        if profile_form.image.data:
+            f = profile_form.image.data
+            fn = secure_filename(f.filename)
+            f.save(
+                tmp_path := os.path.join(
+                    current_app.config["SILICA_IMAGES_TMP_PATH"],
+                    f"{current_user.id}_{fn}",
+                )
+            )
+            dest_path = os.path.join(
+                current_app.config["SILICA_IMAGES_PATH"], f"{current_user.id}.webp"
+            )
+            conv_to_webp(tmp_path, dest_path)
+            os.remove(tmp_path)
+        db.session.commit()
+    return render_template("silica/config.html", form=profile_form)
 
 
 def check_freshness(ap, af):
@@ -669,31 +688,6 @@ def config_taf_verify():
     return render_template(
         f"silica/config_taf_verify_{taf.verifier}.html", form=form, taf=taf
     )
-
-
-@bp.route("/config/profile", methods=("GET", "POST"))
-@login_required
-def config_profile():
-    form = ConfigProfileForm(name=current_user.name, handle=current_user.slug)
-    if form.validate_on_submit():
-        current_user.name = form.name.data
-        current_user.slug = form.handle.data
-        if form.image.data:
-            f = form.image.data
-            fn = secure_filename(f.filename)
-            f.save(
-                tmp_path := os.path.join(
-                    current_app.config["SILICA_IMAGES_TMP_PATH"],
-                    f"{current_user.id}_{fn}",
-                )
-            )
-            dest_path = os.path.join(
-                current_app.config["SILICA_IMAGES_PATH"], f"{current_user.id}.webp"
-            )
-            conv_to_webp(tmp_path, dest_path)
-            os.remove(tmp_path)
-        db.session.commit()
-    return render_template("silica/config_profile.html", form=form)
 
 
 @bp.context_processor
