@@ -5,14 +5,7 @@
 
 {% block content %}
 <form method="GET" action="?">
-	{{ form.sid2.label }} {{ form.sid2 }}
-	<div class="errors">
-		<ul>
-			{% for error in form.errors.sid2 %}
-				<li>{{ error }}</li>
-			{% endfor %}
-		</ul>
-	</div>
+	{{ macros.form_field(form, 'sid2') }}
 	<input type="submit" value="{{ _("検索") }}">
 </form>
 

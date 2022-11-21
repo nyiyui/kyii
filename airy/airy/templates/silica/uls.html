@@ -5,22 +5,8 @@
 
 {% block content %}
 	<form method="GET" action="?">
-		{{ form.sid2.label }} {{ form.sid2 }}
-		<div class="errors">
-			<ul>
-				{% for error in form.errors.sid2 %}
-					<li>{{ error }}</li>
-				{% endfor %}
-			</ul>
-		</div>
-		{{ form.ulid.label }} {{ form.ulid }}
-		<div class="errors">
-			<ul>
-				{% for error in form.errors.ulid %}
-					<li>{{ error }}</li>
-				{% endfor %}
-			</ul>
-		</div>
+		{{ macros.form_field(form, 'sid2') }}
+		{{ macros.form_field(form, 'ulid') }}
 		<input type="submit" value="{{ _("検索") }}">
 	</form>
 	{{ macros.pages(query) }}
@@ -34,6 +20,7 @@
 			<th>{{ _("使用パス") }}</th>
 		</tr>
 		{% for ul in query.items %}
+			{% set me = ul.id == current_ul.id %}
 			<tr>
 				<td>
 					{{ ul.id[:8] }}
@@ -56,9 +43,9 @@
 					{% if ul.end %}
 						<span class="Asuccess">終了</span>
 					{% else %}
-						<span class="Awarning">持続中</span>
+						<span class="Acaution">持続中</span>
 					{% endif %}
-					{% if ul.id == current_ul.id %}
+					{% if me %}
 						{{ _("（自分）") }}
 					{% endif %}
 				</td>
@@ -67,7 +54,7 @@
 					<form method="post" action="{{ url_for('silica.iori_logout', uls=True) }}">
 						{{ macros.form_csrf() }}
 						<input type="hidden" name="ulid" value="{{ ul.id }}"/>
-						<input type="submit" value="{{ _('終了') }}" />
+						<input {% if me %}disabled{% endif %} type="submit" value="{{ _('終了') }}" />
 					</form>
 				</td>
 			</tr>

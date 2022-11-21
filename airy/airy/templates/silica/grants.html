@@ -7,25 +7,21 @@
 	{{ macros.pages(query) }}
 	<table>
 		<tr>
-			<th>ID</th>
-			<th>{{ _("対象") }}</th>
+			<th>{{ _("対象・ID") }}</th>
 			<th>{{ _("権限") }}</th>
 			<th>{{ _("発行（承認）時刻") }}</th>
 			<th>{{ _("期限時刻") }}</th>
-			<th>{{ _("アクセストークン状態") }}</th>
-			<th>{{ _("れフレッシュトークン状態") }}</th>
 			<th>{{ _("する") }}</th>
 		</tr>
 		{% for grant in query.items %}
 			<tr>
 				<td>
-					{{ grant.id }}
-				</td>
-				<td>
 					{{ macros.client(grant.client_id|query_client) }}
+					<br />
+					<code>{{ grant.id }}</code>
 				</td>
 				<td>
-					<ul>
+					<ul class="bare">
 						{% for scope in grant.scope.split() %}
 							<li>
 								<details style="display: inline;">
@@ -52,23 +48,17 @@
 					{% endif %}
 				</td>
 				<td>
-					{{ _("未だ有効") if grant.access_token_revoked_at == 0 else _("取消済み") }}
-				</td>
-				<td>
-					{{ _("未だ有効") if grant.refresh_token_revoked_at == 0 else _("取消済み") }}
-				</td>
-				<td>
 					{% if expires >= now_epoch() %}
 						<form method="post" action="{{ url_for('silica.grant_revoke') }}">
 							{{ macros.form_csrf() }}
 							<input type="hidden" name="grid" value="{{ grant.id }}"/>
-							<input type="submit" value="{{ _('取消す') }}" />
+							<input class="Bcaution" type="submit" value="{{ _('取消す') }}" />
 						</form>
 					{% else %}
 						<form method="post" action="{{ url_for('silica.grant_delete') }}">
 							{{ macros.form_csrf() }}
 							<input type="hidden" name="grid" value="{{ grant.id }}"/>
-							<input class="Bcaution" type="submit" value="{{ _('削除') }}" />
+							<input class="Bwarning" type="submit" value="{{ _('削除') }}" />
 						</form>
 					{% endif %}
 				</td>
