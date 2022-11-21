@@ -7,6 +7,8 @@
 	<h1>{{ _("クライアント　「%(name)s」", name=client.client_metadata.client_name) }}</h1>
 	<p>
 		<a rel="nofollow" href="{{ client.client_metadata.client_uri }}">{{ _("ウェブサイト") }}</a>
+		<a rel="nofollow" href="{{ client.client_metadata.tos_uri }}">{{ _("利用規約") }}</a>
+		<a rel="nofollow" href="{{ client.client_metadata.policy_uri }}">{{ _("プライバシーポリシー") }}</a>
 	</p>
 	<p>
 		{{ _("管理者：%(user)s", user=macros.user(client.user)) }}

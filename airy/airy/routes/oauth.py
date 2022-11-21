@@ -86,7 +86,10 @@ def oauth_authorize_post():
 @bp.route("/oauth/token", methods=("POST",))
 @csrf.exempt
 def oauth_token():
-    return authorization.create_token_response()
+    resp = authorization.create_token_response()
+    print(resp.get_data())
+    print(resp)
+    return resp
 
 
 @bp.route("/oauth/userinfo")
@@ -107,7 +110,7 @@ def openid_configuration():
         "userinfo_endpoint": external_url(".oauth_userinfo"),
         "jwks_uri": external_url(".jwks_endpoint"),
         "id_token_signing_alg_values_supported": ["RS256"],
-        "issuer": current_app.config["OAUTH2_JWT_ISS"],
+        "issuer": current_app.config["OIDC_ISSUER"],
         "response_types_supported": [
             "code",
         ],
@@ -122,18 +125,9 @@ def openid_configuration():
     }
 
 
-def load_public_keys():
-    if "OAUTH2_JWT_KEY_PATH" in current_app.config:
-        public_key_path = current_app.config["OAUTH2_JWT_KEY_PATH"]
-        public_key = JsonWebKey.import_key(Path(public_key_path).read_bytes())
-    else:
-        public_key = JsonWebKey.import_key(current_app.config["OAUTH2_JWT_KEY"])
-    return KeySet([public_key])
-
-
 @bp.route("/.well-known/jwks.json")
 def jwks_endpoint():
-    pks = load_public_keys()
+    pks = KeySet([JsonWebKey.import_key(current_app.config["JWT_CONFIG"]["key"])])
     return pks.as_dict()
 
 

@@ -77,17 +77,24 @@ class OAuth2ClientModelView(AiryModelView):
     )
     column_list = ("client_name", "user", "client_id")
     form_extra_fields = dict(
-        client_name=StringField(),
-        client_uri=StringField(),
-        grant_types=FieldList(SelectField(choices=GRANT_TYPE_CHOICES), min_entries=1),
         redirect_uris=FieldList(URLField(), min_entries=1),
-        response_types=FieldList(
-            SelectField(choices=RESPONSE_TYPE_CHOICES), min_entries=1
-        ),
-        scope=StringField(),
         token_endpoint_auth_method=SelectField(
             choices=TOKEN_ENDPOINT_AUTH_METHOD_CHOICES,
         ),
+        grant_types=FieldList(SelectField(choices=GRANT_TYPE_CHOICES), min_entries=1),
+        response_types=FieldList(
+            SelectField(choices=RESPONSE_TYPE_CHOICES), min_entries=1
+        ),
+        client_name=StringField(),
+        client_uri=StringField(),
+        logo_uri=StringField(),
+        scope=StringField(),
+        contacts=FieldList(StringField(), min_entries=1),
+        tos_uri=StringField(),
+        policy_uri=StringField(),
+        jwks_uri=StringField(),
+        jwks=FieldList(StringField(), min_entries=1),
+        software_id=StringField(),
     )
 
 

@@ -287,16 +287,8 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
     user_id = db.Column(db.String(32), db.ForeignKey("user.id", ondelete="CASCADE"))
     user = db.relationship("User")
 
-    def __str__(self):
-        return self.client_metadata["client_name"]
-
     def set_client_metadata(self, client_metadata):
         super().set_client_metadata(client_metadata)
-        del client_metadata["id"]
-        del client_metadata["client_id"]
-        del client_metadata["client_id_issued_at"]
-        del client_metadata["client_secret"]
-        del client_metadata["client_secret_expires_at"]
         if "client_metadata" in self.__dict__:
             del self.__dict__["client_metadata"]
 
@@ -312,6 +304,37 @@ class OAuth2Client(db.Model, OAuth2ClientMixin):
             policy_uri=self.policy_uri,
             contacts=self.contacts,
         )
+
+
+def gen_pair(key, default):
+    def setter(self, value):
+        meta = self.client_metadata
+        meta[key] = value
+        self.set_client_metadata(meta)
+
+    def getter(self):
+        return self.client_metadata.get(key, default)
+
+    return getter, setter
+
+
+for key, default in (
+    ("redirect_uris", []),
+    ("token_endpoint_auth_method", None),
+    ("grant_types", []),
+    ("response_types", []),
+    ("client_name", None),
+    ("client_uri", None),
+    ("logo_uri", None),
+    ("scope", None),
+    ("contacts", []),
+    ("tos_uri", None),
+    ("policy_uri", None),
+    ("jwks_uri", None),
+    ("jwks", []),
+    ("software_id", None),
+):
+    setattr(OAuth2Client, key, property(*gen_pair(key, default)))
 
 
 class OAuth2AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):

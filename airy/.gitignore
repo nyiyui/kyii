@@ -7,3 +7,5 @@
 .mypy-cache
 /local-profile
 /local-profile-tmp
+/local
+/.venv

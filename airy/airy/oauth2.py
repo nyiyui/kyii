@@ -108,7 +108,7 @@ class OpenIDCode(_OpenIDCode):
         return exists_nonce(nonce, request)
 
     def get_jwt_config(self, grant):
-        return get_jwt_config()
+        return current_app.config["JWT_CONFIG"]
 
     def generate_user_info(self, user, scope):
         return generate_user_info(user, scope)
@@ -119,7 +119,7 @@ class ImplicitGrant(_OpenIDImplicitGrant):
         return exists_nonce(nonce, request)
 
     def get_jwt_config(self, grant):
-        return get_jwt_config()
+        return current_app.config["JWT_CONFIG"]
 
     def generate_user_info(self, user, scope):
         return generate_user_info(user, scope)
@@ -133,7 +133,7 @@ class HybridGrant(_OpenIDHybridGrant):
         return exists_nonce(nonce, request)
 
     def get_jwt_config(self):
-        return get_jwt_config()
+        return current_app.config["JWT_CONFIG"]
 
     def generate_user_info(self, user, scope):
         return generate_user_info(user, scope)
@@ -141,19 +141,6 @@ class HybridGrant(_OpenIDHybridGrant):
 
 authorization = AuthorizationServer()
 require_oauth = ResourceProtector()
-
-
-def get_jwt_config():
-    return dict(
-        key=current_app.config["OAUTH2_JWT_KEY"]
-        if "OAUTH2_JWT_KEY" in current_app.config
-        else JsonWebKey.import_key(
-            Path(current_app.config["OAUTH2_JWT_KEY_PATH"]).read_text()
-        ),
-        alg=current_app.config["OAUTH2_JWT_ALG"],
-        iss=current_app.config["OAUTH2_JWT_ISS"],
-        exp=current_app.config["OAUTH2_JWT_EXP"],
-    )
 
 
 @dataclass
