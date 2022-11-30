@@ -82,12 +82,3 @@ def uls():
             query = query.filter_by(id=form.ulid.data)
     return query, "silica/uls.html", dict(form=form)
 
-
-@bp.route("/ul/<ulid>", methods=("GET",))
-def ul(ulid):
-    try:
-        ul = UserLogin.q(current_user).filter_by(id=str(ulid)).one()
-    except NoResultFound:
-        abort(404)
-        return
-    return render_template("silica/ul.html", ul=ul)

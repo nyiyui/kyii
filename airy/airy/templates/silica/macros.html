@@ -102,32 +102,6 @@
   </span>
 {% endmacro %}
 
-{% macro ul_detail(ul, current) %}
-  <span class="flex ul">
-    <span>
-      {% if ul.name %}
-        {{ ul.name }}
-      {% endif %}
-    </span>
-    {{ _('（ログインID：%(id)s）', id=ul.id) }}
-    <span>
-      {{ _('開始時刻：%(start)s', start=ul.start) }}
-      {{ _('最後にアクセス：%(last)s', last=ul.last) }}
-      {{ _('終了時刻：%(end)s', end=ul.end) }}
-    </span>
-    <span>
-      {{ _('使用した認証パス：') }}
-      {{ ap(ul.against) }}
-    </span>
-    {% if ul.sid2 %}
-      <span>
-        {{ _('セッション：') }}
-        {{ sid2_with_query(ul.sid2) }}
-      </span>
-    {% endif %}
-  </span>
-{% endmacro %}
-
 {% macro pages(query) %}
   {{ _('ページ') }}
   {% if query.prev_num %}
