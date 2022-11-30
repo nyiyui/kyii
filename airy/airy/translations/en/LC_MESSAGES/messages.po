@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-11-30 16:25-0500\n"
+"POT-Creation-Date: 2022-11-30 16:28-0500\n"
 "PO-Revision-Date: 2022-11-03 02:29-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -506,7 +506,7 @@ msgid "使用した認証パス："
 msgstr "Used AP:"
 
 #: airy/templates/silica/macros.html:65 airy/templates/silica/uls.html:44
-#: airy/templates/silica/uls.html:57
+#: airy/templates/silica/uls.html:58
 msgid "終了"
 msgstr "End"
 
@@ -574,7 +574,7 @@ msgstr "You may grant full access to your account when you authorize a token."
 msgid "承認"
 msgstr "Authorize"
 
-#: airy/templates/silica/self.html:4
+#: airy/templates/silica/self.html:4 airy/templates/silica/uls.html:49
 msgid "自分"
 msgstr "Me"
 
@@ -603,15 +603,10 @@ msgstr "Used AP"
 msgid "無し"
 msgstr "None"
 
-#: airy/templates/silica/uls.html:46
+#: airy/templates/silica/uls.html:47
 #, fuzzy
 msgid "持続中"
-msgstr "Ended / Current"
-
-#: airy/templates/silica/uls.html:49
-#, fuzzy
-msgid "（自分）"
-msgstr "Me"
+msgstr "Current"
 
 #: airy/templates/silica/login/attempt_remote.html:9
 #: airy/templates/silica/login/attempt_single.html:4
@@ -784,4 +779,7 @@ msgstr "Remote"
 #: airy/verifiers/__init__.py:144
 msgid "OAuth"
 msgstr "OAuth"
+
+#~ msgid "（自分）"
+#~ msgstr "Me"
 

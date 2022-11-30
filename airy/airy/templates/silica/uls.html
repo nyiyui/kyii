@@ -41,12 +41,13 @@
 				</td>
 				<td>
 					{% if ul.end %}
-					<span class="Asuccess">{{ _("終了") }}</span>
+					<span>{{ _("終了") }}</span>
 					{% else %}
-					<span class="Acaution">{{ _("持続中") }}</span>
-					{% endif %}
 					{% if me %}
-						{{ _("（自分）") }}
+						<span>{{ _("自分") }}</span>
+					{% else %}
+						<span class="Acaution">{{ _("持続中") }}</span>
+					{% endif %}
 					{% endif %}
 				</td>
 				<td>{{ macros.ap(ul.against) }}</td>
