@@ -93,7 +93,7 @@ class Group(db.Model):
 
     @perms.setter
     def perms(self, perms):
-        perms = list(filter(lambda a: a is not "", perms))
+        perms = list(filter(lambda a: a != "", perms))
         for perm in perms:
             gp = GroupPerms.query.filter_by(group=self, perm_name=perm).first()
             if gp is None:

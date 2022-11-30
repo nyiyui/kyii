@@ -9,3 +9,4 @@
 /local-profile-tmp
 /local
 /.venv
+/.build
