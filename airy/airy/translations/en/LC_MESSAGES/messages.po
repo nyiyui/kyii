@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-11-30 16:06-0500\n"
+"POT-Creation-Date: 2022-11-30 16:19-0500\n"
 "PO-Revision-Date: 2022-11-03 02:29-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -496,16 +496,17 @@ msgstr "Logged out of current login."
 msgid "遠隔認証トークン<%(token)sを承認しました。"
 msgstr "Authorized token %(token)s"
 
-#: airy/templates/silica/macros.html:59 airy/templates/silica/macros.html:112
+#: airy/templates/silica/macros.html:59
 #, python-format
 msgid "（ログインID：%(id)s）"
 msgstr "(Login ID: %(id)s)"
 
-#: airy/templates/silica/macros.html:60 airy/templates/silica/macros.html:119
+#: airy/templates/silica/macros.html:60
 msgid "使用した認証パス："
 msgstr "Used AP:"
 
-#: airy/templates/silica/macros.html:65 airy/templates/silica/uls.html:57
+#: airy/templates/silica/macros.html:65 airy/templates/silica/uls.html:44
+#: airy/templates/silica/uls.html:57
 msgid "終了"
 msgstr "End"
 
@@ -529,54 +530,35 @@ msgstr "Account: "
 msgid "省略："
 msgstr ""
 
-#: airy/templates/silica/macros.html:114
-#, python-format
-msgid "開始時刻：%(start)s"
-msgstr ""
-
-#: airy/templates/silica/macros.html:115
-#, python-format
-msgid "最後にアクセス：%(last)s"
-msgstr ""
-
-#: airy/templates/silica/macros.html:116
-#, python-format
-msgid "終了時刻：%(end)s"
-msgstr ""
-
-#: airy/templates/silica/macros.html:124
-msgid "セッション："
-msgstr "Session"
-
-#: airy/templates/silica/macros.html:132
+#: airy/templates/silica/macros.html:106
 msgid "ページ"
 msgstr "Page"
 
-#: airy/templates/silica/macros.html:134
+#: airy/templates/silica/macros.html:108
 msgid "前"
 msgstr "Prev"
 
-#: airy/templates/silica/macros.html:146
+#: airy/templates/silica/macros.html:120
 msgid "次"
 msgstr "Next"
 
-#: airy/templates/silica/macros.html:154
+#: airy/templates/silica/macros.html:128
 msgid "メッセージ"
 msgstr "Message"
 
-#: airy/templates/silica/macros.html:157
+#: airy/templates/silica/macros.html:131
 msgid "成功"
 msgstr "Success"
 
-#: airy/templates/silica/macros.html:160
+#: airy/templates/silica/macros.html:134
 msgid "気をつけて"
 msgstr "Caution"
 
-#: airy/templates/silica/macros.html:163
+#: airy/templates/silica/macros.html:137
 msgid "警告"
 msgstr "Warning"
 
-#: airy/templates/silica/macros.html:166
+#: airy/templates/silica/macros.html:140
 msgid "エラー"
 msgstr "Error"
 
@@ -620,6 +602,11 @@ msgstr "Used AP"
 #: airy/templates/silica/uls.html:40
 msgid "無し"
 msgstr "None"
+
+#: airy/templates/silica/uls.html:46
+#, fuzzy
+msgid "持続中"
+msgstr "Ended / Current"
 
 #: airy/templates/silica/uls.html:49
 #, fuzzy
@@ -797,28 +784,3 @@ msgstr "Remote"
 #: airy/verifiers/__init__.py:144
 msgid "OAuth"
 msgstr "OAuth"
-
-#~ msgid "Eメール"
-#~ msgstr "Read Email"
-
-#~ msgid "最新アクセス時刻"
-#~ msgstr "Last Access Time"
-
-#~ msgid "きぃい シリカ"
-#~ msgstr "Silica"
-
-#~ msgid "対象"
-#~ msgstr "Subject Client"
-
-#~ msgid "アクセストークン状態"
-#~ msgstr "Access Token State"
-
-#~ msgid "れフレッシュトークン状態"
-#~ msgstr "Refresh Token State"
-
-#~ msgid "未だ有効"
-#~ msgstr "Still Active"
-
-#~ msgid "取消済み"
-#~ msgstr "Revoked"
-

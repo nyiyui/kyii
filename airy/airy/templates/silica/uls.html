@@ -41,9 +41,9 @@
 				</td>
 				<td>
 					{% if ul.end %}
-						<span class="Asuccess">終了</span>
+					<span class="Asuccess">{{ _("終了") }}</span>
 					{% else %}
-						<span class="Acaution">持続中</span>
+					<span class="Acaution">{{ _("持続中") }}</span>
 					{% endif %}
 					{% if me %}
 						{{ _("（自分）") }}
