@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2022-11-30 16:19-0500\n"
+"POT-Creation-Date: 2022-11-30 16:25-0500\n"
 "PO-Revision-Date: 2022-11-03 02:29-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -784,3 +784,4 @@ msgstr "Remote"
 #: airy/verifiers/__init__.py:144
 msgid "OAuth"
 msgstr "OAuth"
+
