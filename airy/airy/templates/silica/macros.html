@@ -155,16 +155,16 @@
 {% endmacro %}
 
 {% macro form_field(form, field) %}
-	{{ form[field].label }}
-	{{ form[field] }}
-	{% set errors = form.errors[field] %}
-	{% if errors %}
-		<div class="errors">
-			<ul>
-				{% for error in errrors %}
-					<li>{{ error }}</li>
-				{% endfor %}
-			</ul>
-		</div>
-	{% endif %}
+  {{ form[field].label }}
+  {{ form[field] }}
+  {% set errors = form.errors[field] %}
+  {% if errors %}
+    <div class="errors">
+      <ul>
+        {% for error in errrors %}
+          <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
 {% endmacro %}
