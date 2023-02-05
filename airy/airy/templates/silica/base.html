@@ -16,7 +16,7 @@
     <meta name="author" content="{% block head_author %}{% endblock %}">
     <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}" />
     {{ moment.include_moment() }}
-    {{ moment.locale(auto_detect=True) }}
+    {{ moment.locale(language=g.lang) }}
     {% block etc_head %}{% endblock %}
   </head>
   <body>

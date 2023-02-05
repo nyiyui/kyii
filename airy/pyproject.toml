@@ -1,11 +1,14 @@
-[[source]]
-url = "https://pypi.org/simple"
-verify_ssl = true
-name = "pypi"
+[tool.poetry]
+name = "airy"
+version = "0.1.0"
+description = ""
+authors = ["nyiyui <+@nyiyui.ca>"]
 
-[packages]
+[tool.poetry.dependencies]
+python = "^3.10"
 flask = "*"
 flask-sqlalchemy = "*"
+sqlalchemy = "^1.4.46"
 authlib = "*"
 flask-migrate = "*"
 sqlalchemy-utils = "*"
@@ -33,11 +36,10 @@ flask-qrcode = "*"
 requests = "*"
 flask-moment = "*"
 
-[dev-packages]
+[tool.poetry.dev-dependencies]
 pytest = "*"
 flake8 = "*"
 mypy = "*"
-# NOTE: remember to add type stubs (as they become available)
 types-Pillow = "*"
 types-Flask = "*"
 types-Flask-SQLAlchemy = "*"
@@ -45,5 +47,6 @@ types-sqlalchemy_utils = "*"
 types-SQLAlchemy = "*"
 black = "*"
 
-[requires]
-python_version = "3.9"
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

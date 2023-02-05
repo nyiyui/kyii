@@ -31,7 +31,6 @@ babel = Babel()
 moment_ = Moment()
 
 
-@babel.localeselector
 def get_locale():
     lang = g.lang = request.accept_languages.best_match(current_app.config["LANGUAGES"])
     return lang
@@ -67,24 +66,18 @@ def format_time(t):
 def init_app(app):
     csrf.init_app(app)
     mail.init_app(app)
-    babel.init_app(app)
+    babel.init_app(app, locale_selector=get_locale)
 
     @app.context_processor
     def utility_processor():
-        # this ensures  g.lang is injected before any _ etc call (needed for <html lang="{{ g.lang }}">)
-        babel.locale_selector_func()
-        return {}
-
-    ulm.init_app(app)
-
-    @app.context_processor
-    def utility_processor():
-        # this ensures  g.lang is injected before any _ etc call (needed for <html lang="{{ g.lang }}">)
+        # ensure g.lang is injected before (needed for <html lang="{{ g.lang }}">)
+        get_locale()
         return dict(
             current_user=current_user,
             current_ul=current_ul,
         )
 
+    ulm.init_app(app)
     cache.init_app(app)
     limiter.init_app(app)
     QRcode(app)

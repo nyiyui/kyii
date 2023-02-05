@@ -8,5 +8,5 @@
 /local-profile
 /local-profile-tmp
 /local
-/.venv
-/.build
+/.direnv
+.local

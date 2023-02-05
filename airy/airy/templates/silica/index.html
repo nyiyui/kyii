@@ -2,10 +2,15 @@
 {% import "silica/macros.html" as macros %}
 
 {% block content %}
-	{% if current_user %}
+	{% if current_user.is_authenticated %}
 		<div class="alert Asuccess">
 			{{ _('以下のユーザーとしてログインしています。') }}
 			{{ macros.user(current_user) }}
+		</div>
+	{% else %}
+		<div class="alert Amessage">
+			{{ _('ログインしてません。') }}
+			<a href="{{ url_for('silica.login') }}">{{ _("ログインする") }}</a>
 		</div>
 	{% endif %}
 {% endblock %}
