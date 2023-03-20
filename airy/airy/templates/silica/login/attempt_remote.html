@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-<span id="remote-data" data-url="{{ url_for('api_v2.remote_wait', uid=u.id, token=feedback.token) }}"></span>
+<span id="remote-data" data-url="{{ url_for('silica.remote_wait', uid=u.id, token=feedback.token) }}"></span>
 {{ _('「%(user)s」に認証パス「%(ap_name)s」でログインしようとしています。', user=u.name, ap_name=ap.name) }}
 {{ _('認証要素「%(af_name)s」を解いて下さい。', af_name=af.name) }}
 

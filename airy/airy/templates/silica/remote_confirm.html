@@ -3,20 +3,11 @@
 {% block title %}{{ _("遠隔認証トークン承認") }}{% endblock %}
 
 {% block content %}
-{% if form.token.data is none %}
-{{ macros.alert('message', _("「次へ」を押しても承認しません。")) }}
-{% else %}
 {{ macros.alert('warning', _("トークンを承認するとあなたのアカウントをアクセス出来る可能性があります。")) }}
-{% endif %}
-{{ ul }}
 <form method="POST" action="">
 	{{ form.hidden_tag() }}
 	{{ form.token.label }} {{ form.token }}
-	{% if form.token.data is none %}
-	<input type="submit" name="next" value="{{ _("次へ") }}">
-	{% else %}
-	<input type="submit" name="confirm" value="{{ _("承認") }}">
-	{% endif %}
+	<input type="submit" value="{{ _("承認") }}">
 	<div class="errors">
 		<ul>
 			{% for error in form.errors.slug %}

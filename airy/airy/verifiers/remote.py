@@ -2,6 +2,7 @@ import json
 import secrets
 from typing import Optional, Tuple
 
+from ..db import UserLogin
 from ..etc import cache, signals
 from .errors import GenerationError, VerificationError
 
@@ -30,7 +31,10 @@ def verify(
         key = f"{PREFIX}{target_id}_{token}"
         if cache.get(key) is not None:
             raise GenerationError("token overlap")
-        cache.set(key, False, timeout=TIMEOUT)
+        cache.set(key, dict(
+            allowed=False,
+            sid2=UserLogin.get_sid2(),
+        ), timeout=TIMEOUT)
         return params, None, dict(token=token), False
     elif args["state"] == "2_verify":
         if "token" not in args:
@@ -39,8 +43,8 @@ def verify(
         key = f"{PREFIX}{target_id}_{token}"
         if cache.get(key) is None:
             raise VerificationError("token invalid")
-        val = cache.get(key)
-        if val is True:
+        allowed = cache.get(key)['allowed']
+        if allowed is True:
             return params, None, None, True
         raise VerificationError("not yet")
     raise VerificationError("invalid state")
@@ -52,7 +56,16 @@ def public_params(params: dict, **kwargs) -> dict:
 
 def _remote_decide(token: str, target_id: str) -> None:
     key = f"{PREFIX}{target_id}_{token}"
-    if cache.get(key) is None:
+    val = cache.get(key)
+    if val is None:
         return
-    cache.set(key, True, timeout=TIMEOUT)
+    val['allowed'] = True
+    cache.set(key, val, timeout=TIMEOUT)
     decided.send((target_id, token))
+
+def _remote_get_sid2(token: str, target_id: str) -> dict:
+    key = f"{PREFIX}{target_id}_{token}"
+    val = cache.get(key)
+    if not val:
+        return None
+    return val['sid2']

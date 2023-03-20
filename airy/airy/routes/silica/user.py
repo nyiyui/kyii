@@ -406,23 +406,6 @@ def user(uid):
     return render_template("silica/user.html", user=u)
 
 
-class RemoteDecideForm(FlaskForm):
-    token = StringField(_l("トークン"), validators=[InputRequired(), Length(min=6, max=6)])
-
-
-@bp.route("/remote_decide", methods=("GET", "POST"))
-@login_required
-def remote_decide():
-    form = RemoteDecideForm(token=request.args.get("token"))
-    if form.validate_on_submit():
-        token = form.token.data
-        remote._remote_decide(token, current_user.id)
-        flash(_("トークン%(token)sを承認しました。", token=token))
-        current_user.add_le(LogEntry(renderer="remote", data=dict(token=token)))
-        return redirect(url_for("silica.remote_decide"))
-    return render_template("silica/remote_decide.html", form=form)
-
-
 class ConfigProfileForm(FlaskForm):
     name = StringField(_l("名前"), validators=[InputRequired(), Length(min=1)])
     handle = StringField(_l("ハンドル"), validators=[InputRequired(), Length(min=1)])
@@ -502,6 +485,7 @@ def config_ax():
             if tokens[2] == "name":
                 ap[apid]["name"] = value
             elif tokens[2] == "req":
+                print('a', ap[apid]["reqs"])
                 if value:
                     ap[apid]["reqs"][tokens[3]] = 1
             elif tokens[2] == "reqlevel":
@@ -574,14 +558,24 @@ class TAF:
 @login_required
 def config_taf():
     id = request.args.get("id", "")
-    name = ""
+    form = ConfigTAFForm()
     if id:
         af = AF.query.get_or_404(id)
         if af.user != current_user:
             abort(403)
-        name = af.name
-    form = ConfigTAFForm(name=name)
+        form.name.data = af.name
+        form.verifier.data = af.verifier
+        form.verifier.render_kw = dict(disabled=True) # TODO: is this correct?
     if form.validate_on_submit():
+        if form.verifier.data == "remote":
+            af = AF(verifier="remote", user=current_user, name=form.name.data)
+            af.regen({})
+            print(af, repr(af.id))
+            print(af, af.id)
+            db.session.add(af)
+            db.session.commit()
+            flash(_("認証方法「%(af_name)s」を生成および確認、保存しました。", af_name=af.name), "success")
+            return redirect(url_for("silica.config"))
         session[SILICA_TAF] = TAF(
             id=id, name=form.name.data, verifier=form.verifier.data
         )
@@ -664,6 +658,7 @@ def config_taf_gen():
             (handle, client["name"])
             for handle, client in current_app.config.OAUTH2_CLIENTS.items()
         ]
+        # TODO: pre-fill settings for existing (t)af
     if form.validate_on_submit():
         try:
             taf.params, taf.state, taf.feedback, taf.gen_done = verifiers.gen(

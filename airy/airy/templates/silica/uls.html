@@ -23,7 +23,7 @@
 			{% set me = ul.id == current_ul.id %}
 			<tr>
 				<td>
-					{{ ul.id[:8] }}
+					<code>{{ ul.id[:8] }}</code>
 				</td>
 				<td>
 					<form class="flex" method="post" action="{{ url_for('silica.iori_rename') }}">
@@ -41,10 +41,10 @@
 				</td>
 				<td>
 					{% if ul.end %}
-					<span>{{ _("終了") }}</span>
+					<span>{{ _("終了済") }}</span>
 					{% else %}
 					{% if me %}
-						<span>{{ _("自分") }}</span>
+						<span>{{ _("あなた") }}</span>
 					{% else %}
 						<span class="Acaution">{{ _("持続中") }}</span>
 					{% endif %}

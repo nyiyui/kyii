@@ -55,7 +55,7 @@ class Config:
     LANGUAGES = ["en", "ja"]
 
     # Images
-    SILICA_IMAGES_PATH = "./local-images"
+    SILICA_IMAGES_PATH = ".local"
 
     # OAuth
     OAUTH2_CLIENTS = {}
@@ -81,6 +81,7 @@ REQUIRED_KEYS = [
     "UPLOAD_PATH",
     "VERIFIER_WEBAUTHN",
     "CACHE_TYPE",
+    "SILICA_IMAGES_TMP_PATH",
 ]
 
 

@@ -13,9 +13,7 @@
 {% macro user(user) %}
   <span class="user">
     <img src="{{ url_for('silica.user_pfp', uid=user.id) }}" />
-    <a class="handle" href="{{ url_for('silica.user', uid=user.id) }}">
-      {{ user.slug }}
-    </a>
+    <a class="handle" href="{{ url_for('silica.user', uid=user.id) }}">{{ user.slug }}</a>
   </span>
 {% endmacro %}
 
@@ -28,15 +26,11 @@
 {% endmacro %}
 
 {% macro ap(ap) %}
-  <a href="{{ url_for('silica.config') }}#ap-{{ ap.id }}" class="ap">
-    {{ ap.name }}
-  </a>
+  <a href="{{ url_for('silica.config') }}#ap-{{ ap.id }}" class="ap">{{ ap.name }}</a>
 {% endmacro %}
 
 {% macro af(af) %}
-  <a href="{{ url_for('silica.config') }}#af-{{ af.id }}" class="af">
-    {{ af.name }}
-  </a>
+  <a href="{{ url_for('silica.config') }}#af-{{ af.id }}" class="af">{{ af.name }}</a>
 {% endmacro %}
 
 {% macro ul_short(ul) %}
@@ -62,7 +56,7 @@
     <form method="post" action="{{ url_for('silica.iori_logout') }}">
       {{ form_csrf() }}
       <input type="hidden" name="ulid" value="{{ ul.id }}"/>
-      <input type="submit" value="{{ _('終了') }}" />
+      <input type="submit" value="{{ _('終了する') }}" />
     </form>
     {% if current == ul.id %}
       {{ _('（使用中）') }}
@@ -70,42 +64,10 @@
   </span>
 {% endmacro %}
 
-{% macro ul(ul, current, ul_map_flipped) %}
-  <span class="flex Fcol ul box">
-    <div class="flex">
-      <h2>
-        {% if ul.name %}
-          {{ ul.name }}
-        {% else %}
-          <em>{{ _('名前未設定') }}</em>
-        {% endif %}
-      </h2>
-      <form class="spacer" method="post" action="{{ url_for('silica.iori_choose') }}">
-        {{ form_csrf() }}
-        <input type="hidden" name="ulid" value="{{ ul.id }}"/>
-        <input type="submit" value="{{ _('使用') }}"{% if current == ul.id %} disabled{% endif %} />
-      </form>
-      <form method="post" action="{{ url_for('silica.iori_logout') }}">
-        {{ form_csrf() }}
-        <input type="hidden" name="ulid" value="{{ ul.id }}"/>
-        <input class="Bcaution" type="submit" value="{{ _('ログアウト') }}" />
-      </form>
-    </div>
-    <div>
-      {{ _('ログインID：') }} {{ ul_short(ul) }}
-    </div>
-    <div>
-      {{ _('アカウント：') }} {{ user(ul.user) }}
-    </div>
-    <div>
-      {{ _('省略：') }} {{ ul_map_flipped[ul.id] }}
-  </span>
-{% endmacro %}
-
 {% macro pages(query) %}
   {{ _('ページ') }}
   {% if query.prev_num %}
-    <a href="?page={{ query.prev_num }}">{{ _('前') }}</a>
+    <a href="?page={{ query.prev_num }}">{{ _('←前') }}</a>
   {% endif %}
   {% for page in query.iter_pages() %}
     {% if page == query.page %}
@@ -117,7 +79,7 @@
     {% endif %}
   {% endfor %}
   {% if query.next_num %}
-    <a href="?page={{ query.next_num }}">{{ _('次') }}</a>
+    <a href="?page={{ query.next_num }}">{{ _('次→') }}</a>
   {% endif %}
 {% endmacro %}
 
