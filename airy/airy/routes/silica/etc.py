@@ -18,7 +18,7 @@ def paginate(f: Callable[[], Tuple[Query, int, str, dict]]) -> Callable:
     """
     paginate wraps a function which returns a query object and returns a
     paginated result with the specified template.
-    :param f: the function to wrap; returns (query, per_page, template_name_or_list, context)
+    :param f: wrapped func; returns (query, per_page, template_name_or_list, context)
     TODO: change f to return a dataclass
     """
 
