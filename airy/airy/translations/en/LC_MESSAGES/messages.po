@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-03-20 09:52-0400\n"
+"POT-Creation-Date: 2023-03-20 14:58-0400\n"
 "PO-Revision-Date: 2022-11-03 02:29-0400\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -40,7 +40,7 @@ msgid "メール"
 msgstr "Email"
 
 #: airy/admin.py:105 airy/templates/silica/base.html:51
-#: airy/templates/silica/log.html:51 airy/templates/silica/macros.html:25
+#: airy/templates/silica/log.html:51 airy/templates/silica/macros.html:23
 #: airy/templates/silica/uls.html:4
 msgid "ログイン"
 msgstr "Login"
@@ -69,7 +69,7 @@ msgid "トークン"
 msgstr "Token"
 
 #: airy/admin.py:111 airy/templates/silica/base.html:32
-#: airy/templates/silica/log.html:4 airy/templates/silica/macros.html:26
+#: airy/templates/silica/log.html:4 airy/templates/silica/macros.html:24
 msgid "ログ"
 msgstr "Log"
 
@@ -130,6 +130,10 @@ msgstr "Session ID"
 #, fuzzy
 msgid "ログインID"
 msgstr "Login"
+
+#: airy/routes/silica/remote.py:24
+msgid "六桁の数は必要です。"
+msgstr ""
 
 #: airy/routes/silica/remote.py:34
 #, fuzzy, python-format
@@ -351,7 +355,7 @@ msgstr "Regenerate"
 
 #: airy/templates/silica/config.html:102 airy/templates/silica/config.html:122
 #: airy/templates/silica/config_profile.html:38
-#: airy/templates/silica/iori.html:23 airy/templates/silica/macros.html:56
+#: airy/templates/silica/iori.html:23 airy/templates/silica/macros.html:50
 #: airy/templates/silica/uls.html:33
 msgid "保存"
 msgstr "Save"
@@ -527,55 +531,55 @@ msgstr "Logged out of current login."
 msgid "遠隔認証トークン<%(token)sを承認しました。"
 msgstr "Authorized token %(token)s"
 
-#: airy/templates/silica/macros.html:59
+#: airy/templates/silica/macros.html:53
 #, python-format
 msgid "（ログインID：%(id)s）"
 msgstr "(Login ID: %(id)s)"
 
-#: airy/templates/silica/macros.html:60
+#: airy/templates/silica/macros.html:54
 msgid "使用した認証パス："
 msgstr "Used AP:"
 
-#: airy/templates/silica/macros.html:65
+#: airy/templates/silica/macros.html:59
 #, fuzzy
 msgid "終了する"
 msgstr "End"
 
-#: airy/templates/silica/macros.html:68
+#: airy/templates/silica/macros.html:62
 msgid "（使用中）"
 msgstr "(in use)"
 
-#: airy/templates/silica/macros.html:74
+#: airy/templates/silica/macros.html:68
 msgid "ページ"
 msgstr "Page"
 
-#: airy/templates/silica/macros.html:76
+#: airy/templates/silica/macros.html:70
 #, fuzzy
 msgid "←前"
 msgstr "←Prev"
 
-#: airy/templates/silica/macros.html:88
+#: airy/templates/silica/macros.html:82
 #, fuzzy
 msgid "次→"
 msgstr "Next→"
 
-#: airy/templates/silica/macros.html:96
+#: airy/templates/silica/macros.html:90
 msgid "メッセージ"
 msgstr "Message"
 
-#: airy/templates/silica/macros.html:99
+#: airy/templates/silica/macros.html:93
 msgid "成功"
 msgstr "Success"
 
-#: airy/templates/silica/macros.html:102
+#: airy/templates/silica/macros.html:96
 msgid "気をつけて"
 msgstr "Caution"
 
-#: airy/templates/silica/macros.html:105
+#: airy/templates/silica/macros.html:99
 msgid "警告"
 msgstr "Warning"
 
-#: airy/templates/silica/macros.html:108
+#: airy/templates/silica/macros.html:102
 msgid "エラー"
 msgstr "Error"
 
@@ -692,6 +696,14 @@ msgstr "Link"
 #: airy/templates/silica/login/attempt_remote.html:23
 msgid "手動"
 msgstr "Manual"
+
+#: airy/templates/silica/login/attempt_remote.html:25
+msgid "既にログインしている端末から「遠隔認証」ページを行って下さい。"
+msgstr "Visit the \"Remote\" page from an already-signed-in device."
+
+#: airy/templates/silica/login/attempt_remote.html:26
+msgid "下記のトークンを入力して下さい。"
+msgstr "Enter the following token."
 
 #: airy/templates/silica/login/attempt_remote.html:30
 msgid "トークン："

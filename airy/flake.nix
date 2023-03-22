@@ -31,9 +31,12 @@
     };
   in {
     devShells.default = (mkPoetryEnv common).env.overrideAttrs (prev: {
-      buildInputs = [
-        pkgs.python310
-        pkgs.poetry
+      buildInputs = with pkgs; [
+        python310
+        poetry
+        fish
+        nixfmt
+        vim
       ];
     });
   });

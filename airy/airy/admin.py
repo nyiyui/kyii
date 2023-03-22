@@ -43,6 +43,8 @@ class IndexView(AdminIndexView):
 
 class AiryModelView(sqla.ModelView):
     def is_accessible(self):
+        if current_user.is_anonymous:
+            return False
         if not current_user.is_authenticated:
             return False
         if "admin" not in current_user.perms:

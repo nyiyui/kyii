@@ -220,3 +220,17 @@ td > select {
 ul.bare {
 	list-style-type: none;
 	padding-left: inherit;
+}
+
+/* START only for remote_decide.html */
+
+.token-container {
+  display: flex;
+  align-items: center;
+}
+
+.token {
+  font-size: 2em;
+}
+
+/* END only for remote_decide.html */

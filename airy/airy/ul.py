@@ -1,6 +1,7 @@
 from functools import wraps
 from typing import Optional, Tuple, Set
 from urllib.parse import urlencode
+from datetime import datetime
 
 from flask import (
     _request_ctx_stack,
@@ -57,17 +58,26 @@ def get_extra() -> dict:
         },
     )
 
-
-def login_user(u: User, apid: Optional[str]) -> Tuple[UserLogin, str]:
+def setup_pre_login_ul(u: User) -> UserLogin:
     ul = UserLogin(
         id=gen_id(),
         user=u,
         sid2=UserLogin.get_sid2(),
         extra=get_extra(),
-        against_id=apid,
     )
-    token_secret = ul.gen_token()
     db.session.add(ul)
+    db.session.commit()
+    return ul
+
+
+def login_user(u: User, apid: Optional[str]) -> Tuple[UserLogin, str]:
+    ul = UserLogin.query.filter_by(
+        sid2=UserLogin.get_sid2(),
+        user=u,
+    ).order_by(UserLogin.attempt.desc()).first() # TODO: race condition here, so have some kind of mutex to prevent new UserLogins (a good rate-limiting measure aniway)
+    ul.against_id = apid
+    ul.start = datetime.utcnow()
+    token_secret = ul.gen_token()
     db.session.commit()
     return ul, f"ul{ul.id}:{token_secret}"
 

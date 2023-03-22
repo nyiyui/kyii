@@ -39,7 +39,7 @@ from ...session import (
     SILICA_TAF,
 )
 from ...util import flip
-from ...ul import get_extra, login_user, current_user, login_required
+from ...ul import get_extra, setup_pre_login_ul, login_user, current_user, login_required
 from ...verifiers import VerificationError, remote, VERIFIER_NAMES, VERIFIER_CHOICES
 from ... import verifiers
 from .bp import bp
@@ -62,6 +62,7 @@ def login():
         session[SILICA_NEXT] = tuple(
             request.args.get(key) for key in ("next", "nextargs")
         )
+        setup_pre_login_ul(target)
         return redirect(url_for("silica.login_choose"))
     return render_template("silica/login/start.html", form=form)
 
@@ -85,6 +86,10 @@ def login_choose():
     form = LoginChooseForm()
     with t.time("db"):
         u = User.query.get(session[API_V1_UID])
+        if not u:
+            flash(_("無効なユーザIDが使われました。ログインを停止しました。"), "error")
+            session.pop(API_V1_UID)
+            abort(400)
         aps = list(AP.query.filter_by(user=u))
         u.add_le(LogEntry(renderer="login_start", data=dict(extra=get_extra())))
     if len(aps) == 1:
@@ -100,6 +105,8 @@ def login_choose():
         session[API_V1_SOLVED] = set()
         session[SILICA_LOGIN_LEVEL] = 1
         u.add_le(LogEntry(renderer="login_choose", data=dict(apid=form.apid.data)))
+        if AP.query.get(form.apid.data).afs(user_id=u.id).count() == 0:
+            raise RuntimeError("not allowing zero-length AP")
         return redirect(url_for("silica.login_list"))
     return render_template("silica/login/choose.html", form=form, u=u)
 

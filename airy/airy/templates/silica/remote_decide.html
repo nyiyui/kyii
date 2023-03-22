@@ -8,7 +8,16 @@
 {% else %}
 {{ macros.alert('warning', _("トークンを承認するとあなたのアカウントをアクセス出来る可能性があります。")) }}
 {% endif %}
-{{ ul }}
+{% if not (sid2 is none or form.token.data is none) %}
+{{ _("承認対象の情報です。") }}
+{{ _("セッションID：") }} {{ macros.sid2_with_query(sid2) }} <br />
+{{ _("試行開始時刻：") }} {{ ul.attempt|format_datetime }} <br />
+{{ _("IPアドレス：%(remote)s", remote=ul.extra.remote) }} <br />
+<details>
+  <summary>{{ _("ユーザーエージェント") }}</summary>
+  {{ ul.extra.headers.key[0] }}
+</details>
+{% endif %}
 <form method="POST" action="">
 	{{ form.hidden_tag() }}
 	{{ form.token.label }} {{ form.token }}

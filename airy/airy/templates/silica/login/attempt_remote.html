@@ -5,13 +5,24 @@
 {% endblock %}
 
 {% block content %}
-<span id="remote-data" data-url="{{ url_for('silica.remote_wait', uid=u.id, token=feedback.token) }}"></span>
+<span
+  id="remote-data"
+  data-url="{{ url_for('silica.remote_poll', uid=u.id, token=feedback.token) }}"
+></span>
 {{ _('「%(user)s」に認証パス「%(ap_name)s」でログインしようとしています。', user=u.name, ap_name=ap.name) }}
 {{ _('認証要素「%(af_name)s」を解いて下さい。', af_name=af.name) }}
 
 <div class="attempt">
 	{{ _('承認を%(timeout)s秒以内に行ってください。', timeout=timeout) }}
-	{{ _('承認を行ったら自動的に更新されます。（JavaScript必須）') }}
+	<div class="yesscript" style="display: none;">
+	  {{ _('承認を行ったら自動的に更新されます。（JavaScript必須）') }}
+	</div>
+	<div class="remote-timeout" style="display: none;">
+		{{ macros.alert('error', _('認証がタイムアウトしました。')) }}
+	</div>
+	<div class="remote-decided" style="display: none;">
+		{{ macros.alert('success', _('認証が承認されました。3秒後にリダイレクトします。')) }}
+	</div>
 	<div class="flex">
 		<div id="qr">
 			<h2>{{ _('QRコード') }}</h2>
@@ -22,23 +33,19 @@
 		<div id="manual">
 			<h2>{{ _('手動') }}</h2>
 			<ol>
-				<li>既にログインしている端末から「遠隔認証」ページを行って下さい。</li>
-				<li>下記のトークンを入力して下さい。</li>
+        <li>{{ _('既にログインしている端末から「遠隔認証」ページを行って下さい。') }}</li>
+        <li>{{ _('下記のトークンを入力して下さい。') }}</li>
 			</ol>
 			
-			<p>
-				{{ _('トークン：') }} <code>{{ feedback.token }}</code>
+			<p class="token-container">
+				{{ _('トークン：') }} <code class="token">{{ feedback.token }}</code>
 			</p>
 		</div>
 	</div>
 	<p>
 		{{ _('※トークンを再生成するには、このページを再読み込みして下さい。') }}
 	</p>
-	<div id="remote-timeout" style="display: none;">
-		{{ macros.alert('error', _('※認証がタイムアウトしました。')) }}
-	</div>
-	<div id="remote-decided" style="display: none;">
-		{{ macros.alert('success', _('※認証が承認されました。')) }}
+	<div class="remote-decided" style="display: none;">
 		<form id="remote-submit" method="POST" action="">
 			{{ form.hidden_tag() }}
 			<input type="submit" value="{{ _("進む") }}">

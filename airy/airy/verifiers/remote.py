@@ -10,7 +10,7 @@ from .errors import GenerationError, VerificationError
 
 
 PREFIX = "verifier_remote_"
-TIMEOUT = 30
+TIMEOUT = 120
 decided = signals.signal("verifier_remote_decided")
 
 
@@ -62,6 +62,12 @@ def _remote_decide(token: str, target_id: str) -> None:
     val['allowed'] = True
     cache.set(key, val, timeout=TIMEOUT)
     decided.send((target_id, token))
+
+def _remote_decided(token: str, target_id: str) -> None:
+    key = f"{PREFIX}{target_id}_{token}"
+    if not cache.has(key):
+        return False
+    return cache.get(key)['allowed']
 
 def _remote_get_sid2(token: str, target_id: str) -> dict:
     key = f"{PREFIX}{target_id}_{token}"

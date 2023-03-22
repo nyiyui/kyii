@@ -22,11 +22,11 @@ def init_app(app):
             id=gen_id(),
             slug="nyiyui",
             name="Yui Shibata",
-            primary_group=sus,
+            groups=[sus],
         )
         db.session.add(nyiyui)
         db.session.commit()
-        gp = GroupPerms(group_id=sus.id, perm_name="_.admin")
+        gp = GroupPerms(group_id=sus.id, perm_name="admin")
         print(gp, gp.group_id, gp.perm_name)
         db.session.add(gp)
 
@@ -36,7 +36,7 @@ def init_app(app):
             id=gen_id(),
             slug="asuna",
             name="Yuuki Asuna",
-            primary_group=asuna_g,
+            groups=[asuna_g],
         )
         db.session.add(asuna)
         db.session.commit()
@@ -72,6 +72,9 @@ def init_app(app):
         )
         db.session.add(af3)
 
+        af4 = AF(name="Remote", user=nyiyui, verifier="remote", gen_done=True, params={})
+        db.session.add(af4)
+
         ap1 = AP(name="Basic", user=nyiyui, reqs=[af1])
         db.session.add(ap1)
 
@@ -80,6 +83,9 @@ def init_app(app):
 
         ap3 = AP(name="Legacy", user=nyiyui, reqs=[af3])
         db.session.add(ap3)
+
+        ap4 = AP(name="Remote", user=nyiyui, reqs=[af4])
+        db.session.add(ap4)
 
         mctf = OAuth2Client(
             id="9b540566-c278-4968-bf18-8cdb29fb9b08",

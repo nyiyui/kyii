@@ -14,7 +14,8 @@
 		<tr>
 			<th>ID</th>
 			<th>{{ _("名前") }}</th>
-			<th>{{ _("開始時刻") }}</th>
+			<th>{{ _("ログイン開始時刻") }}</th>
+			<th>{{ _("ログイン成功・開始時刻") }}</th>
 			<th>{{ _("使用時刻") }}</th>
 			<th>{{ _("終了・持続中") }}</th>
 			<th>{{ _("使用パス") }}</th>
@@ -32,6 +33,9 @@
 						<input type="text" name="name" value="{{ ul.name if ul.name else "" }}" placeholder="{{ _("未設定") }}" />
 						<input style="flex-shrink: 10;" type="submit" value="{{ _('保存') }}" />
 					</form>
+				</td>
+				<td>
+					{{ ul.attempt|format_datetime }}
 				</td>
 				<td>
 					{{ ul.start|format_datetime }}
