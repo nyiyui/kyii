@@ -8,7 +8,6 @@ from flask import (
     abort,
     current_app,
     has_request_context,
-    jsonify,
     request,
     session,
     flash,
@@ -79,7 +78,10 @@ def login_user(u: User, apid: Optional[str]) -> Tuple[UserLogin, str]:
         )
         .order_by(UserLogin.attempt.desc())
         .first()
-    )  # TODO: race condition here, so have some kind of mutex to prevent new UserLogins (a good rate-limiting measure aniway)
+    )
+    # TODO: race condition here:
+    #       have some kind of mutex to prevent new UserLogins
+    #       (a good rate-limiting measure aniway)
     ul.against_id = apid
     ul.start = datetime.utcnow()
     token_secret = ul.gen_token()

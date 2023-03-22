@@ -1,5 +1,4 @@
-from flask import Blueprint, current_app, redirect
-from . import silica
+from flask import Blueprint
 
 bp = Blueprint("main", __name__)
 

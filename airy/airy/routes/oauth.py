@@ -1,7 +1,3 @@
-import json
-from pathlib import Path
-from urllib.parse import urlencode, urljoin
-
 from authlib.integrations.flask_oauth2 import current_token
 from authlib.jose import JsonWebKey, KeySet
 from authlib.oauth2 import OAuth2Error
@@ -10,9 +6,7 @@ from flask import (
     abort,
     current_app,
     jsonify,
-    redirect,
     request,
-    session,
     url_for,
     render_template,
 )
@@ -25,6 +19,8 @@ from ..oauth2_client import oauth
 from ..ul import current_user, login_required
 
 bp = Blueprint("oauth", __name__)
+
+# TODO: finish this
 
 
 def init_app(app):
