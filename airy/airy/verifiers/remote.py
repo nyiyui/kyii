@@ -41,9 +41,10 @@ def verify(
             raise VerificationError("invalid")
         token = args["token"]
         key = f"{PREFIX}{target_id}_{token}"
-        if cache.get(key) is None:
+        val = cache.get(key)
+        if val is None:
             raise VerificationError("token invalid")
-        allowed = cache.get(key)['allowed']
+        allowed = val['allowed']
         if allowed is True:
             return params, None, None, True
         raise VerificationError("not yet")
@@ -63,13 +64,14 @@ def _remote_decide(token: str, target_id: str) -> None:
     cache.set(key, val, timeout=TIMEOUT)
     decided.send((target_id, token))
 
-def _remote_decided(token: str, target_id: str) -> None:
+def _remote_decided(token: str, target_id: str) -> bool:
     key = f"{PREFIX}{target_id}_{token}"
-    if not cache.has(key):
+    val = cache.get(key)
+    if not val:
         return False
-    return cache.get(key)['allowed']
+    return val['allowed']
 
-def _remote_get_sid2(token: str, target_id: str) -> dict:
+def _remote_get_sid2(token: str, target_id: str) -> Optional[str]:
     key = f"{PREFIX}{target_id}_{token}"
     val = cache.get(key)
     if not val:

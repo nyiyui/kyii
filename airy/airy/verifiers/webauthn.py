@@ -14,6 +14,7 @@ from webauthn import (
 from webauthn.helpers.structs import (
     PublicKeyCredentialDescriptor,
     RegistrationCredential,
+    AuthenticationCredential,
     UserVerificationRequirement,
 )
 
@@ -87,9 +88,9 @@ def verify(
             user_verification=UserVerificationRequirement.REQUIRED,
         )
         return (
-            None,
+            {},
             dict(ao_gened=True, challenge=ao.challenge),
-            options_to_json(ao),
+            dict(options=options_to_json(ao)),
             False,
         )
     elif args["state"] == "2_verify":
@@ -98,7 +99,7 @@ def verify(
         if not state["ao_gened"]:
             raise VerificationError("no authentication options generated")
         va = verify_authentication_response(
-            credential=RegistrationCredential.parse_raw(args["credential"]),
+            credential=AuthenticationCredential.parse_raw(args["credential"]),
             expected_challenge=state["challenge"],
             expected_rp_id=current_app.config["VERIFIER_WEBAUTHN"]["rp_id"],
             expected_origin=current_app.config["HOST"],

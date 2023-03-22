@@ -45,6 +45,9 @@ types-Flask = "*"
 types-Flask-SQLAlchemy = "*"
 types-sqlalchemy_utils = "*"
 types-SQLAlchemy = "*"
+types-Flask-Cors = "*"
+types-passlib = "*"
+types-Flask-Migrate = "*"
 black = "*"
 
 [build-system]
