@@ -11,7 +11,6 @@ from flask import (
     current_app,
     send_file,
 )
-from flask_cors import CORS
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Optional
@@ -135,7 +134,7 @@ def login_list():
         u = User.query.get(session[API_V1_UID])
         ap = AP.query.get(session[API_V1_APID])
     afs = ap.afs(user_id=u.id).filter(
-        or_(column("level") == session[SILICA_LOGIN_LEVEL], column("level") == None)
+        or_(column("level") == session[SILICA_LOGIN_LEVEL], column("level") is None)
     )
     afids = set(a[0] for a in afs.with_entities(AF.id).all())
     missing = afids - session[API_V1_SOLVED]

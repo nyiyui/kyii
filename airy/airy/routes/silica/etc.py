@@ -1,7 +1,7 @@
 from functools import wraps
-from typing import Callable, Any, Union, List
+from typing import Callable, Tuple
 from flask import abort, request, render_template
-import jinja2
+from sqlalchemy.orm import Query
 
 
 __ALL__ = ["int_or_abort", "paginate"]
@@ -14,7 +14,7 @@ def int_or_abort(s: str, code: int = 400) -> int:
         abort(code)
 
 
-def paginate(f: Callable) -> Callable:
+def paginate(f: Callable[[], Tuple[Query, int, str, dict]]) -> Callable:
     """
     paginate wraps a function which returns a query object and returns a
     paginated result with the specified template.

@@ -1,16 +1,13 @@
-from flask import redirect, render_template, url_for, session, request, flash, abort
-from flask_cors import CORS
+from flask import render_template, request, flash
 from flask_wtf import FlaskForm
 
 from server_timing import Timing as t
 from flask_babel import lazy_gettext as _l
-from wtforms import StringField, RadioField
-from wtforms.validators import InputRequired, Length, ValidationError
+from wtforms import StringField
 from ...db import AP, AF, LogEntry, UserLogin
 from ...ul import current_user, login_required
 from .bp import bp
 from .etc import paginate
-from sqlalchemy.orm.exc import NoResultFound
 
 
 @bp.app_template_filter()
