@@ -16,7 +16,7 @@ jobs:
       working-directory: ./airy
       run: |
         python -m pip install poetry
-        poetry install --dev --deploy
+        poetry install
     - name: Black
       working-directory: ./airy
       run: poetry run black --check .
