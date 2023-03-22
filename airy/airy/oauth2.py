@@ -3,7 +3,6 @@ oauth2.py implements OAuth 2- and OpenID Connect-related functionality.
 """
 
 from dataclasses import dataclass
-from pathlib import Path
 
 from authlib.integrations.flask_oauth2 import AuthorizationServer, ResourceProtector
 from authlib.integrations.sqla_oauth2 import (
@@ -11,7 +10,6 @@ from authlib.integrations.sqla_oauth2 import (
     create_query_client_func,
     create_save_token_func,
 )
-from authlib.jose import JsonWebKey
 from authlib.oauth2.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
 )

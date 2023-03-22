@@ -1,10 +1,9 @@
 import time
-from typing import Dict, Optional
-from urllib.parse import urlencode, urljoin
+from typing import Optional
 
 from flask_qrcode import QRcode
 from blinker import Namespace
-from flask import current_app, redirect, request, session, g
+from flask import current_app, request, session, g
 from flask_babel import Babel
 import flask_babel
 from flask_caching import Cache
@@ -16,7 +15,7 @@ from flask_moment import moment
 from flask_wtf.csrf import CSRFProtect
 from server_timing import Timing
 
-from .db import User, UserLogin
+from .db import UserLogin
 from .ul import ULManager, current_user, current_ul
 
 
@@ -31,7 +30,7 @@ babel = Babel()
 moment_ = Moment()
 
 
-def get_locale():
+def get_locale() -> str:
     lang = g.lang = request.accept_languages.best_match(current_app.config["LANGUAGES"])
     return lang
 
@@ -63,7 +62,7 @@ def format_time(t):
         return moment(t).format("LLL")
 
 
-def init_app(app):
+def init_app(app) -> None:
     csrf.init_app(app)
     mail.init_app(app)
     babel.init_app(app, locale_selector=get_locale)
@@ -88,7 +87,7 @@ def init_app(app):
         Timing.start("request")
 
     @app.after_request
-    def before_request(resp):
+    def after_request(resp):
         Timing.stop("request")
         return resp
 

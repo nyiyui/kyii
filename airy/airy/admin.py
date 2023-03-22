@@ -1,6 +1,6 @@
 from urllib.parse import urlencode
 
-from flask import current_app, redirect, request, url_for
+from flask import redirect, request, url_for
 from flask_admin import Admin, AdminIndexView, expose
 from wtforms.fields import FieldList, SelectField, URLField, StringField
 from flask_admin.contrib import sqla
