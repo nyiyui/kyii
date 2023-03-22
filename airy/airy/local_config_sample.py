@@ -7,3 +7,4 @@ def init_app(app):
         rp_name="local testing airy",
     )
     app.config["CACHE_TYPE"] = "SimpleCache"
+    app.config["SILICA_IMAGES_TMP_PATH"] = ".local/tmp-kyii-upload/"
