@@ -3,23 +3,6 @@ on:
   push:
 
 jobs:
-  yuui:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 16
-    - name: Dependencies
-      working-directory: ./yuui
-      run: |
-        npm i --include=dev
-    - name: Lint
-      working-directory: ./yuui
-      run: |
-        npm run lint
   airy:
     runs-on: ubuntu-latest
     steps:
@@ -32,14 +15,14 @@ jobs:
     - name: Dependencies
       working-directory: ./airy
       run: |
-        python -m pip install pipenv
-        pipenv install --dev --deploy
+        python -m pip install poetry
+        poetry install --dev --deploy
     - name: Black
       working-directory: ./airy
-      run: pipenv run black --check .
+      run: poetry run black --check .
     - name: Flake8
       working-directory: ./airy
-      run: pipenv run flake8
+      run: poetry run flake8
     - name: mypy
       working-directory: ./airy
-      run: pipenv run mypy --strict $(git ls-files '*.py') || echo 'failed but wtv'
+      run: poetry run mypy --strict $(git ls-files '*.py') || echo 'failed but wtv'
