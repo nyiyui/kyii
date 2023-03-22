@@ -37,6 +37,7 @@
         fish
         nixfmt
         vim
+        nodejs
       ];
     });
   });
