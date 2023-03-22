@@ -31,10 +31,14 @@ def verify(
         key = f"{PREFIX}{target_id}_{token}"
         if cache.get(key) is not None:
             raise GenerationError("token overlap")
-        cache.set(key, dict(
-            allowed=False,
-            sid2=UserLogin.get_sid2(),
-        ), timeout=TIMEOUT)
+        cache.set(
+            key,
+            dict(
+                allowed=False,
+                sid2=UserLogin.get_sid2(),
+            ),
+            timeout=TIMEOUT,
+        )
         return params, None, dict(token=token), False
     elif args["state"] == "2_verify":
         if "token" not in args:
@@ -44,7 +48,7 @@ def verify(
         val = cache.get(key)
         if val is None:
             raise VerificationError("token invalid")
-        allowed = val['allowed']
+        allowed = val["allowed"]
         if allowed is True:
             return params, None, None, True
         raise VerificationError("not yet")
@@ -60,20 +64,22 @@ def _remote_decide(token: str, target_id: str) -> None:
     val = cache.get(key)
     if val is None:
         return
-    val['allowed'] = True
+    val["allowed"] = True
     cache.set(key, val, timeout=TIMEOUT)
     decided.send((target_id, token))
+
 
 def _remote_decided(token: str, target_id: str) -> bool:
     key = f"{PREFIX}{target_id}_{token}"
     val = cache.get(key)
     if not val:
         return False
-    return val['allowed']
+    return val["allowed"]
+
 
 def _remote_get_sid2(token: str, target_id: str) -> Optional[str]:
     key = f"{PREFIX}{target_id}_{token}"
     val = cache.get(key)
     if not val:
         return None
-    return val['sid2']
+    return val["sid2"]

@@ -72,7 +72,9 @@ def init_app(app):
         )
         db.session.add(af3)
 
-        af4 = AF(name="Remote", user=nyiyui, verifier="remote", gen_done=True, params={})
+        af4 = AF(
+            name="Remote", user=nyiyui, verifier="remote", gen_done=True, params={}
+        )
         db.session.add(af4)
 
         ap1 = AP(name="Basic", user=nyiyui, reqs=[af1])

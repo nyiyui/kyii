@@ -100,17 +100,19 @@ class OAuth2ClientModelView(AiryModelView):
     )
 
 
-admin = Admin(name=_l("二酸化ケイ素"), index_view=IndexView('ホーム'), template_mode="bootstrap3")
-admin.add_view(UserModelView(User, db.session, _l('ユーザー')))
-admin.add_view(GroupModelView(Group, db.session, _l('グループ')))
-admin.add_view(AiryModelView(Email, db.session, _l('メール')))
-admin.add_view(UserLoginModelView(UserLogin, db.session, _l('ログイン')))
-admin.add_view(AiryModelView(AP, db.session, _l('認証パス')))
-admin.add_view(AiryModelView(AF, db.session, _l('認証方法')))
-admin.add_view(OAuth2ClientModelView(OAuth2Client, db.session, _l('クライアント')))
-admin.add_view(AiryModelView(OAuth2AuthorizationCode, db.session, _l('認可')))
-admin.add_view(AiryModelView(OAuth2Token, db.session, _l('トークン')))
-admin.add_view(AiryModelView(LogEntry, db.session, _l('ログ')))
+admin = Admin(
+    name=_l("二酸化ケイ素"), index_view=IndexView("ホーム"), template_mode="bootstrap3"
+)
+admin.add_view(UserModelView(User, db.session, _l("ユーザー")))
+admin.add_view(GroupModelView(Group, db.session, _l("グループ")))
+admin.add_view(AiryModelView(Email, db.session, _l("メール")))
+admin.add_view(UserLoginModelView(UserLogin, db.session, _l("ログイン")))
+admin.add_view(AiryModelView(AP, db.session, _l("認証パス")))
+admin.add_view(AiryModelView(AF, db.session, _l("認証方法")))
+admin.add_view(OAuth2ClientModelView(OAuth2Client, db.session, _l("クライアント")))
+admin.add_view(AiryModelView(OAuth2AuthorizationCode, db.session, _l("認可")))
+admin.add_view(AiryModelView(OAuth2Token, db.session, _l("トークン")))
+admin.add_view(AiryModelView(LogEntry, db.session, _l("ログ")))
 
 
 def init_app(app):

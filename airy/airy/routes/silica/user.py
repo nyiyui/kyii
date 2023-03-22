@@ -39,7 +39,13 @@ from ...session import (
     SILICA_TAF,
 )
 from ...util import flip
-from ...ul import get_extra, setup_pre_login_ul, login_user, current_user, login_required
+from ...ul import (
+    get_extra,
+    setup_pre_login_ul,
+    login_user,
+    current_user,
+    login_required,
+)
 from ...verifiers import VerificationError, remote, VERIFIER_NAMES, VERIFIER_CHOICES
 from ... import verifiers
 from .bp import bp
@@ -492,7 +498,7 @@ def config_ax():
             if tokens[2] == "name":
                 ap[apid]["name"] = value
             elif tokens[2] == "req":
-                print('a', ap[apid]["reqs"])
+                print("a", ap[apid]["reqs"])
                 if value:
                     ap[apid]["reqs"][tokens[3]] = 1
             elif tokens[2] == "reqlevel":
@@ -572,7 +578,7 @@ def config_taf():
             abort(403)
         form.name.data = af.name
         form.verifier.data = af.verifier
-        form.verifier.render_kw = dict(disabled=True) # TODO: is this correct?
+        form.verifier.render_kw = dict(disabled=True)  # TODO: is this correct?
     if form.validate_on_submit():
         if form.verifier.data == "remote":
             af = AF(verifier="remote", user=current_user, name=form.name.data)

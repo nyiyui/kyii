@@ -36,16 +36,25 @@ def remote_decide():
         flash(_("トークン%(token)sはありません。", token=token), "error")
     if form.validate_on_submit():
         print(request.form)
-        if 'next' in request.form:
+        if "next" in request.form:
             pass
-        elif 'confirm' in request.form:
+        elif "confirm" in request.form:
             remote._remote_decide(token, current_user.id)
             flash(_("トークン%(token)sを承認しました。", token=token))
-            current_user.add_le(LogEntry(renderer="remote",data=dict(token=token, sid2=sid2)))
+            current_user.add_le(
+                LogEntry(renderer="remote", data=dict(token=token, sid2=sid2))
+            )
             return redirect(url_for("silica.remote_decide"))
         else:
-            raise TypeError('invalid submission')
-    return render_template("silica/remote_decide.html", form=form, sid2=sid2, ul=UserLogin.query.filter_by(sid2=sid2).order_by(UserLogin.start.desc()).first())
+            raise TypeError("invalid submission")
+    return render_template(
+        "silica/remote_decide.html",
+        form=form,
+        sid2=sid2,
+        ul=UserLogin.query.filter_by(sid2=sid2)
+        .order_by(UserLogin.start.desc())
+        .first(),
+    )
 
 
 @bp.route("/remote/poll", methods=("GET",))

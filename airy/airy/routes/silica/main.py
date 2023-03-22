@@ -81,4 +81,3 @@ def uls():
         if form.ulid.data:
             query = query.filter_by(id=form.ulid.data)
     return query, "silica/uls.html", dict(form=form)
-
