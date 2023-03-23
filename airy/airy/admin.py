@@ -2,6 +2,7 @@ from urllib.parse import urlencode
 
 from flask import redirect, request, url_for
 from flask_admin import Admin, AdminIndexView, expose
+from flask_admin.menu import MenuLink
 from wtforms.fields import FieldList, SelectField, URLField, StringField
 from flask_admin.contrib import sqla
 from flask_babel import lazy_gettext as _l
@@ -116,4 +117,6 @@ admin.add_view(AiryModelView(LogEntry, db.session, _l("ログ")))
 
 
 def init_app(app):
+    with app.test_request_context():
+        admin.add_link(MenuLink(name=_l("メインサイト"), url=url_for('silica.index')))
     admin.init_app(app)
