@@ -4,7 +4,7 @@
 /jwt.pem.pub
 /airy/local_config.py
 /test.db
-.mypy-cache
+.mypy_cache
 /local-profile
 /local-profile-tmp
 /local
