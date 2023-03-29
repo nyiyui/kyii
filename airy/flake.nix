@@ -25,12 +25,13 @@
           (add-setuptools super "flask-server-timing")
         );
       preferWheels = true;
+    };
+  in rec {
+    devShells.default = (mkPoetryEnv common // {
       editablePackageSources = {
         airy = ./.;
       };
-    };
-  in {
-    devShells.default = (mkPoetryEnv common).env.overrideAttrs (prev: {
+    }).env.overrideAttrs (prev: {
       buildInputs = with pkgs; [
         python310
         poetry

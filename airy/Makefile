@@ -5,6 +5,11 @@ prefix = /usr/local
 
 all: jwt.pem jwt.pem.pub
 
+run:
+	python3 -m flask run
+
+.PHONY: run
+
 install: install-main install-service
 
 install-main:
