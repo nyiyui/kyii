@@ -118,5 +118,5 @@ admin.add_view(AiryModelView(LogEntry, db.session, _l("ログ")))
 
 def init_app(app):
     with app.test_request_context():
-        admin.add_link(MenuLink(name=_l("メインサイト"), url=url_for('silica.index')))
+        admin.add_link(MenuLink(name=_l("メインサイト"), url=url_for("silica.index")))
     admin.init_app(app)
