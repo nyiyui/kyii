@@ -21,7 +21,7 @@ from server_timing import Timing as t
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
 from flask_wtf import FlaskForm
-from wtforms import StringField, RadioField, PasswordField, IntegerField
+from wtforms import validators, StringField, RadioField, PasswordField, IntegerField, EmailField
 from wtforms.validators import InputRequired, Length, ValidationError, NumberRange
 from flask_wtf.file import FileField
 from ..util import conv_to_webp
@@ -333,9 +333,19 @@ def login_stop():
     return render_template("silica/login/stop.html", form=form, u=u, ap=ap)
 
 
+class SignupForm(FlaskForm):
+    email = EmailField(
+        _l("Eメール"),
+        validators=[validators.Email(check_deliverability=True)],
+    )
+
+
 @bp.route("/signup", methods=("GET",))
 def signup():
-    return render_template("silica/signup.html")
+    form = SignupForm()
+    if form.validate_on_submit():
+        raise NotImplemented
+    return render_template("silica/signup.html", form=form)
 
 
 @bp.route("/iori", methods=("GET",))

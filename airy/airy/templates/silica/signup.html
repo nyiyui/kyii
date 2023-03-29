@@ -1,0 +1,17 @@
+{% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block content %}
+<form method="POST" action="">
+	{{ form.hidden_tag() }}
+	{{ form.email.label }} {{ form.email }}
+	<input type="submit" value="{{ _("登録") }}">
+	<div class="errors">
+		<ul>
+			{% for error in form.errors.slug %}
+			<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+	</div>
+</form>
+{% endblock %}
