@@ -4,7 +4,6 @@ RUN adduser --system --home /app --gecos "Airy" app && \
     groupadd app && \
     usermod -g app app && \
     apt-get update && \
-    apt-get install -y uwsgi uwsgi-plugin-python3 && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -15,12 +14,19 @@ COPY poetry.lock pyproject.toml /app/
 RUN python -m poetry config virtualenvs.in-project true && \
     python -m poetry install --no-root
 USER root
-RUN rm -rf /var/cache/*
+RUN rm -rf /var/cache/* && \
+    mkdir /var/kyii-upload -p && \
+    chown app:app /var/kyii-upload && \
+    chmod 770 /var/kyii-upload
 USER app
 
 COPY . /app/
+COPY ./airy/docker_config.py /app/local_config.py
 
-EXPOSE 28730
-COPY uwsgi.ini /app/
 USER root
-CMD ["uwsgi", "--ini", "/app/uwsgi.ini"]
+EXPOSE 28910
+CMD /app/.venv/bin/gunicorn \
+      --bind :28910 \
+      --error-logfile - \
+      --config /app/container/gunicorn.py \
+      airy.wsgi:application
