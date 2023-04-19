@@ -24,10 +24,10 @@
       <!-- TODO: fix global looking weird (box-shadow goes on top too) -->
     </nav>
     <nav id="nav-header">
-      <a href="https://nyiyui.ca" style="margin: 0; padding: 0;">
-        <img style="padding: 0; height: 1.6rem; display: inline; vertical-align: middle;" src="https://cdn.nyiyui.ca/one.svg" />
+      <a href="{{ url_for('silica.index') }}">
+        <img style="padding: 0; height: 1.6rem; display: inline; vertical-align: middle;" src="{{ url_for('static', filename='logo.svg') }}" / >
+        {{ _('Silica') }}
       </a>
-      <a href="{{ url_for('silica.index') }}">{{ _('Silica') }}</a>
       {% if current_user.is_authenticated %}
         <a href="{{ url_for('silica.log') }}">{{ _('ログ') }}</a>
         <a href="{{ url_for('silica.uls') }}">{{ _('ログイン一覧') }}</a>

@@ -1,0 +1,23 @@
+<svg version="1.1"
+viewBox="-3 -3 120 120"
+xmlns="http://www.w3.org/2000/svg">
+<path
+  d="M10 20
+     l100 0
+     M20 20
+     c0 0,60 0,60 40
+     c0 30,-40 30,-40 0
+     c0 -30,40 -40,60 -40"
+  fill="transparent"
+  stroke="#3ee614"
+  stroke-width="14"
+/>
+<path
+  d="M60 60
+     m0 40
+     a40 40 0 0 1 -40 -40"
+  fill="transparent"
+  stroke="#4d93e8"
+  stroke-width="9"
+/>
+</svg>
