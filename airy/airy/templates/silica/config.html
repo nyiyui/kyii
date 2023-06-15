@@ -3,6 +3,22 @@
 
 {% block title %}設定{% endblock %}
 
+{% block etc_js %}
+<script src="{{ url_for('static', filename='silica/config.js') }}" type="module"></script>
+{% endblock %}
+
+{% block template %}
+  <!-- name, value is set by client-side JS -->
+  <template id="template-af-level">
+  	<input
+  		type="number"
+  		class="level"
+  		min="1"
+  		style="width: 2rem;"
+  	/>
+  </template>
+{% endblock %}
+
 {% block content %}
 	<h2>{{ _("認証設定") }}</h2>
 	<form action="/config/ax" method="post">
@@ -26,9 +42,16 @@
 					</td>
 					{% for af in current_user.af %}
 						<td>
-							<div class="flex">
+							<div
+                class="ap-af flex"
+                data-ap-id="{{ ap.id }}"
+                data-af-id="{{ af.id }}"
+								{% set req = get_ap_req(ap.id, af.id) %}
+                data-reqlevel="{{ req.level if req.level else '1' }}"
+              >
 								<input
 									type="checkbox"
+                  class="checkbox"
 									name="ap/{{ ap.id }}/req/{{ af.id }}"
 									{% if af in ap.reqs %}checked{% endif %}
 									value="{{ af.id }}"
@@ -36,6 +59,7 @@
 								{% if af in ap.reqs %}
 									<input
 										type="number"
+                    class="level"
 										min="1"
 										name="ap/{{ ap.id }}/reqlevel/{{ af.id }}"
 										{% set req = get_ap_req(ap.id, af.id) %}
