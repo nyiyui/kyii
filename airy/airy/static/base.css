@@ -242,3 +242,8 @@ ul.bare {
 }
 
 /* END only for remote_decide.html */
+
+table td {
+  padding: 8px;
+  text-align: center;
+}
