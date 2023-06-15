@@ -51,11 +51,6 @@ from .bp import bp
 from .etc import int_or_abort
 
 
-@bp.errorhandler(403)
-def unauthorized(error):
-    return render_template("silica/403.html"), 403
-
-
 @bp.route("/login", methods=("GET", "POST"))
 def login():
     if API_V1_UID in session:
@@ -441,7 +436,6 @@ def config():
     if profile_form.validate_on_submit():
         current_user.name = profile_form.name.data
         current_user.slug = profile_form.handle.data
-        print(profile_form.image.data)
         if profile_form.image.data:
             f = profile_form.image.data
             fn = secure_filename(f.filename)
@@ -478,6 +472,7 @@ def apply_changes(ap, af):
             b.name = af["name"]
         else:
             db.session.add(AF(name=af["name"]))
+    # NOTE: list of all AFs somehow contains a None value?
     for apid, ap in ap.items():
         a = AP.query.filter_by(id=apid)
         reqs = [AF.query.filter_by(id=afid).first() for afid in ap["reqs"].keys()]
@@ -501,13 +496,12 @@ def config_ax():
     ap = defaultdict(lambda: dict(name="", reqs={}))
     af = defaultdict(dict)
     for key, value in request.form.items():
-        tokens = key.split("_")
+        tokens = key.split("/")
         if tokens[0] == "ap":
             apid = tokens[1]
             if tokens[2] == "name":
                 ap[apid]["name"] = value
             elif tokens[2] == "req":
-                print("a", ap[apid]["reqs"])
                 if value:
                     ap[apid]["reqs"][tokens[3]] = 1
             elif tokens[2] == "reqlevel":
@@ -592,8 +586,6 @@ def config_taf():
         if form.verifier.data == "remote":
             af = AF(verifier="remote", user=current_user, name=form.name.data)
             af.regen({})
-            print(af, repr(af.id))
-            print(af, af.id)
             db.session.add(af)
             db.session.commit()
             flash(_("認証方法「%(af_name)s」を生成および確認、保存しました。", af_name=af.name), "success")

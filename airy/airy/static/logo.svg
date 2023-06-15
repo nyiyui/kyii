@@ -9,15 +9,15 @@ xmlns="http://www.w3.org/2000/svg">
      c0 30,-40 30,-40 0
      c0 -30,40 -40,60 -40"
   fill="transparent"
-  stroke="#3ee614"
-  stroke-width="14"
+  stroke="#373b3e"
+  stroke-width="7"
 />
 <path
   d="M60 60
      m0 40
      a40 40 0 0 1 -40 -40"
   fill="transparent"
-  stroke="#4d93e8"
+  stroke="#e12885"
   stroke-width="9"
 />
 </svg>

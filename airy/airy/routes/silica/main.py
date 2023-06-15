@@ -20,6 +20,16 @@ def get_af(afid):
     return AF.query.filter_by(id=afid).first()
 
 
+@bp.errorhandler(404)
+def not_found(error):
+    return render_template("silica/404.html"), 404
+
+
+@bp.errorhandler(403)
+def unauthorized(error):
+    return render_template("silica/403.html"), 403
+
+
 @bp.route("/", methods=("GET",))
 def index():
     return render_template("silica/index.html")

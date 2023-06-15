@@ -39,6 +39,7 @@
         nixfmt
         vim
         nodejs
+        sqlitebrowser
       ];
     });
   });

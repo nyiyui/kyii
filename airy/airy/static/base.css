@@ -223,6 +223,13 @@ ul.bare {
 	padding-left: inherit;
 }
 
+.alert {
+	border: 0.05rem solid #bbb;
+	border-radius: 0.5rem;
+	margin: 0.3rem;
+	padding: 0.3rem;
+}
+
 /* START only for remote_decide.html */
 
 .token-container {

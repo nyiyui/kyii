@@ -1,0 +1,8 @@
+{% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block content %}
+<h1>{{ _('URLに該当するページがありません。') }}</h1>
+{{ _('URLを確認するか、管理者に問合せてください。') }}
+{{ _('（HTTPエラー 404）') }}
+{% endblock %}

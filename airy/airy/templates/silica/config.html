@@ -22,14 +22,14 @@
 			{% for ap in current_user.ap %}
 				<tr id="ap-{{ ap.id }}">
 					<td>
-						<input type="text" name="ap_{{ ap.id }}_name" value="{{ ap.name }}" />
+						<input type="text" name="ap/{{ ap.id }}/name" value="{{ ap.name }}" />
 					</td>
 					{% for af in current_user.af %}
 						<td>
 							<div class="flex">
 								<input
 									type="checkbox"
-									name="ap_{{ ap.id }}_req_{{ af.id }}"
+									name="ap/{{ ap.id }}/req/{{ af.id }}"
 									{% if af in ap.reqs %}checked{% endif %}
 									value="{{ af.id }}"
 								/>
@@ -37,7 +37,7 @@
 									<input
 										type="number"
 										min="1"
-										name="ap_{{ ap.id }}_reqlevel_{{ af.id }}"
+										name="ap/{{ ap.id }}/reqlevel/{{ af.id }}"
 										{% set req = get_ap_req(ap.id, af.id) %}
 										value="{{ req.level if req.level else '' }}"
 										style="width: 2rem;"
@@ -65,7 +65,7 @@
 				{% if af.gen_done %}
 					<tr id="af-{{ af.id }}">
 						<td>
-							<input type="text" name="af_{{ af.id }}_name" value="{{ af.name }}" />
+							<input type="text" name="af/{{ af.id }}/name" value="{{ af.name }}" />
 						</td>
 						<td>
 							{{ verifier_names[af.verifier] }}
