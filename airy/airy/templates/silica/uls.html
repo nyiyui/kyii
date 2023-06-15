@@ -59,7 +59,7 @@
 					<form method="post" action="{{ url_for('silica.iori_logout', uls=True) }}">
 						{{ macros.form_csrf() }}
 						<input type="hidden" name="ulid" value="{{ ul.id }}"/>
-						<input {% if me %}disabled{% endif %} type="submit" value="{{ _('終了') }}" />
+						<input {% if me or ul.end %}disabled{% endif %} type="submit" value="{{ _('終了') }}" />
 					</form>
 				</td>
 			</tr>
