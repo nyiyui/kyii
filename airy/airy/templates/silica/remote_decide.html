@@ -4,7 +4,7 @@
 
 {% block content %}
 {% if form.token.data is none %}
-{{ macros.alert('message', _("「次へ」を押しても承認しません。")) }}
+{{ macros.alert('message', _("「次へ」を押したら確認画面にいきます。")) }}
 {% else %}
 {{ macros.alert('warning', _("トークンを承認するとあなたのアカウントをアクセス出来る可能性があります。")) }}
 {% endif %}
