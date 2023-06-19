@@ -4,6 +4,7 @@ import secrets
 from typing import Optional, Tuple
 
 from flask import current_app
+from flask_babel import lazy_gettext as _l
 from webauthn import (
     base64url_to_bytes,
     generate_authentication_options,
@@ -12,6 +13,7 @@ from webauthn import (
     verify_authentication_response,
     verify_registration_response,
 )
+import webauthn
 from webauthn.helpers.structs import (
     PublicKeyCredentialDescriptor,
     RegistrationCredential,
@@ -28,6 +30,7 @@ def gen(
     state: dict,
     **kwargs,
 ) -> Tuple[dict, Optional[dict], Optional[dict], bool]:
+    print('gen', gen_params, state, kwargs)
     if gen_params["state"] == "1_generate":
         config = current_app.config["VERIFIER_WEBAUTHN"]
         webauthn_id = secrets.token_hex(32)
@@ -38,11 +41,10 @@ def gen(
             user_name=current_user.slug,
             user_display_name=current_user.name,
         )
-        jro = options_to_json(ro)
         return (
             {},
-            dict(ro_gened=True, webauthn_id=webauthn_id, challenge=ro.challenge),
-            jro,
+            dict(ro_gened=True, webauthn_id=webauthn_id, challenge=ro.challenge, state="2_verify"),
+            dict(options=options_to_json(ro)),
             False,
         )
     elif gen_params["state"] == "2_verify":
@@ -51,13 +53,18 @@ def gen(
         if not state["ro_gened"]:
             raise GenerationError("no registration options generated")
         require_user_verification = gen_params["require_user_verification"]
-        vr = verify_registration_response(
-            credential=RegistrationCredential.parse_raw(gen_params["credential"]),
-            expected_challenge=state["challenge"],
-            expected_origin=current_app.config["KYII_YUUI_ORIGIN"],
-            expected_rp_id=current_app.config["VERIFIER_WEBAUTHN"]["rp_id"],
-            require_user_verification=require_user_verification,
-        )
+        print('credential', gen_params['credential'])
+        wae = webauthn.helpers.exceptions
+        try:
+            vr = verify_registration_response(
+                credential=RegistrationCredential.parse_raw(gen_params["credential"]),
+                expected_challenge=state["challenge"],
+                expected_origin=current_app.config["VERIFIER_WEBAUTHN_ORIGIN"],
+                expected_rp_id=current_app.config["VERIFIER_WEBAUTHN"]["rp_id"],
+                require_user_verification=require_user_verification,
+            )
+        except wae.InvalidRegistrationResponse as err:
+            raise VerificationError(str(err))
         return (
             dict(
                 current_sign_count=0,
@@ -89,7 +96,7 @@ def verify(
             user_verification=UserVerificationRequirement.REQUIRED,
         )
         return (
-            {},
+            params,
             dict(ao_gened=True, challenge=ao.challenge),
             dict(options=options_to_json(ao)),
             False,
@@ -103,7 +110,7 @@ def verify(
             credential=AuthenticationCredential.parse_raw(args["credential"]),
             expected_challenge=state["challenge"],
             expected_rp_id=current_app.config["VERIFIER_WEBAUTHN"]["rp_id"],
-            expected_origin=current_app.config["HOST"],
+            expected_origin=current_app.config["VERIFIER_WEBAUTHN_ORIGIN"],
             credential_public_key=base64url_to_bytes(vr["credential_public_key"]),
             credential_current_sign_count=params["current_sign_count"],
             require_user_verification=params["require_user_verification"],

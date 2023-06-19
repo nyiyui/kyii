@@ -22,106 +22,110 @@
 {% block content %}
 	<h2>{{ _("認証設定") }}</h2>
 	<form action="/config/ax" method="post">
-		<h3>{{ _("認証パス") }}</h3>
-		<table id="ap">
-			<tr>
-				<th rowspan="2">{{ _("名前") }}</th>
-				<th colspan="{{ current_user.af | length }}">{{ _("認証方法") }}</th>
-			</tr>
-			<tr>
-				{% for af in current_user.af %}
-					<td>
-						{{ af.name }}
-					</td>
-				{% endfor %}
-			</tr>
-			{% for ap in current_user.ap %}
-				<tr id="ap-{{ ap.id }}">
-					<td>
-						<input type="text" name="ap/{{ ap.id }}/name" value="{{ ap.name }}" />
-					</td>
-					{% for af in current_user.af %}
-						<td>
-							<div
-                class="ap-af flex"
-                data-ap-id="{{ ap.id }}"
-                data-af-id="{{ af.id }}"
-								{% set req = get_ap_req(ap.id, af.id) %}
-                data-reqlevel="{{ req.level if req.level else '1' }}"
-              >
-								<input
-									type="checkbox"
-                  class="checkbox"
-									name="ap/{{ ap.id }}/req/{{ af.id }}"
-									{% if af in ap.reqs %}checked{% endif %}
-									value="{{ af.id }}"
-								/>
-								{% if af in ap.reqs %}
-									<input
-										type="number"
-                    class="level"
-										min="1"
-										name="ap/{{ ap.id }}/reqlevel/{{ af.id }}"
-										{% set req = get_ap_req(ap.id, af.id) %}
-										value="{{ req.level if req.level else '' }}"
-										style="width: 2rem;"
-									/>
-								{% endif %}
-							</div>
-						</td>
-					{% endfor %}
-				</tr>
-			{% endfor %}
-		</table>
-		<h3>{{ _("認証方法") }}</h3>
-		<a href="{{ url_for('silica.config_taf') }}">
-			{{ _("新たに認証方法を生成する") }}
-		</a>
-		<table id="af">
-			<tr>
-				<th>{{ _("名前") }}</th>
-				<th>{{ _("型") }}</th>
-				<th>{{ _("設定") }}</th>
-				<th>{{ _("状態") }}</th>
-				<th>{{ _("する") }}</th>
-			</tr>
-			{% for af in current_user.af %}
-				{% if af.gen_done %}
-					<tr id="af-{{ af.id }}">
-						<td>
-							<input type="text" name="af/{{ af.id }}/name" value="{{ af.name }}" />
-						</td>
-						<td>
-							{{ verifier_names[af.verifier] }}
-						</td>
-						<td>
-							{% if af.verifier == "pw" %}
-								{% if af.params.compat == 'django_pbkdf2_sha256' %}
-									{{ _("※Django PBKDF2/SHA256対応") }}
-								{% endif %}
-							{% elif af.verifier == "limited" %}
-								{{ _("%(limit)sまで", limit=af.params.limit) }}
-							{% endif %}
-						</td>
-						<td>
-							{% if af.verifier == "limited" %}
-								{{ _("%(used)s回使用", used=af.params.used) }}
-							{% endif %}
-						</td>
-						<td>
-							<form action="{{ url_for('silica.config_af_delete', afid=af.id) }}" method="post">
-								{{ macros.form_csrf() }}
-								<input class="Bcaution" type="submit" value="{{ _("削除") }}" />
-							</form>
-							<form action="{{ url_for('silica.config_af_regen', afid=af.id) }}" method="post">
-								{{ macros.form_csrf() }}
-								<input type="submit" value="{{ _("再生成") }}" />
-							</form>
-						</td>
-					</tr>
-				{% endif %}
-			{% endfor %}
-		</table>
+    <div class="box">
+		  <h3>{{ _("認証パス") }}</h3>
+		  <table id="ap">
+		  	<tr>
+		  		<th rowspan="2">{{ _("名前") }}</th>
+		  		<th colspan="{{ current_user.af | length }}">{{ _("認証方法") }}</th>
+		  	</tr>
+		  	<tr>
+		  		{% for af in current_user.af %}
+		  			<td>
+		  				{{ af.name }}
+		  			</td>
+		  		{% endfor %}
+		  	</tr>
+		  	{% for ap in current_user.ap %}
+		  		<tr id="ap-{{ ap.id }}">
+		  			<td>
+		  				<input type="text" name="ap/{{ ap.id }}/name" value="{{ ap.name }}" />
+		  			</td>
+		  			{% for af in current_user.af %}
+		  				<td>
+		  					<div
+                  class="ap-af flex"
+                  data-ap-id="{{ ap.id }}"
+                  data-af-id="{{ af.id }}"
+		  						{% set req = get_ap_req(ap.id, af.id) %}
+                  data-reqlevel="{{ req.level if req.level else '1' }}"
+                >
+		  						<input
+		  							type="checkbox"
+                    class="checkbox"
+		  							name="ap/{{ ap.id }}/req/{{ af.id }}"
+		  							{% if af in ap.reqs %}checked{% endif %}
+		  							value="{{ af.id }}"
+		  						/>
+		  						{% if af in ap.reqs %}
+		  							<input
+		  								type="number"
+                      class="level"
+		  								min="1"
+		  								name="ap/{{ ap.id }}/reqlevel/{{ af.id }}"
+		  								{% set req = get_ap_req(ap.id, af.id) %}
+		  								value="{{ req.level if req.level else '' }}"
+		  								style="width: 2rem;"
+		  							/>
+		  						{% endif %}
+		  					</div>
+		  				</td>
+		  			{% endfor %}
+		  		</tr>
+		  	{% endfor %}
+		  </table>
+    </div>
+    <div class="box">
+	  	<h3>{{ _("認証方法") }}</h3>
+	  	<a href="{{ url_for('silica.config_taf') }}">
+	  		{{ _("新たに認証方法を生成する") }}
+	  	</a>
+	  	<table id="af">
+	  		<tr>
+	  			<th>{{ _("名前") }}</th>
+	  			<th>{{ _("型") }}</th>
+	  			<th>{{ _("設定") }}</th>
+	  			<th>{{ _("状態") }}</th>
+	  			<th>{{ _("する") }}</th>
+	  		</tr>
+	  		{% for af in current_user.af %}
+	  			{% if af.gen_done %}
+	  				<tr id="af-{{ af.id }}">
+	  					<td>
+	  						<input type="text" name="af/{{ af.id }}/name" value="{{ af.name }}" />
+	  					</td>
+	  					<td>
+	  						{{ verifier_names[af.verifier] }}
+	  					</td>
+	  					<td>
+	  						{% if af.verifier == "pw" %}
+	  							{% if af.params.compat == 'django_pbkdf2_sha256' %}
+	  								{{ _("※Django PBKDF2/SHA256対応") }}
+	  							{% endif %}
+	  						{% elif af.verifier == "limited" %}
+	  							{{ _("%(limit)sまで", limit=af.params.limit) }}
+	  						{% endif %}
+	  					</td>
+	  					<td>
+	  						{% if af.verifier == "limited" %}
+	  							{{ _("%(used)s回使用", used=af.params.used) }}
+	  						{% endif %}
+	  					</td>
+	  					<td>
+	  						<form action="{{ url_for('silica.config_af_delete', afid=af.id) }}" method="post">
+	  							{{ macros.form_csrf() }}
+	  							<input class="Bcaution" type="submit" value="{{ _("削除") }}" />
+	  						</form>
+	  						<form action="{{ url_for('silica.config_af_regen', afid=af.id) }}" method="post">
+	  							{{ macros.form_csrf() }}
+	  							<input type="submit" value="{{ _("再生成") }}" />
+	  						</form>
+	  					</td>
+	  				</tr>
+	  			{% endif %}
+	  		{% endfor %}
+	  	</table>
+    </div>
 		{{ macros.form_csrf() }}
 		<input type="submit" value="{{ _('保存') }}" class="Bsuccess" />
 	</form>

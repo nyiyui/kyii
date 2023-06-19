@@ -1,0 +1,41 @@
+{% extends "silica/base.html" %}
+{% import "silica/macros.html" as macros %}
+
+{% block title %}{{ _("認証方法生成") }}{% endblock %}
+
+{% block etc_js %}
+<script src="{{ url_for('static', filename='silica/webauthn.js') }}" type="module"></script>
+{% endblock %}
+
+{% block content %}
+  {{ _("認証方法を生成します。") }}
+  <div id="js-webauthn-unsupported" style="display: none;">
+    {{ macros.alert("error", _("WebAuthnがサポートされてません。")) }}
+  </div>
+  <div id="js-webauthn-not-allowed" style="display: none;">
+    {{ macros.alert("error", _("登録が拒否されました。")) }}
+  </div>
+  <div id="js-webauthn-idk" style="display: none;">
+    {{ macros.alert("error", _("何らかのエラーが発生しました。")) }}
+  </div>
+  <input
+    id="js-action-button"
+    type="button"
+    value='{{ _("再試行") }}'
+  />
+  <form
+    id="js-pkc-form"
+    method="post"
+    data-create-options="{{ create_options_json }}"
+    data-action="create"
+  >
+    {{ form.hidden_tag() }}
+    <!--
+      Errors (for debugging):
+      {% for error in form.errors.slug %}
+        - {{ error }}
+      {% endfor %}
+    -->
+  </form>
+{% endblock %}
+

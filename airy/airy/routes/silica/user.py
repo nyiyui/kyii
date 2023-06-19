@@ -21,7 +21,7 @@ from server_timing import Timing as t
 from flask_babel import lazy_gettext as _l
 from flask_babel import _
 from flask_wtf import FlaskForm
-from wtforms import validators, StringField, RadioField, PasswordField, IntegerField, EmailField
+from wtforms import validators, StringField, RadioField, PasswordField, IntegerField, EmailField, HiddenField
 from wtforms.validators import InputRequired, Length, ValidationError, NumberRange
 from flask_wtf.file import FileField
 from ..util import conv_to_webp
@@ -593,6 +593,7 @@ def config_taf():
         session[SILICA_TAF] = TAF(
             id=id, name=form.name.data, verifier=form.verifier.data
         )
+
         return redirect(url_for("silica.config_taf_gen"))
     return render_template("silica/config_taf.html", form=form)
 
@@ -642,6 +643,23 @@ class ConfigTAFTOTPVerifyForm(FlaskForm):
         return self.code.data
 
 
+class ConfigTAFWebAuthnGenForm(FlaskForm):
+    pkc = HiddenField("PublicKeyCredential (JSON)", id="js-pkc-field")
+
+    @property
+    def gen_params(self) -> dict:
+        return dict(state="2_verify", require_user_verification=False, credential=self.pkc.data)
+
+
+class ConfigTAFWebAuthnVerifyForm(FlaskForm):
+    pkc = HiddenField("PublicKeyCredential (JSON)", id="js-pkc-field")
+
+    @property
+    def attempt(self) -> str:
+        print('VERIFY-pkc', self.pkc.data)
+        return json.dumps(dict(state="2_verify", pkc_json=self.pkc.data))
+
+
 class ConfigTAFLimitedGenForm(FlaskForm):
     times = IntegerField(_l("回数"), validators=[NumberRange(min=0)])
 
@@ -654,18 +672,20 @@ class ConfigTAFOAuthGenForm(FlaskForm):
     provider = RadioField(_l("プロバイダ"), validators=[InputRequired()])
 
 
-CONFIG_TAF_GEN_FORMS = {
-    "pw": ConfigTAFPwForm,
-    "otp_totp": ConfigTAFTOTPGenForm,
-    "limited": ConfigTAFLimitedGenForm,
-    "oauth": ConfigTAFOAuthGenForm,
-}
+CONFIG_TAF_GEN_FORMS = dict(
+    pw=ConfigTAFPwForm,
+    otp_totp=ConfigTAFTOTPGenForm,
+    webauthn=ConfigTAFWebAuthnGenForm,
+    limited=ConfigTAFLimitedGenForm,
+    oauth=ConfigTAFOAuthGenForm,
+)
 
 
 @bp.route("/config/taf/gen", methods=("GET", "POST"))
 @login_required
 def config_taf_gen():
     taf = session[SILICA_TAF]
+    template_kwargs = {}
     form = CONFIG_TAF_GEN_FORMS[taf.verifier]()
     if taf.verifier == "oauth":
         form.choices = [
@@ -673,6 +693,13 @@ def config_taf_gen():
             for handle, client in current_app.config.OAUTH2_CLIENTS.items()
         ]
         # TODO: pre-fill settings for existing (t)af
+    elif taf.verifier == "webauthn" and (not taf.state or taf.state.get('state') != '2_verify'):
+        # do the 1st step w/o a round trip
+        taf.params, taf.state, taf.feedback, taf.gen_done = verifiers.gen("webauthn", dict(
+            state="1_generate",
+        ), {})
+        session[SILICA_TAF] = taf
+        template_kwargs['create_options_json'] = taf.feedback['options']
     if form.validate_on_submit():
         try:
             taf.params, taf.state, taf.feedback, taf.gen_done = verifiers.gen(
@@ -685,10 +712,14 @@ def config_taf_gen():
             return redirect(url_for("silica.config_taf_verify"))
     if taf.verifier not in VERIFIER_NAMES:
         abort(422)
-    return render_template(f"silica/config_taf_gen_{taf.verifier}.html", form=form)
+    return render_template(f"silica/config_taf_gen_{taf.verifier}.html", form=form, taf=taf, **template_kwargs)
 
 
-CONFIG_TAF_VERIFY_FORMS = {"pw": ConfigTAFPwForm, "otp_totp": ConfigTAFTOTPVerifyForm}
+CONFIG_TAF_VERIFY_FORMS = dict(
+    pw=ConfigTAFPwForm,
+    otp_totp=ConfigTAFTOTPVerifyForm,
+    webauthn=ConfigTAFWebAuthnVerifyForm,
+)
 
 
 @bp.route("/config/taf/verify", methods=("GET", "POST"))
@@ -698,9 +729,18 @@ def config_taf_verify():
     if taf.verifier == "limited":
         return taf.save()
     form = CONFIG_TAF_VERIFY_FORMS[taf.verifier]()
+    template_kwargs = {}
     if taf.verifier == "otp_totp":
         digits = taf.params["digits"]
         form.code.validators += (Length(min=digits, max=digits),)
+    elif taf.verifier == "webauthn" and (not taf.state or taf.state.get('state') != '2_verify'):
+        # do the 1st step w/o a round trip
+        print('VERIFY', taf)
+        taf.params, taf.state, taf.feedback, taf.gen_done = verifiers.verify("webauthn", json.dumps(dict(
+            state="1_generate",
+        )), taf.params, taf.state)
+        session[SILICA_TAF] = taf
+        template_kwargs['get_options_json'] = taf.feedback['options']
     if form.validate_on_submit():
         try:
             taf.params, taf.state, feedback, taf.verify_done = verifiers.verify(
@@ -714,7 +754,7 @@ def config_taf_verify():
     if taf.verifier not in VERIFIER_NAMES:
         abort(422)
     return render_template(
-        f"silica/config_taf_verify_{taf.verifier}.html", form=form, taf=taf
+        f"silica/config_taf_verify_{taf.verifier}.html", form=form, taf=taf, **template_kwargs,
     )
 
 
