@@ -1,5 +1,5 @@
 # flake8: noqa
-from . import etc, main, oauth, remote, user
+from . import etc, main, oauth, remote, user, uaf
 
 from .bp import init_app
 

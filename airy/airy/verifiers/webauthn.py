@@ -41,6 +41,7 @@ def gen(
             user_name=current_user.slug,
             user_display_name=current_user.name,
         )
+        print('\n\nRO\n', options_to_json(ro))
         return (
             {},
             dict(ro_gened=True, webauthn_id=webauthn_id, challenge=ro.challenge, state="2_verify"),

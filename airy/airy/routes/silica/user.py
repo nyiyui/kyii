@@ -574,7 +574,10 @@ class TAF:
 @login_required
 def config_taf():
     id = request.args.get("id", "")
-    form = ConfigTAFForm()
+    step = request.args.get("step", "gen")
+    if step not in ("gen", "verify"):
+        step = "gen"
+    form = ConfigTAFForm(request.args)
     if id:
         af = AF.query.get_or_404(id)
         if af.user != current_user:
@@ -584,6 +587,8 @@ def config_taf():
         form.verifier.render_kw = dict(disabled=True)  # TODO: is this correct?
     if form.validate_on_submit():
         if form.verifier.data == "remote":
+            if step == "verify":
+                raise NotImplementedError("verifying remote not implemented")
             af = AF(verifier="remote", user=current_user, name=form.name.data)
             af.regen({})
             db.session.add(af)
@@ -602,6 +607,12 @@ def config_taf():
 @login_required
 def config_af_regen(afid):
     return redirect(url_for("silica.config_taf", id=afid))
+
+
+@bp.route("/config/af/<afid>/verify", methods=("POST",))
+@login_required
+def config_af_verify(afid):
+    return redirect(url_for("silica.config_taf", id=afid, step="verify"))
 
 
 class ConfigTAFPwForm(FlaskForm):
@@ -672,6 +683,10 @@ class ConfigTAFOAuthGenForm(FlaskForm):
     provider = RadioField(_l("プロバイダ"), validators=[InputRequired()])
 
 
+class ConfigTAFRedoForm(FlaskForm):
+    pass
+
+
 CONFIG_TAF_GEN_FORMS = dict(
     pw=ConfigTAFPwForm,
     otp_totp=ConfigTAFTOTPGenForm,
@@ -729,6 +744,7 @@ def config_taf_verify():
     if taf.verifier == "limited":
         return taf.save()
     form = CONFIG_TAF_VERIFY_FORMS[taf.verifier]()
+    redo_form = ConfigTAFRedoForm()
     template_kwargs = {}
     if taf.verifier == "otp_totp":
         digits = taf.params["digits"]
@@ -741,6 +757,8 @@ def config_taf_verify():
         )), taf.params, taf.state)
         session[SILICA_TAF] = taf
         template_kwargs['get_options_json'] = taf.feedback['options']
+    if redo_form.validate_on_submit():
+        return redirect(url_for("silica.config_taf", name=taf.name, verifier=taf.verifier))
     if form.validate_on_submit():
         try:
             taf.params, taf.state, feedback, taf.verify_done = verifiers.verify(
@@ -754,7 +772,7 @@ def config_taf_verify():
     if taf.verifier not in VERIFIER_NAMES:
         abort(422)
     return render_template(
-        f"silica/config_taf_verify_{taf.verifier}.html", form=form, taf=taf, **template_kwargs,
+        f"silica/config_taf_verify_{taf.verifier}.html", redo_form=redo_form, form=form, taf=taf, **template_kwargs,
     )
 
 

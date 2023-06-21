@@ -120,6 +120,10 @@
 	  							{{ macros.form_csrf() }}
 	  							<input type="submit" value="{{ _("再生成") }}" />
 	  						</form>
+	  						<form action="{{ url_for('silica.config_af_verify', afid=af.id) }}" method="post">
+	  							{{ macros.form_csrf() }}
+	  							<input type="submit" value="{{ _("再確認") }}" />
+	  						</form>
 	  					</td>
 	  				</tr>
 	  			{% endif %}

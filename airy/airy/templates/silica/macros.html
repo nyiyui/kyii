@@ -130,3 +130,20 @@
     </div>
   {% endif %}
 {% endmacro %}
+
+{% macro taf_redo(redo_form) %}
+  <form
+    id="js-pkc-form"
+    method="post"
+    action="{{ url_for('silica.config_taf_verify') }}"
+  >
+    {{ redo_form.hidden_tag() }}
+    <!--
+      Errors (for debugging):
+      {% for error in redo_form.errors.slug %}
+        - {{ error }}
+      {% endfor %}
+    -->
+		<input type="submit" value="{{ _('登録を変更・再試行') }}" />
+  </form>
+{% endmacro %}

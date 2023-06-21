@@ -25,9 +25,12 @@ function checkSupported() {
 async function createCredentials() {
   const co = parseCreationOptionsFromJSON({ publicKey: JSON.parse(pkcForm.dataset.createOptions) })
   console.log('creation options:', co)
+  console.log('creation options:', JSON.stringify(co))
+  return;
   try {
     const pkc = await create(co)
     console.log('creation pkc:', pkc)
+    console.log('creation pkc:', JSON.stringify(pkc))
     pkcField.value = JSON.stringify(pkc)
     pkcForm.submit()
   } catch (err) {
@@ -45,11 +48,11 @@ async function getCredentials() {
   console.log('request/get options:', ro)
   try {
     const pkc = await get(ro)
-    console.log('creation pkc:', pkc)
+    console.log('request/get pkc:', pkc)
     pkcField.value = JSON.stringify(pkc)
     pkcForm.submit()
   } catch (err) {
-    console.error('create credential: ', err)
+    console.error('request/get credential: ', err)
     if (err instanceof DOMException && err.name == "NotAllowedError") {
       webauthnNotAllowed.style.display = "initial"
     } else {

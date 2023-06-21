@@ -13,7 +13,7 @@
     {{ macros.alert("error", _("WebAuthnがサポートされてません。")) }}
   </div>
   <div id="js-webauthn-not-allowed" style="display: none;">
-    {{ macros.alert("error", _("登録が拒否されました。")) }}
+    {{ macros.alert("error", _("認証が拒否されました。")) }}
   </div>
   <div id="js-webauthn-idk" style="display: none;">
     {{ macros.alert("error", _("何らかのエラーが発生しました。")) }}
@@ -37,5 +37,6 @@
       {% endfor %}
     -->
   </form>
+  {{ macros.taf_redo(redo_form) }}
 {% endblock %}
 
