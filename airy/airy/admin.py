@@ -54,7 +54,7 @@ class AiryModelView(sqla.ModelView):
 
     def inaccessible_callback(self, name, **kwargs):
         return redirect(
-            url_for("silica.login", next=request.path, args=urlencode(request.args))
+            url_for("silica.login_start", next=request.path, args=urlencode(request.args))
         )
 
 

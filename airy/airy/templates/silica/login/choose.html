@@ -2,7 +2,7 @@
 
 {% block content %}
 {{ _('「%(user)s」にログインしようとしています。', user=u.name) }}
-<form method="POST" action="{{ url_for("silica.login_choose") }}">
+<form method="POST" action="{{ url_for("silica.login_choose", ulid=ulid) }}">
 	{{ form.hidden_tag() }}
 	{{ form.apid.label }} {{ form.apid }}
 	<div class="errors">

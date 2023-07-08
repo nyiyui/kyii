@@ -134,6 +134,7 @@ class Email(db.Model):
 
 
 class UserLogin(db.Model):
+    # TODO: delete UserLogins when User is deleted
     __tablename__ = "user_login"
     id = db.Column(db.String(32), primary_key=True, default=gen_id)
     name = db.Column(db.Unicode(256))
@@ -149,6 +150,7 @@ class UserLogin(db.Model):
     end = db.Column(db.DateTime, nullable=True)
     reason_end = db.Column(db.String(32), nullable=True)
     token_hash = db.Column(db.String(512))
+    logged_in = db.Column(db.Boolean, default=False)
 
     def __str__(self):
         return f"<UserLogin {self.id} for {self.user_id} against {self.against_id}>"

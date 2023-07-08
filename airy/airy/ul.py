@@ -66,7 +66,6 @@ def setup_pre_login_ul(u: User) -> UserLogin:
         extra=get_extra(),
     )
     db.session.add(ul)
-    db.session.commit()
     return ul
 
 
@@ -162,7 +161,7 @@ class ULManager:
     def unauthenticated(self):
         flash(_("ログインが必要です。"), "warning")
         return redirect(
-            url_for("silica.login", next=request.path, nextargs=urlencode(request.args))
+            url_for("silica.login_start", next=request.path, nextargs=urlencode(request.args))
         )
 
     def __get_ul(self, token):

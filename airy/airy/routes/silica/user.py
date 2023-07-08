@@ -51,35 +51,7 @@ from .bp import bp
 from .etc import int_or_abort
 
 
-@bp.route("/login", methods=("GET", "POST"))
-def login():
-    if API_V1_UID in session:
-        return redirect(url_for("silica.login_choose"))
-    form = LoginStartForm()
-    if form.validate_on_submit():
-        target = User.query.filter_by(slug=form.slug.data, is_active=True).one()
-        session[API_V1_UID] = target.id
-        session[SILICA_NEXT] = tuple(
-            request.args.get(key) for key in ("next", "nextargs")
-        )
-        setup_pre_login_ul(target)
-        return redirect(url_for("silica.login_choose"))
-    return render_template("silica/login/start.html", form=form)
-
-
-class LoginStartForm(FlaskForm):
-    slug = StringField(
-        _l("ハンドル"),
-        validators=[InputRequired(), Length(min=1, max=128)],
-        render_kw=dict(autofocus=True),
-    )
-
-    def validate_slug(form, field):
-        if not User.query.filter_by(slug=field.data, is_active=True).count():
-            raise ValidationError("Invalid slug")
-
-
-@bp.route("/login/choose", methods=("GET", "POST"))
+#@bp.route("/login/choose", methods=("GET", "POST"))
 def login_choose():
     if API_V1_UID not in session:
         raise RuntimeError("start login first")  # TODO: nicer UX
@@ -117,14 +89,14 @@ class LoginChooseForm(FlaskForm):
     )
 
 
-@bp.route("/login/list", methods=("GET",))
+#@bp.route("/login/list", methods=("GET",))
 def login_list():
     if (
         API_V1_UID not in session
         or API_V1_APID not in session
         or API_V1_SOLVED not in session
     ):
-        return redirect(url_for("silica.login"))
+        return redirect(url_for("silica.login_start"))
     with t.time("db"):
         u = User.query.get(session[API_V1_UID])
         ap = AP.query.get(session[API_V1_APID])
@@ -213,121 +185,6 @@ class LoginAttemptOtpTotpForm(FlaskForm):
         return self.code
 
 
-SINGLE_ATTEMPT_FORMS = dict(
-    pw=LoginAttemptPwForm,
-    otp_totp=LoginAttemptOtpTotpForm,
-)
-
-AUTOMATIC_VERIFIERS = {"limited"}
-
-
-@bp.route("/login/attempt", methods=("GET", "POST"))
-def login_attempt():
-    if (
-        API_V1_UID not in session
-        or API_V1_APID not in session
-        or API_V1_SOLVED not in session
-    ):
-        return redirect(url_for("silica.login"))
-    with t.time("db"):
-        u = User.query.get(session[API_V1_UID])
-        af = AF.query.get(request.args["afid"])
-        if af is None:
-            flash(_("認証要素IDが存在していないのに参照しています。"), "error")
-            return redirect(url_for("silica.login_list"))
-        ap = AP.query.get(session[API_V1_APID])
-    if af.id in session[API_V1_SOLVED]:
-        flash(_("「%(af_name)s」認証要素は既に解決されています。", af_name=af.name), "caution")
-        return redirect(url_for("silica.login_list"))
-    if af.verifier in SINGLE_ATTEMPT_FORMS:
-        Form = SINGLE_ATTEMPT_FORMS[af.verifier]
-        form = Form()
-        if form.validate_on_submit():
-            attempt = form.attempt.data
-            try:
-                with t.time("verify"):
-                    feedback, cur_done = af.verify(attempt, target_id=u.id)
-            except VerificationError as e:
-                flash(_("ペケ！認証要素を解けません：%(error)s", error=str(e)), "error")
-                cur_done = False
-            u.add_le(
-                LogEntry(
-                    renderer="login_attempt",
-                    data=dict(
-                        afid=af.id, cur_done=cur_done, level=session[SILICA_LOGIN_LEVEL]
-                    ),
-                )
-            )
-            if cur_done:
-                flash(_("「%(af_name)s」認証要素を解きました。", af_name=af.name))
-                session[API_V1_SOLVED] = session[API_V1_SOLVED] | {af.id}
-                return redirect(url_for("silica.login_list"))
-        return render_template(
-            "silica/login/attempt_single.html", form=form, u=u, ap=ap, af=af
-        )
-    elif af.verifier in AUTOMATIC_VERIFIERS:
-        if af.verifier == "limited":
-            feedback, cur_done = af.verify(None, target_id=u.id)
-            if not cur_done:
-                raise RuntimeError("limited must not not cur_done")
-            flash(_("「%(af_name)s」認証要素を解きました。", af_name=af.name))
-            session[API_V1_SOLVED] = session[API_V1_SOLVED] | {af.id}
-            return redirect(url_for("silica.login_list"))
-        return
-    elif af.verifier == "webauthn":
-        feedback, done = af.verify(json.dumps(dict(state="1_generate")))
-        if done:
-            raise RuntimeError("webauthn 1_generate expected not to finish with done")
-        return render_template(
-            "silica/login/attempt_webauthn.html", form=form, u=u, ap=ap, af=af
-        )
-    elif af.verifier == "remote":
-        form = LoginAttemptRemoteForm()
-        if form.validate_on_submit():
-            session[API_V1_SOLVED] |= {af.id}
-            return redirect(url_for("silica.login_list"))
-        else:
-            feedback, done = af.verify(
-                json.dumps(dict(state="1_generate")), target_id=u.id
-            )
-            if done:
-                raise RuntimeError(
-                    "webauthn 1_generate expected not to finish with done"
-                )
-            return render_template(
-                "silica/login/attempt_remote.html",
-                u=u,
-                ap=ap,
-                af=af,
-                feedback=feedback,
-                timeout=remote.TIMEOUT,
-                form=form,
-            )
-    else:
-        flash(_("未知の認証要素の認証方法です。どうしよう…"), "error")
-        return redirect(url_for("silica.index"))
-
-
-class LoginStopForm(FlaskForm):
-    pass
-
-
-@bp.route("/login/stop", methods=("GET", "POST"))
-def login_stop():
-    if API_V1_UID not in session:
-        return redirect(url_for("silica.login"))
-    form = LoginStopForm()
-    ap = AP.query.get(session.get(API_V1_APID))
-    u = User.query.get(session[API_V1_UID])
-    if form.validate_on_submit():
-        u.add_le(LogEntry(renderer="login_stop"))
-        session.pop(API_V1_UID, None)
-        session.pop(API_V1_APID, None)
-        session.pop(API_V1_SOLVED, None)
-        return redirect(url_for("silica.login"))
-    return render_template("silica/login/stop.html", form=form, u=u, ap=ap)
-
-
 class SignupForm(FlaskForm):
     email = EmailField(
         _l("Eメール"),
@@ -351,7 +208,7 @@ def iori():
         or SILICA_UL_MAP not in session
         or SILICA_CURRENT_ULID not in session
     ):
-        return redirect(url_for("silica.login"))
+        return redirect(url_for("silica.login_start"))
     ulids = session[SILICA_ULIDS]
     uls = UserLogin.get_usable().filter(UserLogin.id.in_(ulids)).all()
     session[SILICA_ULIDS] = set(ul.id for ul in uls)
@@ -369,7 +226,7 @@ def iori():
 def iori_logout():
     ulid = request.form["ulid"]
     if SILICA_ULIDS not in session:
-        return redirect(url_for("silica.login"))
+        return redirect(url_for("silica.login_start"))
     ul = UserLogin.query.get(ulid)
     if ulid not in session[SILICA_ULIDS] and ul.user != current_user:
         abort(403)
@@ -598,8 +455,9 @@ def config_taf():
         session[SILICA_TAF] = TAF(
             id=id, name=form.name.data, verifier=form.verifier.data
         )
-
+        raise RuntimeError()
         return redirect(url_for("silica.config_taf_gen"))
+    print('a')
     return render_template("silica/config_taf.html", form=form)
 
 
@@ -613,172 +471,6 @@ def config_af_regen(afid):
 @login_required
 def config_af_verify(afid):
     return redirect(url_for("silica.config_taf", id=afid, step="verify"))
-
-
-class ConfigTAFPwForm(FlaskForm):
-    password = PasswordField(_l("パスワード"), validators=[InputRequired(), Length(min=1)])
-
-    @property
-    def gen_params(self):
-        return dict(password=self.password.data)
-
-    @property
-    def attempt(self):
-        return self.password.data
-
-
-class ConfigTAFTOTPGenForm(FlaskForm):
-    digits = IntegerField(_l("桁"), default=6, validators=[NumberRange(min=6, max=8)])
-    algorithm = RadioField(
-        _l("ハッシュ関数"),
-        default="SHA1",
-        choices=list(
-            {
-                "SHA1": _l("SHA-1"),
-                "SHA256": _l("SHA-256"),
-                "SHA512": _l("SHA-512"),
-            }.items()
-        ),
-    )
-
-    @property
-    def gen_params(self):
-        return dict(digits=self.digits.data, algorithm=self.algorithm.data)
-
-
-class ConfigTAFTOTPVerifyForm(FlaskForm):
-    code = StringField(_l("コード"))
-
-    @property
-    def attempt(self):
-        return self.code.data
-
-
-class ConfigTAFWebAuthnGenForm(FlaskForm):
-    pkc = HiddenField("PublicKeyCredential (JSON)", id="js-pkc-field")
-
-    @property
-    def gen_params(self) -> dict:
-        return dict(state="2_verify", require_user_verification=False, credential=self.pkc.data)
-
-
-class ConfigTAFWebAuthnVerifyForm(FlaskForm):
-    pkc = HiddenField("PublicKeyCredential (JSON)", id="js-pkc-field")
-
-    @property
-    def attempt(self) -> str:
-        print('VERIFY-pkc', self.pkc.data)
-        return json.dumps(dict(state="2_verify", pkc_json=self.pkc.data))
-
-
-class ConfigTAFLimitedGenForm(FlaskForm):
-    times = IntegerField(_l("回数"), validators=[NumberRange(min=0)])
-
-    @property
-    def gen_params(self) -> dict:
-        return dict(times=self.times.data)
-
-
-class ConfigTAFOAuthGenForm(FlaskForm):
-    provider = RadioField(_l("プロバイダ"), validators=[InputRequired()])
-
-
-class ConfigTAFRedoForm(FlaskForm):
-    pass
-
-
-CONFIG_TAF_GEN_FORMS = dict(
-    pw=ConfigTAFPwForm,
-    otp_totp=ConfigTAFTOTPGenForm,
-    webauthn=ConfigTAFWebAuthnGenForm,
-    limited=ConfigTAFLimitedGenForm,
-    oauth=ConfigTAFOAuthGenForm,
-)
-
-
-@bp.route("/config/taf/gen", methods=("GET", "POST"))
-@login_required
-def config_taf_gen():
-    taf = session[SILICA_TAF]
-    template_kwargs = {}
-    form = CONFIG_TAF_GEN_FORMS[taf.verifier]()
-    if taf.verifier == "oauth":
-        form.choices = [
-            (handle, client["name"])
-            for handle, client in current_app.config.OAUTH2_CLIENTS.items()
-        ]
-        # TODO: pre-fill settings for existing (t)af
-    elif taf.verifier == "webauthn" and (not taf.state or taf.state.get('state') != '2_verify'):
-        # do the 1st step w/o a round trip
-        taf.params, taf.state, taf.feedback, taf.gen_done = verifiers.gen("webauthn", dict(
-            state="1_generate",
-        ), {})
-        session[SILICA_TAF] = taf
-        template_kwargs['create_options_json'] = taf.feedback['options']
-    if form.validate_on_submit():
-        try:
-            taf.params, taf.state, taf.feedback, taf.gen_done = verifiers.gen(
-                taf.verifier, form.gen_params, taf.state
-            )
-        except VerificationError as e:
-            flash(_("認証方法生成：%(err)s", err=e), "error")
-        session[SILICA_TAF] = taf
-        if taf.gen_done:
-            return redirect(url_for("silica.config_taf_verify"))
-    if taf.verifier not in VERIFIER_NAMES:
-        abort(422)
-    return render_template(f"silica/config_taf_gen_{taf.verifier}.html", form=form, taf=taf, **template_kwargs)
-
-
-CONFIG_TAF_VERIFY_FORMS = dict(
-    pw=ConfigTAFPwForm,
-    otp_totp=ConfigTAFTOTPVerifyForm,
-    webauthn=ConfigTAFWebAuthnVerifyForm,
-)
-
-
-@bp.route("/config/taf/verify", methods=("GET", "POST"))
-@login_required
-def config_taf_verify():
-    taf = session[SILICA_TAF]
-    if taf.verifier == "limited":
-        return taf.save()
-    form = CONFIG_TAF_VERIFY_FORMS[taf.verifier]()
-    redo_form = ConfigTAFRedoForm()
-    template_kwargs = {}
-    if taf.verifier == "otp_totp":
-        digits = taf.params["digits"]
-        form.code.validators += (Length(min=digits, max=digits),)
-    elif taf.verifier == "webauthn" and (not taf.state or taf.state.get('state') != '2_verify'):
-        # do the 1st step w/o a round trip
-        print('VERIFY', taf)
-        taf.params, taf.state, taf.feedback, taf.gen_done = verifiers.verify("webauthn", json.dumps(dict(
-            state="1_generate",
-        )), taf.params, taf.state)
-        session[SILICA_TAF] = taf
-        template_kwargs['get_options_json'] = taf.feedback['options']
-    if redo_form.validate_on_submit():
-        return redirect(url_for("silica.config_taf", name=taf.name, verifier=taf.verifier))
-    if form.validate_on_submit():
-        try:
-            taf.params, taf.state, feedback, taf.verify_done = verifiers.verify(
-                taf.verifier, form.attempt, taf.params, taf.state
-            )
-        except VerificationError as e:
-            flash(_("認証方法確認：%(err)s", err=e), "error")
-        session[SILICA_TAF] = taf
-        if taf.verify_done:
-            return taf.save()
-    if taf.verifier not in VERIFIER_NAMES:
-        abort(422)
-    return render_template(
-        f"silica/config_taf_verify_{taf.verifier}.html", redo_form=redo_form, form=form, taf=taf, **template_kwargs,
-    )
-
-
-@bp.context_processor
-def verifier_names():
-    return VERIFIER_NAMES
 
 
 @bp.route("/user/<uid>/pfp.webp")

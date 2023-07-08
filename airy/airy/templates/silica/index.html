@@ -10,7 +10,7 @@
 	{% else %}
 		<div class="alert Amessage">
 			{{ _('ログインしてません。') }}
-			<a href="{{ url_for('silica.login') }}">{{ _("ログインする") }}</a>
+			<a href="{{ url_for('silica.login_start') }}">{{ _("ログインする") }}</a>
 		</div>
 	{% endif %}
 {% endblock %}
