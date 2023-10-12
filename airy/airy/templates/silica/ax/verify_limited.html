@@ -4,7 +4,7 @@
 {% block title %}{{ _("認証方法確認") }}{% endblock %}
 
 {% block content %}
-	{{ _("認証方法を確認してください。") }}
+	{{ macros.ax_af_msg(aid) }}
 	<form method="post">
 		{{ form.hidden_tag() }}
 		{{ form.password.label }} {{ form.password }}

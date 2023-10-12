@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
- {{ _("認証方法を確認してください。") }}
+ {{ macros.ax_af_msg(aid) }}
   <div id="js-webauthn-unsupported" style="display: none;">
     {{ macros.alert("error", _("WebAuthnがサポートされてません。")) }}
   </div>

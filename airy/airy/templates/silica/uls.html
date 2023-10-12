@@ -56,11 +56,13 @@
 				</td>
 				<td>{{ macros.ap(ul.against) }}</td>
 				<td>
+				    {% if not (me or ul.end) %}
 					<form method="post" action="{{ url_for('silica.iori_logout', uls=True) }}">
 						{{ macros.form_csrf() }}
 						<input type="hidden" name="ulid" value="{{ ul.id }}"/>
-						<input {% if me or ul.end %}disabled{% endif %} type="submit" value="{{ _('終了') }}" />
+						<input type="submit" value="{{ _('強制ログアウト') }}" />
 					</form>
+					{% endif %}
 				</td>
 			</tr>
 		{% endfor %}

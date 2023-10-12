@@ -147,3 +147,11 @@
 		<input type="submit" value="{{ _('登録を変更・再試行') }}" />
   </form>
 {% endmacro %}
+
+{% macro ax_af_msg(aid) %}
+{% if aid.context == 'login' %}
+{{ _("認証方法を確認してください。") }}
+{% else %}
+{{ _("認証方法を解いてしてください。") }}
+{% endif %}
+{% endmacro %}

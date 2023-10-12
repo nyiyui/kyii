@@ -247,3 +247,19 @@ table td {
   padding: 8px;
   text-align: center;
 }
+
+.aligned-form {
+	display: table;
+.}
+
+.aligned-form p {
+	display: table-row;
+.}
+
+.aligned-form label {
+	display: table-cell;
+.}
+
+.aligned-form input {
+	display: table-cell;
+.}

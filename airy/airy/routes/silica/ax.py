@@ -430,6 +430,7 @@ def uaf_verify(aidid: str, afid: str):
         context=aid.context,
         form=form,
         af=af,
+        aid=aid,
         **template_kwargs,
         **(dict(ul=UserLogin.query.get(aid.ulid)) if aid.ulid else {}),
     )

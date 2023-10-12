@@ -135,15 +135,15 @@
 	</form>
 	<hr />
 	<h2>{{ _("プロフィール") }}</h2>
-	<form method="post" enctype="multipart/form-data">
-		<label>
-			ID
-			<input type="text" disabled value="{{ current_user.id }}" />
-		</label>
+	<form method="post" enctype="multipart/form-data" class="aligned-form">
+		<p>
+			<label for="profile-form-id">ID</label>
+			<input id="profile-form-id" type="text" disabled value="{{ current_user.id }}" />
+		</p>
 		{{ macros.form_csrf() }}
-		{{ form.name.label }} {{ form.name }}
-		{{ form.handle.label }} {{ form.handle }}
-		{{ form.image.label }} {{ form.image }}
+		<p>{{ form.name.label }} {{ form.name }}</p>
+		<p>{{ form.handle.label }} {{ form.handle }}</p>
+		<p>{{ form.image.label }} {{ form.image }}</p>
 		<div class="errors">
 			<ul>
 				{% for error in form.errors.slug %}

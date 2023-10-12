@@ -23,7 +23,7 @@
 			<input type="text" value="{{ taf.feedback.period }}" readonly />
 		</label>
 	</div>
-	{{ _("認証方法を確認してください。") }}
+	{{ macros.ax_af_msg(aid) }}
 	<form method="post">
 		{{ form.hidden_tag() }}
 		{{ form.code.label }} {{ form.code }}
