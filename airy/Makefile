@@ -14,30 +14,30 @@ install: install-main install-service
 
 install-main:
 	$(PRE_INSTALL)
-	useradd -m -c "Kyii Airy" -d "/opt/kyii-airy-home" kyii-airy
+	useradd -m -c "Kyii Airy" -d "/opt/kankin-airy-home" kankin-airy
 	$(NORMAL_INSTALL)
-	cp -r . /opt/kyii-airy-home/airy
-	cp -r ./deploy/* /opt/kyii-airy-home/
-	chown kyii-airy:kyii-airy /opt/kyii-airy-home/ -R
-	chmod u+x /opt/kyii-airy-home/start.sh
+	cp -r . /opt/kankin-airy-home/airy
+	cp -r ./deploy/* /opt/kankin-airy-home/
+	chown kankin-airy:kankin-airy /opt/kankin-airy-home/ -R
+	chmod u+x /opt/kankin-airy-home/start.sh
 	$(POST_INSTALL)
-	su -s /bin/bash -c 'bash /opt/kyii-airy-home/setup.sh' kyii-airy
+	su -s /bin/bash -c 'bash /opt/kankin-airy-home/setup.sh' kankin-airy
 
 install-service:
 	$(NORMAL_INSTALL)
-	cp ./deploy/kyii-airy.service /usr/lib/systemd/system/kyii-airy.service
+	cp ./deploy/kankin-airy.service /usr/lib/systemd/system/kankin-airy.service
 	$(POST_INSTALL)
 	systemctl daemon-reload
-	systemctl enable kyii-airy.service
+	systemctl enable kankin-airy.service
 
 uninstall: uninstall-main uninstall-service
 
 uninstall-main:
-	userdel kyii-airy
-	rm -r /opt/kyii-airy-home
+	userdel kankin-airy
+	rm -r /opt/kankin-airy-home
 
 uninstall-service:
-	rm /usr/lib/systemd/system/kyii-airy.service
+	rm /usr/lib/systemd/system/kankin-airy.service
 
 messages.pot:
 	pybabel extract -F ./babel.cfg -k _l -o messages.pot .

@@ -5,7 +5,7 @@ services:
   airy:
     build: ./
     volumes:
-      - ./airy/docker/local_config.py:/opt/kyii-airy/airy/local_config.py
+      - ./airy/docker/local_config.py:/opt/kankin-airy/airy/local_config.py
     networks:
       - main
   nginx:
@@ -24,8 +24,8 @@ services:
     volumes:
       - database:/var/lib/mysql
     environment:
-      MYSQL_DATABASE: kyii_airy_db
-      MYSQL_USER: kyii_airy_user
+      MYSQL_DATABASE: kankin_airy_db
+      MYSQL_USER: kankin_airy_user
       MYSQL_PASSWORD: very_secure_password
       MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
     networks:

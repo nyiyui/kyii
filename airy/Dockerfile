@@ -15,9 +15,9 @@ RUN python -m poetry config virtualenvs.in-project true && \
     python -m poetry install --no-root
 USER root
 RUN rm -rf /var/cache/* && \
-    mkdir /var/kyii-upload -p && \
-    chown app:app /var/kyii-upload && \
-    chmod 770 /var/kyii-upload
+    mkdir /var/kankin-upload -p && \
+    chown app:app /var/kankin-upload && \
+    chmod 770 /var/kankin-upload
 USER app
 
 COPY . /app/

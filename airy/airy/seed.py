@@ -102,7 +102,7 @@ def init_app(app):
                     "client_uri": "http://localhost:8001",
                     "grant_types": ["authorization_code"],
                     "redirect_uris": [
-                        "http://localhost:8001/accounts/kyii/login/callback/"
+                        "http://localhost:8001/accounts/kankin/login/callback/"
                     ],
                     "response_types": ["code"],
                     "scope": "openid profile",

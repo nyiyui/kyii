@@ -47,7 +47,7 @@ class Config:
 
     # Verifiers
     VERIFIER_WEBAUTHN = dict(
-        rp_id="https://yuui.kyii.nyiyui.ca",
+        rp_id="https://yuui.kankin.nyiyui.ca",
         rp_name="Airy",
     )
 

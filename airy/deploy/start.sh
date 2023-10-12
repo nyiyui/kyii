@@ -1,5 +1,5 @@
 #!/bin/env sh
 
-cd /opt/kyii-airy-home/airy
+cd /opt/kankin-airy-home/airy
 
-/opt/kyii-airy-home/.local/bin/pipenv run uwsgi --ini /opt/kyii-airy-home/uwsgi.ini
+/opt/kankin-airy-home/.local/bin/pipenv run uwsgi --ini /opt/kankin-airy-home/uwsgi.ini
